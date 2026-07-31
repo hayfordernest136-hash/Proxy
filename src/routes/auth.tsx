@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -11,6 +11,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useSession } from "@/hooks/useSession";
 import { Brand } from "@/components/site/Brand";
+
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID ?? '';
 
 const searchSchema = z.object({
   mode: z.enum(["login", "register"]).optional(),
@@ -33,6 +35,15 @@ export const Route = createFileRoute("/auth")({
         content: "Sign in to track your proxy orders and collect CD keys.",
       },
     ],
+    scripts: GOOGLE_CLIENT_ID
+      ? [
+          {
+            src: "https://accounts.google.com/gsi/client",
+            async: true,
+            defer: true,
+          },
+        ]
+      : [],
   }),
   component: AuthPage,
 });
@@ -52,13 +63,64 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [busy, setBusy] = useState(false);
+  const [googleBusy, setGoogleBusy] = useState(false);
   const [sentConfirmation, setSentConfirmation] = useState(false);
+  const googleButtonRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!loading && user) {
       navigate({ to: user.role === "admin" ? "/admin" : "/dashboard", replace: true });
     }
   }, [user, loading, navigate]);
+
+  // Initialize Google Sign-In button
+  useEffect(() => {
+    if (!GOOGLE_CLIENT_ID || !googleButtonRef.current) return;
+
+    // Wait for the GIS library to load
+    const interval = setInterval(() => {
+      if (typeof window !== 'undefined' && (window as any).google?.accounts?.id) {
+        clearInterval(interval);
+        (window as any).google.accounts.id.initialize({
+          client_id: GOOGLE_CLIENT_ID,
+          callback: handleGoogleCredential,
+          cancel_on_tap_outside: false,
+        });
+        (window as any).google.accounts.id.renderButton(googleButtonRef.current, {
+          type: 'standard',
+          shape: 'rectangular',
+          theme: 'outline',
+          text: 'continue_with',
+          size: 'large',
+          width: '100%',
+          logo_alignment: 'center',
+        });
+      }
+    }, 200);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  async function handleGoogleCredential(response: { credential?: string }) {
+    if (!response.credential) {
+      toast.error('Google sign-in was cancelled. Please try again.');
+      return;
+    }
+
+    setGoogleBusy(true);
+    try {
+      const data = await apiFetch<{ ok: boolean; user?: { role?: string } }>('/api/auth/google', {
+        method: 'POST',
+        body: JSON.stringify({ credential: response.credential }),
+      });
+      setGoogleBusy(false);
+      toast.success('Welcome!');
+      navigate({ to: data?.user?.role === 'admin' ? '/admin' : '/dashboard', replace: true });
+    } catch (err: any) {
+      setGoogleBusy(false);
+      toast.error(err?.message || 'Google sign-in failed. Please try again.');
+    }
+  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -170,7 +232,27 @@ function AuthPage() {
                     : "An account is required before you can purchase."}
                 </p>
 
-                <form onSubmit={submit} className="mt-6 space-y-4">
+                {/* Google Sign-In Button */}
+                {GOOGLE_CLIENT_ID ? (
+                  <div className="mt-6">
+                    {googleBusy ? (
+                      <div className="flex w-full items-center justify-center gap-2 rounded-lg border border-border px-4 py-3">
+                        <Loader2 className="size-4 animate-spin text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">Signing in with Google...</span>
+                      </div>
+                    ) : (
+                      <div ref={googleButtonRef} className="flex justify-center [&>div]:!w-full" />
+                    )}
+                  </div>
+                ) : null}
+
+                <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">
+                  <span className="h-px flex-1 bg-border" />
+                  <span>Or continue with your email and password</span>
+                  <span className="h-px flex-1 bg-border" />
+                </div>
+
+                <form onSubmit={submit} className="space-y-4">
                   {mode === "register" ? (
                     <div className="space-y-2">
                       <Label htmlFor="name">Full name</Label>
@@ -230,12 +312,6 @@ function AuthPage() {
                     {mode === "login" ? "Log in" : "Create account"}
                   </Button>
                 </form>
-
-                <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">
-                  <span className="h-px flex-1 bg-border" />
-                  <span>Or continue with your email and password</span>
-                  <span className="h-px flex-1 bg-border" />
-                </div>
               </>
             )}
           </CardContent>
