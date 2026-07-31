@@ -1,10 +1,10 @@
 services:
   # Frontend - TanStack Start SSR Web Service
   - type: web
-    name: proxyzone
+    name: proxyflex-frontend
     env: node
     region: oregon
-    buildCommand: npm install && npm run build
+    buildCommand: NITRO_PRESET=node-server npm install && npm run build
     startCommand: node .output/server/index.mjs
     envVars:
       - key: NODE_ENV
@@ -12,13 +12,13 @@ services:
       - key: NITRO_PRESET
         value: node-server
       - key: VITE_API_BASE
-        value: https://proxyzone-api.onrender.com
+        value: https://proxyflex.onrender.com
       - key: VITE_PAYSTACK_PUBLIC_KEY
         sync: false
 
   # Backend API Web Service
   - type: web
-    name: proxyzone-api
+    name: proxyflex
     env: node
     region: oregon
     rootDir: server
@@ -43,7 +43,7 @@ services:
       - key: JWT_SECRET
         sync: false
       - key: FRONTEND_URL
-        value: https://proxyzone.onrender.com
+        value: https://proxyflex-frontend.onrender.com
       - key: PAYSTACK_SECRET_KEY
         sync: false
       - key: PAYSTACK_PUBLIC_KEY
