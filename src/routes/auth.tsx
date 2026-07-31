@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -13,6 +13,7 @@ import { useSession } from "@/hooks/useSession";
 import { Brand } from "@/components/site/Brand";
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID ?? '';
+const GOOGLE_CALLBACK_URL = import.meta.env.VITE_GOOGLE_CALLBACK_URL ?? `${window.location.origin}/auth`;
 
 const searchSchema = z.object({
   mode: z.enum(["login", "register"]).optional(),
@@ -65,7 +66,6 @@ function AuthPage() {
   const [busy, setBusy] = useState(false);
   const [googleBusy, setGoogleBusy] = useState(false);
   const [sentConfirmation, setSentConfirmation] = useState(false);
-  const googleButtonRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!loading && user) {
@@ -73,37 +73,9 @@ function AuthPage() {
     }
   }, [user, loading, navigate]);
 
-  // Initialize Google Sign-In button
-  useEffect(() => {
-    if (!GOOGLE_CLIENT_ID || !googleButtonRef.current) return;
-
-    // Wait for the GIS library to load
-    const interval = setInterval(() => {
-      if (typeof window !== 'undefined' && (window as any).google?.accounts?.id) {
-        clearInterval(interval);
-        (window as any).google.accounts.id.initialize({
-          client_id: GOOGLE_CLIENT_ID,
-          callback: handleGoogleCredential,
-          cancel_on_tap_outside: false,
-        });
-        (window as any).google.accounts.id.renderButton(googleButtonRef.current, {
-          type: 'standard',
-          shape: 'rectangular',
-          theme: 'outline',
-          text: 'continue_with',
-          size: 'large',
-          width: '100%',
-          logo_alignment: 'center',
-        });
-      }
-    }, 200);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  async function handleGoogleCredential(response: { credential?: string }) {
-    if (!response.credential) {
-      toast.error('Google sign-in was cancelled. Please try again.');
+  async function handleGoogleCredential(response: { credential?: string; code?: string; error?: string; error_description?: string }) {
+    if (response.error) {
+      toast.error(response.error_description || 'Google sign-in was cancelled. Please try again.');
       return;
     }
 
@@ -111,18 +83,45 @@ function AuthPage() {
     try {
       const data = await apiFetch<{ ok: boolean; token?: string; user?: { role?: string } }>('/api/auth/google', {
         method: 'POST',
-        body: JSON.stringify({ credential: response.credential }),
+        body: JSON.stringify({
+          ...(response.credential ? { credential: response.credential } : {}),
+          ...(response.code ? { code: response.code } : {}),
+        }),
       });
-      setGoogleBusy(false);
       if (data?.token) {
         window.localStorage.setItem('auth-token', data.token);
       }
       toast.success('Welcome!');
       navigate({ to: data?.user?.role === 'admin' ? '/admin' : '/dashboard', replace: true });
     } catch (err: any) {
-      setGoogleBusy(false);
       toast.error(err?.message || 'Google sign-in failed. Please try again.');
+    } finally {
+      setGoogleBusy(false);
     }
+  }
+
+  async function startGoogleFlow() {
+    if (!GOOGLE_CLIENT_ID) {
+      toast.error('Google sign-in is not configured yet.');
+      return;
+    }
+
+    if (typeof window === 'undefined' || !(window as any).google?.accounts?.oauth2) {
+      toast.error('Google sign-in is unavailable right now.');
+      return;
+    }
+
+    const client = (window as any).google.accounts.oauth2.initCodeClient({
+      client_id: GOOGLE_CLIENT_ID,
+      scope: 'openid email profile',
+      ux_mode: 'popup',
+      redirect_uri: GOOGLE_CALLBACK_URL,
+      callback: (response: { code?: string; error?: string; error_description?: string }) => {
+        handleGoogleCredential(response);
+      },
+    });
+
+    client.requestCode();
   }
 
   async function submit(e: React.FormEvent) {
@@ -241,17 +240,20 @@ function AuthPage() {
                     : "An account is required before you can purchase."}
                 </p>
 
-                {/* Google Sign-In Button */}
                 {GOOGLE_CLIENT_ID ? (
                   <div className="mt-6">
-                    {googleBusy ? (
-                      <div className="flex w-full items-center justify-center gap-2 rounded-lg border border-border px-4 py-3">
-                        <Loader2 className="size-4 animate-spin text-muted-foreground" />
-                        <span className="text-sm text-muted-foreground">Signing in with Google...</span>
-                      </div>
-                    ) : (
-                      <div ref={googleButtonRef} className="flex justify-center [&>div]:!w-full" />
-                    )}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full"
+                      onClick={startGoogleFlow}
+                      disabled={googleBusy}
+                    >
+                      {googleBusy ? (
+                        <Loader2 className="mr-2 size-4 animate-spin" />
+                      ) : null}
+                      Continue with Google
+                    </Button>
                   </div>
                 ) : null}
 

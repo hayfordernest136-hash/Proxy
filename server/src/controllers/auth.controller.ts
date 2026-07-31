@@ -7,7 +7,7 @@ import {
   verifyPassword,
 } from '../services/user.service';
 import { createReferral } from '../services/referral.service';
-import { clearAuthCookie, setAuthCookie, signToken } from '../utils/jwt';
+import { clearAuthCookie, getAuthToken, setAuthCookie, signToken } from '../utils/jwt';
 import { isValidEmail, isValidPassword } from '../middleware/validate.middleware';
 
 export async function register(req: Request, res: Response) {
@@ -103,7 +103,7 @@ export function logout(req: Request, res: Response) {
 
 export async function me(req: Request, res: Response) {
   try {
-    const token = req.cookies?.token;
+    const token = getAuthToken(req);
     if (!token) return res.json({ user: null });
 
     const { verifyToken } = await import('../utils/jwt');
