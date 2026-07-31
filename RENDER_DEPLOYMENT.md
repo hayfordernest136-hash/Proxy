@@ -76,18 +76,17 @@ Since this is a TanStack Start SSR application (not a static site), it must be d
    | **Root Directory** | (leave blank - use root) |
    | **Runtime** | `Node` |
    | **Build Command** | `npm install && npm run build` |
-   | **Start Command** | `node .output/server/index.mjs` |
+   | **Start Command** | `npm run start` |
 
 ### Environment Variables
 
 | Variable | Value |
 |----------|-------|
 | `NODE_ENV` | `production` |
-| `NITRO_PRESET` | `node-server` |
 | `VITE_API_BASE` | `https://proxyzone-api.onrender.com` |
 | `VITE_PAYSTACK_PUBLIC_KEY` | Your Paystack public key |
 
-> **⚠️ Important:** The `NITRO_PRESET=node-server` environment variable is **required**. Without it, the build will generate a Cloudflare Worker preset which won't run on Render. The build output goes to `.output/server/index.mjs`, not `dist/`.
+> **⚠️ Important:** This is a Vite-built TanStack Start SSR app. The production runtime is served from `dist/`, so use `npm run start` (which launches `vite preview`) instead of `node .output/server/index.mjs`.
 
 ### After Deployment
 

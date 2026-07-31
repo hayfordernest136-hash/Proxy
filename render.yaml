@@ -5,13 +5,11 @@ services:
     env: node
     region: oregon
     rootDir: .
-    buildCommand: NITRO_PRESET=node-server npm install --include=dev && npm run build
-    startCommand: node dist/server/server.js
+    buildCommand: npm install --include=dev && npm run build
+    startCommand: npm run start
     envVars:
       - key: NODE_ENV
         value: production
-      - key: NITRO_PRESET
-        value: node-server
       - key: VITE_API_BASE
         value: https://proxyflex.onrender.com
       - key: VITE_PAYSTACK_PUBLIC_KEY
