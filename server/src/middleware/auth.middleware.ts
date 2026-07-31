@@ -12,7 +12,7 @@ export function requireAuth(req: Request, res: Response, next: NextFunction) {
 }
 
 export function requireAdmin(req: Request, res: Response, next: NextFunction) {
-  const role = (req as any).role;
+  const role = String((req as any).role || '').toLowerCase();
   if (role !== 'admin') return res.status(403).json({ message: 'Forbidden' });
   next();
 }

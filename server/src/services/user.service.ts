@@ -6,6 +6,30 @@ function generateReferralCode() {
   return randomBytes(4).toString('hex');
 }
 
+function getApprovedAdminEmails() {
+  const raw = [process.env.ADMIN_EMAILS, process.env.ADMIN_EMAIL]
+    .filter((value): value is string => Boolean(value))
+    .join(',');
+
+  return raw
+    .split(',')
+    .map((value) => value.trim().toLowerCase())
+    .filter(Boolean);
+}
+
+export function isApprovedAdminEmail(email: string) {
+  const normalizedEmail = String(email).trim().toLowerCase();
+  if (!normalizedEmail) return false;
+  return getApprovedAdminEmails().includes(normalizedEmail);
+}
+
+export function resolveUserRole(email: string, fallbackRole?: string) {
+  if (isApprovedAdminEmail(email)) {
+    return 'admin' as const;
+  }
+  return fallbackRole === 'admin' ? 'admin' : 'user';
+}
+
 export async function findUserByEmail(email: string) {
   const [rows] = await pool.query('SELECT * FROM users WHERE email = ? LIMIT 1', [email]);
   return (rows as any[])[0] || null;
@@ -43,13 +67,14 @@ export async function createUser({
   name,
   email,
   password,
-  role = 'user',
+  role,
 }: {
   name: string;
   email: string;
   password: string;
   role?: string;
 }) {
+  const resolvedRole = resolveUserRole(email, role);
   const password_hash = await bcrypt.hash(password, 12);
   let code = generateReferralCode();
   let tries = 0;
@@ -62,12 +87,12 @@ export async function createUser({
 
   const [result] = await pool.query(
     'INSERT INTO users (name, email, password_hash, role, referral_code, created_at) VALUES (?, ?, ?, ?, ?, NOW())',
-    [name, email, password_hash, role, code],
+    [name, email, password_hash, resolvedRole, code],
   );
   const insertId = (result as any).insertId;
   // create profile
   await pool.query('INSERT INTO profiles (user_id, name, created_at) VALUES (?, ?, NOW())', [insertId, name]);
-  return { id: insertId, name, email, referral_code: code };
+  return { id: insertId, name, email, role: resolvedRole, referral_code: code };
 }
 
 export async function setUserReferralRewardUsed(userId: number, used: boolean) {

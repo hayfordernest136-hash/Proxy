@@ -49,29 +49,8 @@ export async function getAdminUsersHandler(_req: Request, res: Response) {
   }
 }
 
-export async function updateUserRoleHandler(req: Request, res: Response) {
-  try {
-    const userId = Number(req.params.userId);
-    const { role } = req.body;
-    if (!['user', 'admin'].includes(role)) {
-      return res.status(400).json({ message: 'Invalid role' });
-    }
-
-    const existingUser = await findUserById(userId);
-    if (!existingUser) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-
-    const updated = await updateUserRole(userId, role);
-    if (!updated) {
-      return res.status(500).json({ message: 'Unable to update user role' });
-    }
-
-    return res.json({ ok: true, user: { id: updated.id, role: updated.role } });
-  } catch (error) {
-    console.error('Failed to update user role:', error);
-    return res.status(500).json({ message: 'Unable to update user role' });
-  }
+export async function updateUserRoleHandler(_req: Request, res: Response) {
+  return res.status(403).json({ message: 'Role changes are managed by the server configuration.' });
 }
 
 export async function updateOrderHandler(req: Request, res: Response) {

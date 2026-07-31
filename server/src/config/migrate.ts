@@ -8,6 +8,11 @@ dotenv.config();
 const schemaFixes = [
   {
     table: 'users',
+    column: 'role',
+    ddl: "ALTER TABLE users ADD COLUMN role VARCHAR(32) NOT NULL DEFAULT 'user'",
+  },
+  {
+    table: 'users',
     column: 'referral_code',
     ddl: 'ALTER TABLE users ADD COLUMN referral_code VARCHAR(32) UNIQUE',
   },
@@ -304,29 +309,25 @@ export async function seedSampleProducts() {
 }
 
 export async function ensureAdminUser() {
-  const isDev = process.env.NODE_ENV !== 'production';
-  const adminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase() ||
-    (isDev ? 'admin@example.com' : undefined);
-  const adminPassword = process.env.ADMIN_PASSWORD?.trim() ||
-    (isDev ? 'change-me' : undefined);
+  const configuredAdminEmails = [process.env.ADMIN_EMAILS, process.env.ADMIN_EMAIL]
+    .filter((value): value is string => Boolean(value))
+    .join(',')
+    .split(',')
+    .map((value) => value.trim().toLowerCase())
+    .filter(Boolean);
+
+  const adminEmail = configuredAdminEmails[0];
+  const adminPassword = process.env.ADMIN_PASSWORD?.trim();
   const adminName = process.env.ADMIN_NAME?.trim() || 'Administrator';
 
   if (!adminEmail || !adminPassword) {
     return;
   }
 
-  if (isDev && !process.env.ADMIN_EMAIL) {
-    console.log('No ADMIN_EMAIL configured; seeding default local admin account.');
-    console.log('Local admin credentials: admin@example.com / change-me');
-  }
-
   const [rows] = await pool.query('SELECT id, role FROM users WHERE email = ? LIMIT 1', [adminEmail]);
   const existing = (rows as any[])[0];
   if (existing) {
     if (existing.role !== 'admin') {
-      console.warn(
-        `Admin seed email ${adminEmail} already exists as a non-admin account. Set a dedicated ADMIN_EMAIL or promote the account manually.`,
-      );
       await pool.query('UPDATE users SET role = ? WHERE id = ?', ['admin', existing.id]);
       console.log(`Promoted existing user ${adminEmail} to admin.`);
     }

@@ -3,6 +3,7 @@ import {
   createUser,
   findUserByEmail,
   findUserByReferralCode,
+  resolveUserRole,
   verifyPassword,
 } from '../services/user.service';
 import { createReferral } from '../services/referral.service';
@@ -22,9 +23,9 @@ function setAuthCookie(res: Response, token: string) {
 
 export async function register(req: Request, res: Response) {
   try {
-    const { full_name, email, password, referral_code } = req.body;
+    const { full_name, email, password, confirm_password, referral_code } = req.body;
 
-    if (!email || !password || !full_name) {
+    if (!email || !password || !confirm_password || !full_name) {
       return res.status(400).json({ message: 'Missing required fields' });
     }
 
@@ -38,6 +39,10 @@ export async function register(req: Request, res: Response) {
       return res.status(400).json({ message: 'Password must be at least 6 characters' });
     }
 
+    if (String(password) !== String(confirm_password)) {
+      return res.status(400).json({ message: 'Passwords do not match' });
+    }
+
     const name = String(full_name).trim().slice(0, 120);
 
     const existing = await findUserByEmail(normalizedEmail);
@@ -47,6 +52,7 @@ export async function register(req: Request, res: Response) {
       name,
       email: normalizedEmail,
       password,
+      role: resolveUserRole(normalizedEmail),
     });
 
     if (referral_code) {
@@ -56,9 +62,9 @@ export async function register(req: Request, res: Response) {
       }
     }
 
-    const token = signToken({ sub: user.id, role: 'user' });
+    const token = signToken({ sub: user.id, role: user.role });
     setAuthCookie(res, token);
-    return res.json({ ok: true, user: { id: user.id, name: user.name, email: user.email } });
+    return res.json({ ok: true, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
   } catch (error: any) {
     console.error('Registration failed:', error);
     return res.status(500).json({ message: 'Unable to create account' });
@@ -83,9 +89,14 @@ export async function login(req: Request, res: Response) {
     const valid = await verifyPassword(String(password), user.password_hash);
     if (!valid) return res.status(401).json({ message: 'Invalid email or password.' });
 
-    const token = signToken({ sub: user.id, role: user.role });
+    const role = resolveUserRole(normalizedEmail, user.role);
+    if (role === 'admin' && user.role !== 'admin') {
+      await (await import('../services/user.service')).updateUserRole(user.id, 'admin');
+    }
+
+    const token = signToken({ sub: user.id, role });
     setAuthCookie(res, token);
-    return res.json({ ok: true, user: { id: user.id, name: user.name, email: user.email } });
+    return res.json({ ok: true, user: { id: user.id, name: user.name, email: user.email, role } });
   } catch (error: any) {
     console.error('Login failed:', error);
     return res.status(500).json({ message: 'Unable to login' });

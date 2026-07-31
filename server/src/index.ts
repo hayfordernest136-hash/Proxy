@@ -8,7 +8,7 @@ import compression from 'compression';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
 import apiRoutes from './routes/index';
-import { runMigrations, seedSampleProducts } from './config/migrate';
+import { runMigrations, seedSampleProducts, ensureAdminUser } from './config/migrate';
 import { connectWithRetry } from './config/db';
 import { errorHandler, notFoundHandler } from './middleware/error.middleware';
 import { sanitizeInput } from './middleware/validate.middleware';
@@ -21,15 +21,7 @@ dotenv.config({ path: serverEnvPath });
 dotenv.config({ path: rootEnvPath });
 
 // ---- Validate required environment variables ----
-const REQUIRED_ENV_VARS = [
-  'DB_HOST',
-  'DB_PORT',
-  'DB_USER',
-  'DB_PASSWORD',
-  'DB_NAME',
-  'JWT_SECRET',
-  'FRONTEND_URL',
-] as const;
+const REQUIRED_ENV_VARS = ['DB_HOST', 'DB_PORT', 'DB_USER', 'DB_NAME', 'JWT_SECRET', 'FRONTEND_URL'] as const;
 
 const missing: string[] = [];
 for (const key of REQUIRED_ENV_VARS) {
@@ -139,6 +131,12 @@ async function start() {
     await runMigrations();
   } catch (e) {
     console.warn('Migration step failed:', e);
+  }
+
+  try {
+    await ensureAdminUser();
+  } catch (e) {
+    console.warn('Admin user seeding failed:', e);
   }
 
   // Only seed sample data in non-production environments
