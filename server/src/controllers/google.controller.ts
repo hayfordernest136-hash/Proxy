@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { OAuth2Client } from 'google-auth-library';
 import { findUserByEmail, createUser, resolveUserRole } from '../services/user.service';
-import { signToken } from '../utils/jwt';
+import { setAuthCookie, signToken } from '../utils/jwt';
 
 const googleClient = new OAuth2Client();
 
@@ -11,17 +11,6 @@ function getGoogleClientId(): string {
     throw new Error('GOOGLE_CLIENT_ID environment variable is required for Google OAuth');
   }
   return clientId;
-}
-
-function setAuthCookie(res: Response, token: string) {
-  const isProd = process.env.NODE_ENV === 'production';
-  res.cookie('token', token, {
-    httpOnly: true,
-    secure: isProd,
-    sameSite: isProd ? 'none' : 'lax',
-    maxAge: 7 * 24 * 60 * 60 * 1000,
-    ...(isProd ? { domain: undefined } : {}),
-  });
 }
 
 export async function googleAuth(req: Request, res: Response) {
@@ -79,6 +68,7 @@ export async function googleAuth(req: Request, res: Response) {
 
     return res.json({
       ok: true,
+      token,
       user: {
         id: user.id,
         name: user.name,

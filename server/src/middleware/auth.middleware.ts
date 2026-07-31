@@ -1,11 +1,14 @@
 import { Request, Response, NextFunction } from 'express';
-import { verifyToken } from '../utils/jwt';
+import { clearAuthCookie, getAuthToken, verifyToken } from '../utils/jwt';
 
 export function requireAuth(req: Request, res: Response, next: NextFunction) {
-  const token = req.cookies?.token;
+  const token = getAuthToken(req);
   if (!token) return res.status(401).json({ message: 'Not authenticated' });
   const payload = verifyToken(token);
-  if (!payload) return res.status(401).json({ message: 'Invalid token' });
+  if (!payload) {
+    clearAuthCookie(res);
+    return res.status(401).json({ message: 'Invalid token' });
+  }
   (req as any).userId = payload.sub;
   (req as any).role = payload.role;
   next();

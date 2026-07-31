@@ -1,5 +1,11 @@
 import { useEffect, useState } from "react";
 import { apiFetch, setOnUnauthorized } from "@/lib/api";
+
+function clearStoredAuthToken() {
+  if (typeof window !== "undefined") {
+    window.localStorage.removeItem("auth-token");
+  }
+}
 import { useNavigate } from "@tanstack/react-router";
 
 export function useSession() {
@@ -10,6 +16,7 @@ export function useSession() {
   useEffect(() => {
     // Register the onUnauthorized handler to clear session
     setOnUnauthorized(() => {
+      clearStoredAuthToken();
       setUser(null);
       setLoading(false);
     });

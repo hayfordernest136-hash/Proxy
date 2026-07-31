@@ -54,6 +54,9 @@ export function Navbar() {
   async function signOut() {
     await queryClient.cancelQueries();
     queryClient.clear();
+    if (typeof window !== "undefined") {
+      window.localStorage.removeItem("auth-token");
+    }
     await apiFetch("/api/auth/logout", { method: "POST" });
     navigate({ to: "/auth", replace: true });
   }

@@ -109,11 +109,14 @@ function AuthPage() {
 
     setGoogleBusy(true);
     try {
-      const data = await apiFetch<{ ok: boolean; user?: { role?: string } }>('/api/auth/google', {
+      const data = await apiFetch<{ ok: boolean; token?: string; user?: { role?: string } }>('/api/auth/google', {
         method: 'POST',
         body: JSON.stringify({ credential: response.credential }),
       });
       setGoogleBusy(false);
+      if (data?.token) {
+        window.localStorage.setItem('auth-token', data.token);
+      }
       toast.success('Welcome!');
       navigate({ to: data?.user?.role === 'admin' ? '/admin' : '/dashboard', replace: true });
     } catch (err: any) {
@@ -142,7 +145,7 @@ function AuthPage() {
     setBusy(true);
     if (mode === "register") {
       try {
-        const data = await apiFetch<{ ok: boolean; user?: { role?: string } }>('/api/auth/register', {
+        const data = await apiFetch<{ ok: boolean; token?: string; user?: { role?: string } }>('/api/auth/register', {
           method: 'POST',
           body: JSON.stringify({
             full_name: fullName.trim().slice(0, 120),
@@ -153,6 +156,9 @@ function AuthPage() {
           }),
         });
         setBusy(false);
+        if (data?.token) {
+          window.localStorage.setItem('auth-token', data.token);
+        }
         toast.success('Welcome to BrokeFlex!');
         navigate({ to: data?.user?.role === 'admin' ? '/admin' : '/dashboard', replace: true });
       } catch (err: any) {
@@ -161,11 +167,14 @@ function AuthPage() {
       }
     } else {
       try {
-        const data = await apiFetch<{ ok: boolean; user?: { role?: string } }>('/api/auth/login', {
+        const data = await apiFetch<{ ok: boolean; token?: string; user?: { role?: string } }>('/api/auth/login', {
           method: 'POST',
           body: JSON.stringify({ email: parsed.data.email, password: parsed.data.password }),
         });
         setBusy(false);
+        if (data?.token) {
+          window.localStorage.setItem('auth-token', data.token);
+        }
         toast.success('Welcome back!');
         navigate({ to: data?.user?.role === 'admin' ? '/admin' : '/dashboard', replace: true });
       } catch (err: any) {

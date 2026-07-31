@@ -21,7 +21,7 @@ dotenv.config({ path: serverEnvPath });
 dotenv.config({ path: rootEnvPath });
 
 // ---- Validate required environment variables ----
-const REQUIRED_ENV_VARS = ['DB_HOST', 'DB_PORT', 'DB_USER', 'DB_NAME', 'JWT_SECRET', 'FRONTEND_URL'] as const;
+const REQUIRED_ENV_VARS = ['DB_HOST', 'DB_PORT', 'DB_USER', 'DB_NAME', 'JWT_SECRET'] as const;
 
 const missing: string[] = [];
 for (const key of REQUIRED_ENV_VARS) {
@@ -33,10 +33,12 @@ for (const key of REQUIRED_ENV_VARS) {
 if (missing.length > 0) {
   console.error(
     `[FATAL] Missing required environment variables:\n  ${missing.join('\n  ')}\n` +
-    'Please set them before starting the server.',
+      'Please set them before starting the server.',
   );
   process.exit(1);
 }
+
+const frontendUrl = process.env.FRONTEND_URL || process.env.FRONTEND_ORIGIN || '';
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -81,8 +83,7 @@ const globalLimiter = rateLimit({
 app.use('/api', globalLimiter);
 
 // ---- CORS ----
-const frontendUrl = process.env.FRONTEND_URL?.replace(/\/+$/, '') || '';
-const corsOrigins = [frontendUrl].filter(Boolean);
+const corsOrigins = [frontendUrl.replace(/\/+$/, '')].filter(Boolean);
 
 if (!isProd) {
   corsOrigins.push(

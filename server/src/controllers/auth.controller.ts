@@ -7,19 +7,8 @@ import {
   verifyPassword,
 } from '../services/user.service';
 import { createReferral } from '../services/referral.service';
-import { signToken } from '../utils/jwt';
+import { clearAuthCookie, setAuthCookie, signToken } from '../utils/jwt';
 import { isValidEmail, isValidPassword } from '../middleware/validate.middleware';
-
-function setAuthCookie(res: Response, token: string) {
-  const isProd = process.env.NODE_ENV === 'production';
-  res.cookie('token', token, {
-    httpOnly: true,
-    secure: isProd,
-    sameSite: isProd ? 'none' : 'lax',
-    maxAge: 7 * 24 * 60 * 60 * 1000,
-    ...(isProd ? { domain: undefined } : {}),
-  });
-}
 
 export async function register(req: Request, res: Response) {
   try {
@@ -64,7 +53,11 @@ export async function register(req: Request, res: Response) {
 
     const token = signToken({ sub: user.id, role: user.role });
     setAuthCookie(res, token);
-    return res.json({ ok: true, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
+    return res.json({
+      ok: true,
+      token,
+      user: { id: user.id, name: user.name, email: user.email, role: user.role },
+    });
   } catch (error: any) {
     console.error('Registration failed:', error);
     return res.status(500).json({ message: 'Unable to create account' });
@@ -96,7 +89,7 @@ export async function login(req: Request, res: Response) {
 
     const token = signToken({ sub: user.id, role });
     setAuthCookie(res, token);
-    return res.json({ ok: true, user: { id: user.id, name: user.name, email: user.email, role } });
+    return res.json({ ok: true, token, user: { id: user.id, name: user.name, email: user.email, role } });
   } catch (error: any) {
     console.error('Login failed:', error);
     return res.status(500).json({ message: 'Unable to login' });
@@ -104,11 +97,7 @@ export async function login(req: Request, res: Response) {
 }
 
 export function logout(req: Request, res: Response) {
-  res.clearCookie('token', {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' as const : 'lax' as const,
-  });
+  clearAuthCookie(res);
   return res.json({ ok: true });
 }
 
@@ -120,11 +109,7 @@ export async function me(req: Request, res: Response) {
     const { verifyToken } = await import('../utils/jwt');
     const payloadVerified = verifyToken(token);
     if (!payloadVerified) {
-      res.clearCookie('token', {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: process.env.NODE_ENV === 'production' ? 'none' as const : 'lax' as const,
-      });
+      clearAuthCookie(res);
       return res.json({ user: null });
     }
 

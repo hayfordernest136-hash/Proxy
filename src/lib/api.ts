@@ -45,12 +45,24 @@ function getFriendlyMessage(statusCode: number): string {
  */
 let onUnauthorized: (() => void) | null = null;
 
+function getStoredAuthToken(): string | null {
+  if (typeof window === 'undefined') return null;
+  return window.localStorage.getItem('auth-token');
+}
+
+function clearStoredAuthToken() {
+  if (typeof window !== 'undefined') {
+    window.localStorage.removeItem('auth-token');
+  }
+}
+
 export function setOnUnauthorized(handler: () => void) {
   onUnauthorized = handler;
 }
 
 export async function apiFetch<T = unknown>(path: string, options?: RequestInit) {
   const url = path.startsWith('http') ? path : `${API_BASE}${path}`;
+  const authToken = getStoredAuthToken();
 
   let response: Response;
   try {
@@ -58,6 +70,7 @@ export async function apiFetch<T = unknown>(path: string, options?: RequestInit)
       credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
+        ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
         ...(options?.headers || {}),
       },
       ...options,
@@ -71,8 +84,9 @@ export async function apiFetch<T = unknown>(path: string, options?: RequestInit)
   }
 
   // Handle 401 - session expired
-  if (response.status === 401 && onUnauthorized) {
-    onUnauthorized();
+  if (response.status === 401) {
+    clearStoredAuthToken();
+    onUnauthorized?.();
   }
 
   const text = await response.text();
