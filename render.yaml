@@ -4,7 +4,8 @@ services:
     name: proxyflex-frontend
     env: node
     region: oregon
-    buildCommand: NITRO_PRESET=node-server npm install && npm run build
+    rootDir: .
+    buildCommand: NITRO_PRESET=node-server npm install --include=dev && npm run build
     startCommand: node .output/server/index.mjs
     envVars:
       - key: NODE_ENV
