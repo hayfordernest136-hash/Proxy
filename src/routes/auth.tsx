@@ -50,11 +50,14 @@ function AuthPage() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [sentConfirmation, setSentConfirmation] = useState(false);
 
   useEffect(() => {
-    if (!loading && user) navigate({ to: "/dashboard", replace: true });
+    if (!loading && user) {
+      navigate({ to: user.role === "admin" ? "/admin" : "/dashboard", replace: true });
+    }
   }, [user, loading, navigate]);
 
   async function submit(e: React.FormEvent) {
@@ -69,34 +72,40 @@ function AuthPage() {
       return;
     }
 
+    if (mode === "register" && confirmPassword !== password) {
+      toast.error("Passwords do not match.");
+      return;
+    }
+
     setBusy(true);
     if (mode === "register") {
       try {
-        await apiFetch('/api/auth/register', {
+        const data = await apiFetch<{ ok: boolean; user?: { role?: string } }>('/api/auth/register', {
           method: 'POST',
           body: JSON.stringify({
             full_name: fullName.trim().slice(0, 120),
             email: parsed.data.email,
             password: parsed.data.password,
+            confirm_password: confirmPassword,
             referral_code: search.referral_code ?? null,
           }),
         });
         setBusy(false);
         toast.success('Welcome to BrokeFlex!');
-        navigate({ to: '/dashboard', replace: true });
+        navigate({ to: data?.user?.role === 'admin' ? '/admin' : '/dashboard', replace: true });
       } catch (err: any) {
         setBusy(false);
         toast.error(err?.message || 'Registration failed');
       }
     } else {
       try {
-        await apiFetch('/api/auth/login', {
+        const data = await apiFetch<{ ok: boolean; user?: { role?: string } }>('/api/auth/login', {
           method: 'POST',
           body: JSON.stringify({ email: parsed.data.email, password: parsed.data.password }),
         });
         setBusy(false);
         toast.success('Welcome back!');
-        navigate({ to: '/dashboard', replace: true });
+        navigate({ to: data?.user?.role === 'admin' ? '/admin' : '/dashboard', replace: true });
       } catch (err: any) {
         setBusy(false);
         toast.error(err?.message || 'Login failed');
@@ -200,6 +209,21 @@ function AuthPage() {
                       placeholder="At least 8 characters"
                     />
                   </div>
+
+                  {mode === "register" ? (
+                    <div className="space-y-2">
+                      <Label htmlFor="confirmPassword">Confirm Password</Label>
+                      <Input
+                        id="confirmPassword"
+                        type="password"
+                        autoComplete="new-password"
+                        value={confirmPassword}
+                        maxLength={72}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        placeholder="Re-enter your password"
+                      />
+                    </div>
+                  ) : null}
 
                   <Button type="submit" className="w-full" disabled={busy}>
                     {busy ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}

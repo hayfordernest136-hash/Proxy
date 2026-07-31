@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Bell, Copy, Package, ShoppingBag, User } from "lucide-react";
+import { Bell, CheckCircle2, Copy, Gift, Package, ShoppingBag, Sparkles, User } from "lucide-react";
 
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { Badge } from "@/components/ui/badge";
@@ -81,6 +81,8 @@ function DashboardPage() {
   const referralLink = referralOrigin && referralStatus?.referralCode
     ? `${referralOrigin}/auth?referral_code=${referralStatus.referralCode}`
     : null;
+  const rewardProgress = Math.min(100, ((referralStatus?.successfulReferrals ?? 0) / 10) * 100);
+  const rewardUnlocked = referralStatus?.rewardStatus === "unlocked";
 
   const active = (orders ?? []).filter(
     (o) => !["completed", "cancelled", "refunded"].includes(o.status),
@@ -262,45 +264,95 @@ function DashboardPage() {
           </Card>
 
           <div className="space-y-6">
-            <Card className="border-border/70">
+            <Card className="border-border/70 bg-gradient-to-br from-primary/10 via-background to-background">
               <CardContent className="p-6">
-                <h2 className="font-semibold tracking-tight">Referral rewards</h2>
-                <dl className="mt-4 space-y-3 text-sm">
-                  <div>
-                    <dt className="text-muted-foreground">Your referral link</dt>
-                    <dd className="space-y-2">
-                      {referralLink ? (
-                        <div className="rounded-lg border border-border/70 bg-background p-3 text-sm break-all">
-                          <code className="block break-words">{referralLink}</code>
-                        </div>
-                      ) : (
-                        <p className="text-sm text-muted-foreground">Generating your referral link...</p>
-                      )}
-                      {referralLink ? (
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          className="mt-2"
-                          onClick={async () => {
-                            await navigator.clipboard.writeText(referralLink);
-                          }}
-                        >
-                          <Copy className="mr-2 size-4" /> Copy referral link
-                        </Button>
-                      ) : null}
-                    </dd>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="space-y-2">
+                    <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-primary">
+                      <Gift className="size-3.5" /> Referral rewards
+                    </div>
+                    <div>
+                      <h2 className="font-semibold tracking-tight">Invite friends, unlock rewards</h2>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        Each successful referral moves you closer to a reward that applies automatically at checkout.
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <dt className="text-muted-foreground">Successful referrals</dt>
-                    <dd>{referralStatus?.successfulReferrals ?? 0}/10</dd>
+                  <div className="rounded-2xl border border-primary/20 bg-background/80 px-3 py-2 text-right shadow-sm">
+                    <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Progress</p>
+                    <p className="text-lg font-semibold">{referralStatus?.successfulReferrals ?? 0}/10</p>
                   </div>
-                  <div>
-                    <dt className="text-muted-foreground">Reward status</dt>
-                    <dd className="capitalize">{referralStatus?.rewardStatus ?? 'locked'}</dd>
+                </div>
+
+                <div className="mt-5 rounded-2xl border border-border/70 bg-background/70 p-4 shadow-sm">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-medium">Your referral link</p>
+                      <p className="text-xs text-muted-foreground">Share it with friends and earn progress together.</p>
+                    </div>
+                    <Badge variant={rewardUnlocked ? 'default' : 'secondary'} className="capitalize">
+                      {rewardUnlocked ? 'Unlocked' : 'In progress'}
+                    </Badge>
                   </div>
-                </dl>
-                {referralStatus?.rewardStatus === 'unlocked' ? (
-                  <div className="mt-4 rounded-2xl border border-primary/40 bg-primary/5 p-4 text-sm text-primary">
+
+                  <div className="mt-3 space-y-3">
+                    {referralLink ? (
+                      <div className="rounded-xl border border-border/70 bg-background p-3 text-sm break-all">
+                        <code className="block break-words">{referralLink}</code>
+                      </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">Generating your referral link...</p>
+                    )}
+
+                    <div className="flex items-center gap-2">
+                      <div className="h-2 flex-1 rounded-full bg-muted">
+                        <div
+                          className="h-2 rounded-full bg-primary transition-all"
+                          style={{ width: `${rewardProgress}%` }}
+                        />
+                      </div>
+                      <span className="text-sm font-medium text-muted-foreground">{Math.round(rewardProgress)}%</span>
+                    </div>
+
+                    {referralLink ? (
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        className="w-full sm:w-auto"
+                        onClick={async () => {
+                          await navigator.clipboard.writeText(referralLink);
+                        }}
+                      >
+                        <Copy className="mr-2 size-4" /> Copy referral link
+                      </Button>
+                    ) : null}
+                  </div>
+                </div>
+
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  <div className="rounded-2xl border border-border/70 bg-background/70 p-4">
+                    <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                      <CheckCircle2 className="size-4 text-primary" /> Reward status
+                    </div>
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      {rewardUnlocked
+                        ? 'Your reward is ready and can be applied automatically on eligible orders.'
+                        : `You’re ${referralStatus?.successfulReferrals ?? 0} of 10 referrals away from unlocking the bonus.`}
+                    </p>
+                  </div>
+
+                  <div className="rounded-2xl border border-border/70 bg-background/70 p-4">
+                    <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                      <Sparkles className="size-4 text-primary" /> How it works
+                    </div>
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      Once a referral becomes successful, your progress updates instantly and the reward can be used at checkout.
+                    </p>
+                  </div>
+                </div>
+
+                {rewardUnlocked ? (
+                  <div className="mt-4 rounded-2xl border border-primary/25 bg-primary/10 p-4 text-sm text-primary">
                     Your referral reward is unlocked. Apply it automatically on any eligible 10 IP proxy order at checkout.
                   </div>
                 ) : null}

@@ -64,8 +64,39 @@ function SupportPage() {
         <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
           <h1 className="text-4xl font-extrabold tracking-tight">Support</h1>
           <p className="mt-3 max-w-2xl text-muted-foreground">
-            We are a small team of real people. If something is wrong with an order, tell
-            us and we will fix it.
+            # Support Center
+
+Need help? We are here to assist you.
+
+If you have any questions, problems, or need assistance with your account, payments, or services, contact us directly through WhatsApp. Our support team will personally respond and help you resolve your issue.
+
+## Contact Support
+
+💬 WhatsApp Support
+Click the WhatsApp button below to chat with us directly.
+
+ We Can Help With:
+
+* Account and login issues
+* Payment problems
+* Service questions
+* Order or subscription issues
+* Technical difficulties
+* General inquiries
+
+When Contacting Support, Please Provide:
+
+Your name
+ Email address or account details
+ A description of your issue
+ Screenshots or error messages (if applicable)
+
+Support Hours
+
+We respond as quickly as possible and aim to resolve customer issues promptly.
+
+Thank you for using our service. We appreciate your trust and support.
+
           </p>
         </div>
       </section>
