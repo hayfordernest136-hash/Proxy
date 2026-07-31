@@ -41,8 +41,8 @@ function ProductsPage() {
       const products = await apiFetch<any[]>("/api/products");
       return products.map((p) => {
         const prices = (p.plans ?? [])
-          .filter((pl) => pl.is_active)
-          .map((pl) => Number(pl.price));
+.filter((pl: any) => pl.is_active)
+          .map((pl: any) => Number(pl.price));
         return {
           ...p,
           from_price: prices.length ? Math.min(...prices) : null,

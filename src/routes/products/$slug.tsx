@@ -31,6 +31,38 @@ import {
 } from "@/lib/order-status";
 import { cn } from "@/lib/utils";
 
+type ProductPrice = {
+  id: number;
+  number_of_ips: number;
+  price: number;
+  currency: string;
+  sort_order: number;
+};
+
+type ProductPlan = {
+  id: number;
+  name: string;
+  price: number;
+  currency: string;
+  number_of_ips: number;
+};
+
+type Product = {
+  id: number;
+  slug: string;
+  name: string;
+  description: string;
+  proxy_type: string;
+  location: string;
+  image_url: string | null;
+  features: string[];
+  supports_cd_key: boolean | number;
+  supports_account_refill: boolean | number;
+  duration_days?: number | null;
+  prices?: ProductPrice[];
+  plans?: ProductPlan[];
+};
+
 export const Route = createFileRoute("/products/$slug")({
   head: ({ params }) => {
     const pretty = params.slug
@@ -60,7 +92,7 @@ function ProductDetailPage() {
   const navigate = useNavigate();
   const { user } = useSession();
 
-  const [planId, setPlanId] = useState<string | null>(null);
+  const [planId, setPlanId] = useState<number | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [delivery, setDelivery] = useState<DeliveryMethod>("cd_key");
   const [refillEmail, setRefillEmail] = useState("");
@@ -71,25 +103,38 @@ function ProductDetailPage() {
   const { data: product, isLoading } = useQuery({
     queryKey: ["product", slug],
     queryFn: async () => {
-      return await apiFetch<any>(`/api/products/${slug}`);
+      return await apiFetch<Product>(`/api/products/${slug}`);
     },
   });
 
-  const prices = useMemo(() => (product?.prices ?? []).sort((a,b)=>a.sort_order - b.sort_order), [product]);
+const prices = useMemo<ProductPrice[]>(
+    () =>
+      (product?.prices ?? [])
+        .slice()
+        .sort((a, b) => a.sort_order - b.sort_order),
+    [product],
+  );
 
   useEffect(() => {
     // pick a default plan id corresponding to the first price row
     if (!planId) {
       const firstPrice = prices[0];
       if (firstPrice && product?.plans) {
-        const match = (product.plans ?? []).find((pl:any)=>pl.number_of_ips === firstPrice.number_of_ips);
+        const match = (product.plans ?? []).find((pl) => pl.number_of_ips === firstPrice.number_of_ips);
         if (match) setPlanId(match.id);
       }
     }
   }, [prices, product, planId]);
 
-  const selectedPrice = prices.find((p) => String(p.id) === String(planId) || (product?.plans ?? []).some((pl:any)=>pl.id===planId && pl.number_of_ips===p.number_of_ips)) ?? prices[0] ?? null;
-  const selectedPlan = (product?.plans ?? []).find((p:any) => p.id === planId) ?? null;
+  const selectedPrice =
+    prices.find(
+      (p) =>
+        p.id === planId ||
+        (product?.plans ?? []).some(
+          (pl) => pl.id === planId && pl.number_of_ips === p.number_of_ips,
+        ),
+    ) ?? prices[0] ?? null;
+  const selectedPlan = (product?.plans ?? []).find((p) => p.id === planId) ?? null;
   const total = (selectedPrice ? Number(selectedPrice.price) : selectedPlan ? Number(selectedPlan.price) : 0) * quantity;
 
   async function createOrder() {
@@ -221,7 +266,7 @@ function ProductDetailPage() {
               <CardContent className="p-6">
                 <h2 className="font-semibold tracking-tight">Features</h2>
                 <ul className="mt-4 grid gap-3 sm:grid-cols-2">
-                  {product.features.map((f) => (
+{product.features.map((f: string) => (
                     <li key={f} className="flex items-start gap-2 text-sm">
                       <Check className="mt-0.5 size-4 shrink-0 text-success" />
                       {f}
@@ -266,20 +311,24 @@ function ProductDetailPage() {
                 <div className="space-y-2">
                   <Label>IP Pricing</Label>
                   <div className="grid gap-2">
-                    {(product?.prices ?? []).map((p:any, i:number) => (
+{(product?.prices ?? []).map((p: ProductPrice, i: number) => (
                       <button
                         key={i}
                         type="button"
                         onClick={() => {
-                          // set planId to matching plan if available, otherwise use index
-                          const match = (product.plans ?? []).find((pl:any)=>pl.number_of_ips === p.number_of_ips);
+                          // set planId to matching plan if available, otherwise use this price id
+                          const match = (product?.plans ?? []).find(
+                            (pl) => pl.number_of_ips === p.number_of_ips,
+                          );
                           if (match) setPlanId(match.id);
-                          else setPlanId(String(p.id));
+                          else setPlanId(p.id);
                         }}
                         className={cn(
                           "flex items-center justify-between rounded-lg border px-4 py-3 text-left transition-colors",
                           // active if the selected plan corresponds to this price
-                          ((product?.plans ?? []).some((pl:any)=>pl.id===planId && pl.number_of_ips===p.number_of_ips) || String(planId) === String(p.id))
+                          ((product?.plans ?? []).some(
+                            (pl) => pl.id === planId && pl.number_of_ips === p.number_of_ips,
+                          ) || planId === p.id)
                             ? "border-primary bg-primary/10"
                             : "border-border hover:border-primary/40",
                         )}

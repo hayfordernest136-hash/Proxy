@@ -24,7 +24,7 @@ export const pool = mysql.createPool({
   keepAliveInitialDelay: 10000,
 });
 
-// Handle pool errors to prevent crashes
+
 (pool as any).on('error', (err: any) => {
   console.error('[DB Pool Error]', err.message);
   if (err.code === 'PROTOCOL_CONNECTION_LOST' || err.code === 'ECONNRESET') {

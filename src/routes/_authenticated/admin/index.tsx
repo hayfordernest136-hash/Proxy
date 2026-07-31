@@ -145,7 +145,8 @@ function AdminPage() {
     },
   });
 
-  const routeSearch = Route.useSearch();
+  const routeSearch = Route.useSearch() as { manage?: string } | undefined;
+  const manage = routeSearch?.manage;
 
   const { data: orders, isLoading: isLoadingOrders } = useQuery({
     queryKey: ["admin-orders"],
@@ -162,8 +163,8 @@ function AdminPage() {
 
   // Open product dialog when admin console is opened with ?manage=<slug>
   useEffect(() => {
-    if (routeSearch?.manage && products) {
-      const slug = String(routeSearch.manage);
+    if (manage && products) {
+      const slug = String(manage);
       const p = (products as any[]).find((x) => x.slug === slug);
       if (p) {
         // normalize fields to ensure controlled inputs

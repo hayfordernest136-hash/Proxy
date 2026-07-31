@@ -55,9 +55,9 @@ function PricingPage() {
               <Skeleton key={i} className="h-40 rounded-xl" />
             ))
           : data?.map((product) => {
-              const plans = (product.plans ?? [])
-                .filter((p) => p.is_active)
-                .sort((a, b) => a.sort_order - b.sort_order);
+const plans = (product.plans ?? [])
+                .filter((p: any) => p.is_active)
+                .sort((a: any, b: any) => a.sort_order - b.sort_order);
               return (
                 <Card key={product.slug} className="border-border/70">
                   <CardContent className="p-6">
@@ -78,7 +78,7 @@ function PricingPage() {
                     </div>
 
                     <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                      {plans.map((plan) => (
+{plans.map((plan: any) => (
                         <div
                           key={plan.id}
                           className="rounded-lg border border-border/70 bg-muted/30 p-4"
