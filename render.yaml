@@ -1,0 +1,51 @@
+services:
+  # Frontend - TanStack Start SSR Web Service
+  - type: web
+    name: proxyzone
+    env: node
+    region: oregon
+    buildCommand: npm install && npm run build
+    startCommand: node .output/server/index.mjs
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NITRO_PRESET
+        value: node-server
+      - key: VITE_API_BASE
+        value: https://proxyzone-api.onrender.com
+      - key: VITE_PAYSTACK_PUBLIC_KEY
+        sync: false
+
+  # Backend API Web Service
+  - type: web
+    name: proxyzone-api
+    env: node
+    region: oregon
+    rootDir: server
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "4000"
+      - key: DB_HOST
+        sync: false
+      - key: DB_PORT
+        value: "3306"
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_NAME
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: FRONTEND_URL
+        value: https://proxyzone.onrender.com
+      - key: PAYSTACK_SECRET_KEY
+        sync: false
+      - key: PAYSTACK_PUBLIC_KEY
+        sync: false
+
