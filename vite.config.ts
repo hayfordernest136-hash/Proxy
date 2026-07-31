@@ -12,6 +12,12 @@ export default defineConfig({
     tailwindcss(),
     tsconfigPaths(),
   ],
+  preview: {
+    allowedHosts: [
+      "proxyflex-frontend.onrender.com",
+      "www.brokeflexdata.com",
+    ],
+  },
   build: {
     // Generate sourcemaps for production debugging
     sourcemap: process.env.NODE_ENV !== "production",
