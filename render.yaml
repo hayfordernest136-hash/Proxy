@@ -6,7 +6,7 @@ services:
     region: oregon
     rootDir: .
     buildCommand: NITRO_PRESET=node-server npm install --include=dev && npm run build
-    startCommand: node .output/server/index.mjs
+    startCommand: node dist/server/server.js
     envVars:
       - key: NODE_ENV
         value: production
