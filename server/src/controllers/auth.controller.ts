@@ -1,0 +1,138 @@
+import { Request, Response } from 'express';
+import {
+  createUser,
+  findUserByEmail,
+  findUserByReferralCode,
+  verifyPassword,
+} from '../services/user.service';
+import { createReferral } from '../services/referral.service';
+import { signToken } from '../utils/jwt';
+import { isValidEmail, isValidPassword } from '../middleware/validate.middleware';
+
+function setAuthCookie(res: Response, token: string) {
+  const isProd = process.env.NODE_ENV === 'production';
+  res.cookie('token', token, {
+    httpOnly: true,
+    secure: isProd,
+    sameSite: isProd ? 'none' : 'lax',
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+    ...(isProd ? { domain: undefined } : {}),
+  });
+}
+
+export async function register(req: Request, res: Response) {
+  try {
+    const { full_name, email, password, referral_code } = req.body;
+
+    if (!email || !password || !full_name) {
+      return res.status(400).json({ message: 'Missing required fields' });
+    }
+
+    const normalizedEmail = String(email).toLowerCase().trim();
+
+    if (!isValidEmail(normalizedEmail)) {
+      return res.status(400).json({ message: 'Invalid email format' });
+    }
+
+    if (!isValidPassword(String(password))) {
+      return res.status(400).json({ message: 'Password must be at least 6 characters' });
+    }
+
+    const name = String(full_name).trim().slice(0, 120);
+
+    const existing = await findUserByEmail(normalizedEmail);
+    if (existing) return res.status(409).json({ message: 'Account already exists' });
+
+    const user = await createUser({
+      name,
+      email: normalizedEmail,
+      password,
+    });
+
+    if (referral_code) {
+      const referrer = await findUserByReferralCode(String(referral_code).trim());
+      if (referrer && referrer.id !== user.id && referrer.email.toLowerCase() !== user.email.toLowerCase()) {
+        await createReferral(referrer.id, user.id, user.email, String(referral_code).trim());
+      }
+    }
+
+    const token = signToken({ sub: user.id, role: 'user' });
+    setAuthCookie(res, token);
+    return res.json({ ok: true, user: { id: user.id, name: user.name, email: user.email } });
+  } catch (error: any) {
+    console.error('Registration failed:', error);
+    return res.status(500).json({ message: 'Unable to create account' });
+  }
+}
+
+export async function login(req: Request, res: Response) {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Missing email or password' });
+    }
+
+    const normalizedEmail = String(email).toLowerCase().trim();
+    if (!isValidEmail(normalizedEmail)) {
+      return res.status(400).json({ message: 'Invalid email format' });
+    }
+
+    const user = await findUserByEmail(normalizedEmail);
+    if (!user) return res.status(404).json({ message: 'Account not found.' });
+
+    const valid = await verifyPassword(String(password), user.password_hash);
+    if (!valid) return res.status(401).json({ message: 'Invalid email or password.' });
+
+    const token = signToken({ sub: user.id, role: user.role });
+    setAuthCookie(res, token);
+    return res.json({ ok: true, user: { id: user.id, name: user.name, email: user.email } });
+  } catch (error: any) {
+    console.error('Login failed:', error);
+    return res.status(500).json({ message: 'Unable to login' });
+  }
+}
+
+export function logout(req: Request, res: Response) {
+  res.clearCookie('token', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' as const : 'lax' as const,
+  });
+  return res.json({ ok: true });
+}
+
+export async function me(req: Request, res: Response) {
+  try {
+    const token = req.cookies?.token;
+    if (!token) return res.json({ user: null });
+
+    const { verifyToken } = await import('../utils/jwt');
+    const payloadVerified = verifyToken(token);
+    if (!payloadVerified) {
+      res.clearCookie('token', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' as const : 'lax' as const,
+      });
+      return res.json({ user: null });
+    }
+
+    const { findUserById } = await import('../services/user.service');
+    const user = await findUserById(Number(payloadVerified.sub));
+    if (!user) return res.json({ user: null });
+
+    return res.json({
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        created_at: user.created_at,
+        referral_code: user.referral_code,
+      },
+    });
+  } catch (error: any) {
+    console.error('Failed to fetch user session:', error);
+    return res.json({ user: null });
+  }
+}
