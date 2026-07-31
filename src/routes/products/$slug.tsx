@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   ArrowRight,
   Check,
@@ -115,25 +115,16 @@ const prices = useMemo<ProductPrice[]>(
     [product],
   );
 
-  useEffect(() => {
-    // pick a default plan id corresponding to the first price row
-    if (!planId) {
-      const firstPrice = prices[0];
-      if (firstPrice && product?.plans) {
-        const match = (product.plans ?? []).find((pl) => pl.number_of_ips === firstPrice.number_of_ips);
-        if (match) setPlanId(match.id);
-      }
-    }
-  }, [prices, product, planId]);
-
   const selectedPrice =
-    prices.find(
-      (p) =>
-        p.id === planId ||
-        (product?.plans ?? []).some(
-          (pl) => pl.id === planId && pl.number_of_ips === p.number_of_ips,
-        ),
-    ) ?? prices[0] ?? null;
+    (planId == null
+      ? null
+      : prices.find(
+          (p) =>
+            p.id === planId ||
+            (product?.plans ?? []).some(
+              (pl) => pl.id === planId && pl.number_of_ips === p.number_of_ips,
+            ),
+        ) ?? null);
   const selectedPlan = (product?.plans ?? []).find((p) => p.id === planId) ?? null;
   const total = (selectedPrice ? Number(selectedPrice.price) : selectedPlan ? Number(selectedPlan.price) : 0) * quantity;
 
@@ -153,35 +144,40 @@ const prices = useMemo<ProductPrice[]>(
     }
 
     setSubmitting(true);
-    const planIdToUse = selectedPlan?.id ?? ((product.plans ?? []).find((pl:any)=>pl.number_of_ips === selectedPrice?.number_of_ips)?.id ?? null);
-    const planNameToUse = selectedPrice ? `${selectedPrice.number_of_ips} IPs` : (selectedPlan?.name ?? '');
-    const unitPriceToUse = selectedPrice ? selectedPrice.price : (selectedPlan?.price ?? 0);
-    const currencyToUse = selectedPrice ? selectedPrice.currency : (selectedPlan?.currency ?? 'GHS');
+    try {
+      const planIdToUse = selectedPlan?.id ?? ((product.plans ?? []).find((pl:any)=>pl.number_of_ips === selectedPrice?.number_of_ips)?.id ?? null);
+      const planNameToUse = selectedPrice ? `${selectedPrice.number_of_ips} IPs` : (selectedPlan?.name ?? '');
+      const unitPriceToUse = selectedPrice ? selectedPrice.price : (selectedPlan?.price ?? 0);
+      const currencyToUse = selectedPrice ? selectedPrice.currency : (selectedPlan?.currency ?? 'GHS');
 
-    const order = await apiFetch<any>('/api/orders', {
-      method: 'POST',
-      body: JSON.stringify({
-        product_id: product.id,
-        plan_id: planIdToUse,
-        product_name: product.name,
-        plan_name: planNameToUse,
-        proxy_type: product.proxy_type,
-        quantity,
-        unit_price: unitPriceToUse,
-        total_amount: total,
-        currency: currencyToUse,
-        delivery_method: delivery,
-        refill_email:
-          delivery === 'account_refill' ? refillEmail.trim().slice(0, 255) : null,
-        refill_password:
-          delivery === 'account_refill' && refillPassword ? refillPassword.slice(0, 255) : null,
-        refill_notes:
-          delivery === 'account_refill' ? refillNotes.trim().slice(0, 1000) || null : null,
-      }),
-    });
-    setSubmitting(false);
+      const order = await apiFetch<any>('/api/orders', {
+        method: 'POST',
+        body: JSON.stringify({
+          product_id: product.id,
+          plan_id: planIdToUse,
+          product_name: product.name,
+          plan_name: planNameToUse,
+          proxy_type: product.proxy_type,
+          quantity,
+          unit_price: unitPriceToUse,
+          total_amount: total,
+          currency: currencyToUse,
+          delivery_method: delivery,
+          refill_email:
+            delivery === 'account_refill' ? refillEmail.trim().slice(0, 255) : null,
+          refill_password:
+            delivery === 'account_refill' && refillPassword ? refillPassword.slice(0, 255) : null,
+          refill_notes:
+            delivery === 'account_refill' ? refillNotes.trim().slice(0, 1000) || null : null,
+        }),
+      });
 
-    navigate({ to: '/checkout/$orderId', params: { orderId: order.id } });
+      navigate({ to: '/checkout/$orderId', params: { orderId: order.id } });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Unable to create your order. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   if (isLoading) {
@@ -308,55 +304,113 @@ const prices = useMemo<ProductPrice[]>(
                   </p>
                 </div>
 
-                <div className="space-y-2">
-                  <Label>IP Pricing</Label>
-                  <div className="grid gap-2">
-{(product?.prices ?? []).map((p: ProductPrice, i: number) => (
-                      <button
-                        key={i}
-                        type="button"
-                        onClick={() => {
-                          // set planId to matching plan if available, otherwise use this price id
-                          const match = (product?.plans ?? []).find(
-                            (pl) => pl.number_of_ips === p.number_of_ips,
-                          );
-                          if (match) setPlanId(match.id);
-                          else setPlanId(p.id);
-                        }}
-                        className={cn(
-                          "flex items-center justify-between rounded-lg border px-4 py-3 text-left transition-colors",
-                          // active if the selected plan corresponds to this price
-                          ((product?.plans ?? []).some(
-                            (pl) => pl.id === planId && pl.number_of_ips === p.number_of_ips,
-                          ) || planId === p.id)
-                            ? "border-primary bg-primary/10"
-                            : "border-border hover:border-primary/40",
-                        )}
-                      >
-                        <span className="text-sm font-medium">{p.number_of_ips} IPs</span>
-                        <span className="text-sm font-semibold">
-                          {formatMoney(p.price, p.currency)}
-                        </span>
-                      </button>
-                    ))}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <Label>IP Pricing</Label>
+                    <span className="text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
+                      Wraps automatically
+                    </span>
+                  </div>
+                  <div className="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(108px,1fr))]">
+                    {(product?.prices ?? []).map((p: ProductPrice, i: number) => {
+                      const isSelected =
+                        (product?.plans ?? []).some(
+                          (pl) => pl.id === planId && pl.number_of_ips === p.number_of_ips,
+                        ) || planId === p.id;
+
+                      return (
+                        <button
+                          key={i}
+                          type="button"
+                          aria-pressed={isSelected}
+                          onClick={() => {
+                            const match = (product?.plans ?? []).find(
+                              (pl) => pl.number_of_ips === p.number_of_ips,
+                            );
+                            if (match) setPlanId(match.id);
+                            else setPlanId(p.id);
+                          }}
+                          className={cn(
+                            "flex min-h-[88px] flex-col justify-center rounded-xl border px-3 py-3 text-center transition-all",
+                            isSelected
+                              ? "border-primary bg-primary/10 shadow-sm"
+                              : "border-border bg-background hover:border-primary/40 hover:bg-primary/5",
+                          )}
+                        >
+                          <span className="text-sm font-semibold">
+                            {p.number_of_ips} {p.number_of_ips === 1 ? "IP" : "IPs"}
+                          </span>
+                          {isSelected ? (
+                            <span className="mt-2 text-xs font-medium text-primary">
+                              {formatMoney(p.price, p.currency)}
+                            </span>
+                          ) : (
+                            <span className="mt-2 text-xs text-muted-foreground">Select</span>
+                          )}
+                        </button>
+                      );
+                    })}
                     {(product?.prices ?? []).length === 0 ? (
                       <p className="text-sm text-muted-foreground">No pricing available right now.</p>
                     ) : null}
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="qty">Quantity</Label>
-                  <Input
-                    id="qty"
-                    type="number"
-                    min={1}
-                    max={100}
-                    value={quantity}
-                    onChange={(e) =>
-                      setQuantity(Math.min(100, Math.max(1, Number(e.target.value) || 1)))
-                    }
-                  />
+                <div className="space-y-3">
+                  <Label>Quantity</Label>
+                  <div className="flex items-center justify-between rounded-xl border border-border/70 bg-background p-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setQuantity((value) => Math.max(1, value - 1))}
+                      aria-label="Decrease quantity"
+                    >
+                      -
+                    </Button>
+                    <span className="min-w-12 text-center text-lg font-semibold">{quantity}</span>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setQuantity((value) => Math.min(100, value + 1))}
+                      aria-label="Increase quantity"
+                    >
+                      +
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="rounded-xl border border-border/70 bg-muted/40 p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Selected</p>
+                      <p className="mt-1 text-sm font-semibold">
+                        {selectedPrice
+                          ? `${selectedPrice.number_of_ips} ${selectedPrice.number_of_ips === 1 ? "IP" : "IPs"}`
+                          : "Choose an option"}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Price</p>
+                      <p className="mt-1 text-sm font-semibold">
+                        {selectedPrice ? formatMoney(selectedPrice.price, selectedPrice.currency) : "—"}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 flex items-center justify-between border-t border-border/60 pt-4">
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Quantity</p>
+                      <p className="mt-1 text-sm font-semibold">{quantity}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Total</p>
+                      <p className="mt-1 text-lg font-semibold">
+                        {selectedPrice ? formatMoney(total, selectedPlan?.currency ?? "GHS") : "—"}
+                      </p>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="space-y-2">
@@ -435,7 +489,7 @@ const prices = useMemo<ProductPrice[]>(
                 <Button
                   className="w-full"
                   size="lg"
-                  disabled={!selectedPlan || submitting}
+                  disabled={!selectedPrice || submitting}
                   onClick={createOrder}
                 >
                   {submitting ? (

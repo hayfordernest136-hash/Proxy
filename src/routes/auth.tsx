@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -66,6 +66,8 @@ function AuthPage() {
   const [busy, setBusy] = useState(false);
   const [googleBusy, setGoogleBusy] = useState(false);
   const [sentConfirmation, setSentConfirmation] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   useEffect(() => {
     if (!loading && user) {
@@ -106,22 +108,27 @@ function AuthPage() {
       return;
     }
 
-    if (typeof window === 'undefined' || !(window as any).google?.accounts?.oauth2) {
+    if (typeof window === 'undefined' || !(window as any).google?.accounts?.id) {
       toast.error('Google sign-in is unavailable right now.');
       return;
     }
 
-    const client = (window as any).google.accounts.oauth2.initCodeClient({
+    const google = (window as any).google.accounts;
+
+    google.id.initialize({
       client_id: GOOGLE_CLIENT_ID,
-      scope: 'openid email profile',
-      ux_mode: 'popup',
-      redirect_uri: GOOGLE_CALLBACK_URL,
-      callback: (response: { code?: string; error?: string; error_description?: string }) => {
+      callback: (response: { credential?: string; code?: string; error?: string; error_description?: string }) => {
         handleGoogleCredential(response);
       },
+      auto_select: false,
+      cancel_on_tap_outside: false,
     });
 
-    client.requestCode();
+    google.id.prompt((notification: any) => {
+      if (notification?.getNotDisplayedReason?.()) {
+        toast.error('Google sign-in could not be shown. Please try again.');
+      }
+    });
   }
 
   async function submit(e: React.FormEvent) {
@@ -292,29 +299,51 @@ function AuthPage() {
 
                   <div className="space-y-2">
                     <Label htmlFor="password">Password</Label>
-                    <Input
-                      id="password"
-                      type="password"
-                      autoComplete={mode === "login" ? "current-password" : "new-password"}
-                      value={password}
-                      maxLength={72}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="At least 8 characters"
-                    />
+                    <div className="relative">
+                      <Input
+                        id="password"
+                        type={showPassword ? "text" : "password"}
+                        autoComplete={mode === "login" ? "current-password" : "new-password"}
+                        value={password}
+                        maxLength={72}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="At least 8 characters"
+                        className="pr-11"
+                      />
+                      <button
+                        type="button"
+                        className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground"
+                        onClick={() => setShowPassword((value) => !value)}
+                        aria-label={showPassword ? "Hide password" : "Show password"}
+                      >
+                        {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                      </button>
+                    </div>
                   </div>
 
                   {mode === "register" ? (
                     <div className="space-y-2">
                       <Label htmlFor="confirmPassword">Confirm Password</Label>
-                      <Input
-                        id="confirmPassword"
-                        type="password"
-                        autoComplete="new-password"
-                        value={confirmPassword}
-                        maxLength={72}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        placeholder="Re-enter your password"
-                      />
+                      <div className="relative">
+                        <Input
+                          id="confirmPassword"
+                          type={showConfirmPassword ? "text" : "password"}
+                          autoComplete="new-password"
+                          value={confirmPassword}
+                          maxLength={72}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                          placeholder="Re-enter your password"
+                          className="pr-11"
+                        />
+                        <button
+                          type="button"
+                          className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground"
+                          onClick={() => setShowConfirmPassword((value) => !value)}
+                          aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                        >
+                          {showConfirmPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                        </button>
+                      </div>
                     </div>
                   ) : null}
 

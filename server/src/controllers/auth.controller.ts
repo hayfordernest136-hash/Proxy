@@ -4,6 +4,8 @@ import {
   findUserByEmail,
   findUserByReferralCode,
   resolveUserRole,
+  updateUserPassword,
+  updateUserProfile,
   verifyPassword,
 } from '../services/user.service';
 import { createReferral } from '../services/referral.service';
@@ -99,6 +101,77 @@ export async function login(req: Request, res: Response) {
 export function logout(req: Request, res: Response) {
   clearAuthCookie(res);
   return res.json({ ok: true });
+}
+
+export async function updateProfile(req: Request, res: Response) {
+  try {
+    const token = getAuthToken(req);
+    if (!token) return res.status(401).json({ message: 'Unauthorized' });
+
+    const { verifyToken } = await import('../utils/jwt');
+    const payloadVerified = verifyToken(token);
+    if (!payloadVerified?.sub) {
+      clearAuthCookie(res);
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    const { findUserById } = await import('../services/user.service');
+    const user = await findUserById(Number(payloadVerified.sub));
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const { name, current_password, new_password, confirm_password } = req.body as {
+      name?: string;
+      current_password?: string;
+      new_password?: string;
+      confirm_password?: string;
+    };
+
+    const trimmedName = String(name ?? '').trim();
+    if (name !== undefined && trimmedName.length < 2) {
+      return res.status(400).json({ message: 'Display name must be at least 2 characters' });
+    }
+
+    if (new_password !== undefined || current_password !== undefined || confirm_password !== undefined) {
+      if (!current_password || !new_password || !confirm_password) {
+        return res.status(400).json({ message: 'Please fill in the current password, new password, and confirmation' });
+      }
+      if (String(new_password).length < 6) {
+        return res.status(400).json({ message: 'New password must be at least 6 characters' });
+      }
+      if (String(new_password) !== String(confirm_password)) {
+        return res.status(400).json({ message: 'New passwords do not match' });
+      }
+      const valid = await verifyPassword(String(current_password), user.password_hash);
+      if (!valid) {
+        return res.status(401).json({ message: 'Current password is incorrect' });
+      }
+      await updateUserPassword(user.id, String(new_password));
+    }
+
+    if (name !== undefined) {
+      await updateUserProfile(user.id, trimmedName || user.name);
+    }
+
+    const refreshedUser = await findUserById(user.id);
+    const refreshedToken = signToken({ sub: refreshedUser.id, role: refreshedUser.role });
+    setAuthCookie(res, refreshedToken);
+
+    return res.json({
+      ok: true,
+      token: refreshedToken,
+      user: {
+        id: refreshedUser.id,
+        name: refreshedUser.name,
+        email: refreshedUser.email,
+        role: refreshedUser.role,
+        created_at: refreshedUser.created_at,
+        referral_code: refreshedUser.referral_code,
+      },
+    });
+  } catch (error: any) {
+    console.error('Failed to update profile:', error);
+    return res.status(500).json({ message: 'Unable to update profile' });
+  }
 }
 
 export async function me(req: Request, res: Response) {

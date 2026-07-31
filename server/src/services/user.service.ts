@@ -106,6 +106,18 @@ export async function verifyPassword(password: string, hash: string) {
   return bcrypt.compare(password, hash);
 }
 
+export async function updateUserProfile(userId: number, name: string) {
+  await pool.query('UPDATE users SET name = ? WHERE id = ?', [name, userId]);
+  await pool.query('UPDATE profiles SET name = ? WHERE user_id = ?', [name, userId]);
+  return findUserById(userId);
+}
+
+export async function updateUserPassword(userId: number, password: string) {
+  const password_hash = await bcrypt.hash(password, 12);
+  await pool.query('UPDATE users SET password_hash = ? WHERE id = ?', [password_hash, userId]);
+  return findUserById(userId);
+}
+
 export async function updateUserRole(userId: number, role: string) {
   if (!['user', 'admin'].includes(role)) {
     return null;

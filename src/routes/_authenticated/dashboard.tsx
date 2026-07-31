@@ -1,13 +1,29 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Bell, CheckCircle2, Copy, Gift, Package, ShoppingBag, Sparkles, User } from "lucide-react";
+import { Bell, CheckCircle2, Copy, Eye, EyeOff, Gift, Package, ShoppingBag, Sparkles, User } from "lucide-react";
+import { toast } from "sonner";
 
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -42,15 +58,28 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 });
 
 function DashboardPage() {
-  const { user } = useSession();
+  const { user, refreshSession } = useSession();
   const queryClient = useQueryClient();
   const [referralOrigin, setReferralOrigin] = useState('');
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [profileName, setProfileName] = useState(user?.name ?? "");
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [savingProfile, setSavingProfile] = useState(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       setReferralOrigin(window.location.origin);
     }
   }, []);
+
+  useEffect(() => {
+    setProfileName(user?.name ?? "");
+  }, [user?.name]);
 
   const { data: orders, isLoading } = useQuery({
     queryKey: ["my-orders", user?.id],
@@ -131,6 +160,53 @@ function DashboardPage() {
     }
   }
 
+  async function saveProfile() {
+    const trimmedName = profileName.trim();
+    if (!trimmedName && !currentPassword && !newPassword && !confirmPassword) {
+      toast.error("No changes to save.");
+      return;
+    }
+    if (trimmedName.length < 2) {
+      toast.error("Please enter a display name.");
+      return;
+    }
+    if ((currentPassword || newPassword || confirmPassword) && (!currentPassword || !newPassword || !confirmPassword)) {
+      toast.error("Please fill in your current password, new password, and confirmation.");
+      return;
+    }
+    if (newPassword && newPassword.length < 6) {
+      toast.error("New password must be at least 6 characters.");
+      return;
+    }
+    if (newPassword && newPassword !== confirmPassword) {
+      toast.error("New passwords do not match.");
+      return;
+    }
+
+    setSavingProfile(true);
+    try {
+      await apiFetch("/api/auth/profile", {
+        method: "PATCH",
+        body: JSON.stringify({
+          name: trimmedName,
+          current_password: currentPassword || undefined,
+          new_password: newPassword || undefined,
+          confirm_password: confirmPassword || undefined,
+        }),
+      });
+      toast.success("Profile updated successfully.");
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      await refreshSession();
+      setProfileOpen(false);
+    } catch (error: any) {
+      toast.error(error?.message || "Unable to update profile.");
+    } finally {
+      setSavingProfile(false);
+    }
+  }
+
   return (
     <SiteLayout>
       <div className="mx-auto max-w-7xl space-y-8 px-4 py-12 sm:px-6">
@@ -143,11 +219,32 @@ function DashboardPage() {
               Here is everything happening with your proxies.
             </p>
           </div>
-          <Button asChild>
-            <Link to="/products">
-              <ShoppingBag className="mr-2 size-4" /> Buy more proxies
-            </Link>
-          </Button>
+          <div className="flex items-center gap-3">
+            <Button asChild>
+              <Link to="/products">
+                <ShoppingBag className="mr-2 size-4" /> Buy more proxies
+              </Link>
+            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon" className="rounded-full">
+                  <User className="size-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <div className="px-2 py-2">
+                  <p className="text-sm font-medium">{user?.name ?? "Account"}</p>
+                  <p className="text-xs text-muted-foreground">{user?.email ?? "Manage your profile"}</p>
+                </div>
+                <DropdownMenuItem onSelect={() => setProfileOpen(true)}>
+                  Edit profile
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => setProfileOpen(true)}>
+                  Change password
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-3">
@@ -361,7 +458,15 @@ function DashboardPage() {
 
             <Card className="border-border/70">
               <CardContent className="p-6">
-                <h2 className="font-semibold tracking-tight">Profile</h2>
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <h2 className="font-semibold tracking-tight">Profile</h2>
+                    <p className="mt-1 text-sm text-muted-foreground">Keep your account details up to date.</p>
+                  </div>
+                  <Button variant="outline" size="sm" onClick={() => setProfileOpen(true)}>
+                    <User className="mr-2 size-4" /> Manage
+                  </Button>
+                </div>
                 <dl className="mt-4 space-y-3 text-sm">
                   <div>
                     <dt className="text-muted-foreground">Name</dt>
@@ -414,6 +519,98 @@ function DashboardPage() {
             </Card>
           </div>
         </div>
+        <Dialog open={profileOpen} onOpenChange={setProfileOpen}>
+          <DialogContent className="sm:max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Account settings</DialogTitle>
+              <DialogDescription>Update your display name or change your password anytime.</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="profile-name">Display name</Label>
+                <Input
+                  id="profile-name"
+                  value={profileName}
+                  onChange={(event) => setProfileName(event.target.value)}
+                  placeholder="Your name"
+                />
+              </div>
+              <div className="space-y-3 rounded-xl border border-border/70 bg-muted/40 p-4">
+                <div className="space-y-2">
+                  <Label htmlFor="current-password">Current password</Label>
+                  <div className="relative">
+                    <Input
+                      id="current-password"
+                      type={showCurrentPassword ? "text" : "password"}
+                      value={currentPassword}
+                      onChange={(event) => setCurrentPassword(event.target.value)}
+                      placeholder="Enter current password"
+                      className="pr-11"
+                    />
+                    <button
+                      type="button"
+                      className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground"
+                      onClick={() => setShowCurrentPassword((value) => !value)}
+                      aria-label={showCurrentPassword ? "Hide password" : "Show password"}
+                    >
+                      {showCurrentPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                    </button>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="new-password">New password</Label>
+                  <div className="relative">
+                    <Input
+                      id="new-password"
+                      type={showNewPassword ? "text" : "password"}
+                      value={newPassword}
+                      onChange={(event) => setNewPassword(event.target.value)}
+                      placeholder="At least 6 characters"
+                      className="pr-11"
+                    />
+                    <button
+                      type="button"
+                      className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground"
+                      onClick={() => setShowNewPassword((value) => !value)}
+                      aria-label={showNewPassword ? "Hide password" : "Show password"}
+                    >
+                      {showNewPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                    </button>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="confirm-password">Confirm new password</Label>
+                  <div className="relative">
+                    <Input
+                      id="confirm-password"
+                      type={showConfirmPassword ? "text" : "password"}
+                      value={confirmPassword}
+                      onChange={(event) => setConfirmPassword(event.target.value)}
+                      placeholder="Re-enter new password"
+                      className="pr-11"
+                    />
+                    <button
+                      type="button"
+                      className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground"
+                      onClick={() => setShowConfirmPassword((value) => !value)}
+                      aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                    >
+                      {showConfirmPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button variant="outline" onClick={() => setProfileOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={saveProfile} disabled={savingProfile}>
+                {savingProfile ? "Saving..." : "Save changes"}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </SiteLayout>
   );

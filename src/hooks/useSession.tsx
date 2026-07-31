@@ -13,8 +13,22 @@ export function useSession() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const refreshSession = async () => {
+    try {
+      const body = await apiFetch<{ user: any | null }>('/api/auth/me');
+      setUser(body?.user ?? null);
+      setError(null);
+      return body?.user ?? null;
+    } catch (e: any) {
+      setUser(null);
+      if (e?.statusCode === 0) {
+        setError('Unable to connect to the server. Please try again later.');
+      }
+      return null;
+    }
+  };
+
   useEffect(() => {
-    // Register the onUnauthorized handler to clear session
     setOnUnauthorized(() => {
       clearStoredAuthToken();
       setUser(null);
@@ -22,21 +36,15 @@ export function useSession() {
     });
 
     (async () => {
-      try {
-        const body = await apiFetch<{ user: any | null }>("/api/auth/me");
-        setUser(body?.user ?? null);
-      } catch (e: any) {
+      const result = await refreshSession();
+      if (result === null && !error) {
         setUser(null);
-        if (e?.statusCode === 0) {
-          setError("Unable to connect to the server. Please try again later.");
-        }
-      } finally {
-        setLoading(false);
       }
+      setLoading(false);
     })();
   }, []);
 
-  return { session: null, user, loading, error };
+  return { session: null, user, loading, error, refreshSession };
 }
 
 /**
