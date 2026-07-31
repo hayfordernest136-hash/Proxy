@@ -93,7 +93,7 @@ export function Navbar() {
               <Button asChild variant="secondary" size="sm" className="hidden sm:inline-flex">
                 <Link to="/dashboard">Dashboard</Link>
               </Button>
-              <Button variant="ghost" size="sm" onClick={signOut}>
+              <Button variant="ghost" size="sm" onClick={signOut} className="text-red-500 hover:bg-red-500/10 hover:text-red-600">
                 Sign out
               </Button>
             </>
