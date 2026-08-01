@@ -4,7 +4,7 @@ import { OAuth2Client } from 'google-auth-library';
 import { findUserByEmail, createUser, resolveUserRole } from '../services/user.service';
 import { setAuthCookie, signToken } from '../utils/jwt';
 
-function getGoogleClient(): OAuth2Client {
+function getGoogleClient(redirectUri?: string): OAuth2Client {
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
 
@@ -12,8 +12,8 @@ function getGoogleClient(): OAuth2Client {
     throw new Error('GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET environment variables are required for Google OAuth');
   }
 
-  const redirectUri = process.env.GOOGLE_CALLBACK_URL || (process.env.FRONTEND_URL ? `${process.env.FRONTEND_URL.replace(/\/+$/, '')}/auth` : 'postmessage');
-  return new OAuth2Client(clientId, clientSecret, redirectUri);
+  const defaultRedirectUri = process.env.GOOGLE_CALLBACK_URL || 'postmessage';
+  return new OAuth2Client(clientId, clientSecret, redirectUri ?? defaultRedirectUri);
 }
 
 async function verifyGooglePayload(payload: string | undefined) {
@@ -41,7 +41,7 @@ export async function googleAuth(req: Request, res: Response) {
     let payload: any;
 
     if (code) {
-      const oauthClient = getGoogleClient();
+      const oauthClient = getGoogleClient('postmessage');
       const { tokens } = await oauthClient.getToken(code);
       const idToken = tokens.id_token;
       if (!idToken) {

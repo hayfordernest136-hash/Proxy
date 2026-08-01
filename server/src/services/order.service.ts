@@ -96,8 +96,8 @@ export async function createOrder(order: {
         order.refill_password ?? null,
         order.refill_notes ?? null,
         'awaiting_payment',
-        0,
         'unpaid',
+        0,
       ],
     );
 

@@ -297,14 +297,20 @@ const prices = useMemo<ProductPrice[]>(
           <div className="order-first lg:order-none lg:sticky lg:top-24 lg:self-start">
             <Card className="border-border/70">
               <CardContent className="space-y-6 p-6">
-                <div>
-                  <h2 className="text-lg font-semibold tracking-tight">Configure your order</h2>
-                  <p className="text-sm text-muted-foreground">
-                    Select a plan, quantity and how you want it delivered.
-                  </p>
-                </div>
-
                 <div className="space-y-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+                        Select number of IPS
+                      </p>
+                      <p className="text-2xl font-bold tracking-tight">
+                        {selectedPrice ? formatMoney(selectedPrice.price, selectedPrice.currency) : '—'}
+                      </p>
+                    </div>
+                    <span className="text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
+                      {selectedPrice ? `${selectedPrice.number_of_ips} IPs` : 'Choose a plan'}
+                    </span>
+                  </div>
                   <div className="flex items-center justify-between gap-3">
                     <Label>IP Pricing</Label>
                     <span className="text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
@@ -357,14 +363,14 @@ const prices = useMemo<ProductPrice[]>(
                 </div>
 
                 <div className="space-y-3">
-                  <Label>Quantity</Label>
+                  <Label>Select number of keys</Label>
                   <div className="flex items-center justify-between rounded-xl border border-border/70 bg-background p-2">
                     <Button
                       type="button"
                       variant="outline"
                       size="icon"
                       onClick={() => setQuantity((value) => Math.max(1, value - 1))}
-                      aria-label="Decrease quantity"
+                      aria-label="Decrease keys"
                     >
                       -
                     </Button>
@@ -374,11 +380,12 @@ const prices = useMemo<ProductPrice[]>(
                       variant="outline"
                       size="icon"
                       onClick={() => setQuantity((value) => Math.min(100, value + 1))}
-                      aria-label="Increase quantity"
+                      aria-label="Increase keys"
                     >
                       +
                     </Button>
                   </div>
+                  <p className="text-xs text-muted-foreground">Available: 6</p>
                 </div>
 
                 <div className="rounded-xl border border-border/70 bg-muted/40 p-4">
@@ -480,7 +487,10 @@ const prices = useMemo<ProductPrice[]>(
                 ) : null}
 
                 <div className="flex items-center justify-between border-t border-border/60 pt-4">
-                  <span className="text-sm text-muted-foreground">Total</span>
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Select number of keys</p>
+                    <p className="text-sm text-muted-foreground">Available: 6</p>
+                  </div>
                   <span className="text-2xl font-bold tracking-tight">
                     {formatMoney(total, selectedPlan?.currency ?? "GHS")}
                   </span>

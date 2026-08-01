@@ -65,6 +65,7 @@ function AuthPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [googleBusy, setGoogleBusy] = useState(false);
+  const [googleClient, setGoogleClient] = useState<any | null>(null);
   const [sentConfirmation, setSentConfirmation] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -102,29 +103,91 @@ function AuthPage() {
     }
   }
 
+  useEffect(() => {
+    if (!GOOGLE_CLIENT_ID || typeof window === 'undefined') return;
+
+    let initInterval: number | undefined;
+    const tryInit = () => {
+      const google = (window as any).google;
+      if (!google?.accounts?.oauth2?.initCodeClient) return;
+
+      const client = google.accounts.oauth2.initCodeClient({
+        client_id: GOOGLE_CLIENT_ID,
+        scope: 'openid email profile',
+        ux_mode: 'popup',
+        redirect_uri: 'postmessage',
+        callback: (response: any) => {
+          handleGoogleCredential(response);
+        },
+      });
+      setGoogleClient(client);
+      if (initInterval) {
+        window.clearInterval(initInterval);
+      }
+    };
+
+    tryInit();
+    if (!googleClient) {
+      initInterval = window.setInterval(tryInit, 250);
+    }
+
+    return () => {
+      if (initInterval) {
+        window.clearInterval(initInterval);
+      }
+    };
+  }, [googleClient]);
+
   async function startGoogleFlow() {
     if (!GOOGLE_CLIENT_ID) {
       toast.error('Google sign-in is not configured yet.');
       return;
     }
 
-    if (typeof window === 'undefined' || !(window as any).google?.accounts?.id) {
+    if (typeof window === 'undefined') {
       toast.error('Google sign-in is unavailable right now.');
       return;
     }
 
-    const google = (window as any).google.accounts;
+    const google = (window as any).google;
+    if (!google?.accounts) {
+      toast.error('Google sign-in is unavailable right now.');
+      return;
+    }
 
-    google.id.initialize({
+    if (googleClient) {
+      googleClient.requestCode();
+      return;
+    }
+
+    if (google?.accounts?.oauth2?.initCodeClient) {
+      const client = google.accounts.oauth2.initCodeClient({
+        client_id: GOOGLE_CLIENT_ID,
+        scope: 'openid email profile',
+        ux_mode: 'popup',
+        redirect_uri: 'postmessage',
+        callback: (response: any) => {
+          handleGoogleCredential(response);
+        },
+      });
+      setGoogleClient(client);
+      client.requestCode();
+      return;
+    }
+
+    if (!google?.accounts?.id) {
+      toast.error('Google sign-in is still loading. Please try again in a moment.');
+      return;
+    }
+
+    google.accounts.id.initialize({
       client_id: GOOGLE_CLIENT_ID,
-      callback: (response: { credential?: string; code?: string; error?: string; error_description?: string }) => {
-        handleGoogleCredential(response);
-      },
+      callback: (response: any) => handleGoogleCredential(response),
       auto_select: false,
       cancel_on_tap_outside: false,
     });
 
-    google.id.prompt((notification: any) => {
+    google.accounts.id.prompt((notification: any) => {
       if (notification?.getNotDisplayedReason?.()) {
         toast.error('Google sign-in could not be shown. Please try again.');
       }
