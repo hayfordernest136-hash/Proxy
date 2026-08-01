@@ -4,16 +4,8 @@ import type { ReactNode } from "react";
 
 const navItems = [
   { label: "Dashboard", to: "/admin" },
-  { label: "Orders", to: "/admin/orders" },
+  { label: "Orders", to: "/admin" },
   { label: "Products", to: "/admin/products" },
-  { label: "Pricing Templates", to: "/admin/pricing-templates" },
-  { label: "Categories", to: "/admin/categories" },
-  { label: "Customers", to: "/admin/customers" },
-  { label: "Wallet", to: "/admin/wallet" },
-  { label: "Coupons", to: "/admin/coupons" },
-  { label: "Analytics", to: "/admin/analytics" },
-  { label: "Support", to: "/admin/support" },
-  { label: "Settings", to: "/admin/settings" },
 ];
 
 function AdminSidebar() {
