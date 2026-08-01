@@ -92,34 +92,23 @@ function getUnitLabel(unit: "ip" | "gb" | undefined, quantity = 1) {
   return `${quantity} ${quantity === 1 ? "IP" : "IPs"}`;
 }
 
-function renderDescriptionWithLinks(text: string) {
-  const segments = text.split(/(https?:\/\/[^\s]+|www\.[^\s]+)/gi);
+function escapeHtml(value: string) {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
 
-  return segments.map((segment, index) => {
-    if (!segment) return null;
+function renderDescriptionHtml(text: string) {
+  const escaped = escapeHtml(text)
+    .replace(/\r\n/g, "\n")
+    .replace(/\n/g, "<br />");
 
-    const isLink = /^https?:\/\//i.test(segment) || /^www\./i.test(segment);
-    if (!isLink) {
-      return (
-        <span key={`${segment}-${index}`} className="whitespace-pre-wrap break-words">
-          {segment}
-        </span>
-      );
-    }
-
-    const href = /^www\./i.test(segment) ? `https://${segment}` : segment;
-
-    return (
-      <a
-        key={`${segment}-${index}`}
-        href={href}
-        target="_blank"
-        rel="noreferrer"
-        className="whitespace-pre-wrap break-words font-semibold text-amber-400 underline decoration-amber-400/70 underline-offset-2 transition-colors hover:text-amber-300"
-      >
-        {segment}
-      </a>
-    );
+  return escaped.replace(/(https?:\/\/[^\s<]+|www\.[^\s<]+)/gi, (match) => {
+    const href = /^www\./i.test(match) ? `https://${match}` : match;
+    return `<a href="${href}" target="_blank" rel="noreferrer" class="font-semibold text-amber-400 underline decoration-amber-400/70 underline-offset-2 transition-colors hover:text-amber-300">${match}</a>`;
   });
 }
 
@@ -298,9 +287,10 @@ const prices = useMemo<ProductPrice[]>(
               <h1 className="mt-4 text-3xl font-extrabold tracking-tight sm:text-4xl">
                 {product.name}
               </h1>
-              <div className="mt-4 whitespace-pre-wrap text-muted-foreground">
-                {renderDescriptionWithLinks(product.description)}
-              </div>
+              <div
+                className="mt-4 whitespace-pre-wrap text-muted-foreground"
+                dangerouslySetInnerHTML={{ __html: renderDescriptionHtml(product.description) }}
+              />
             </div>
 
             <Card className="border-border/70">
