@@ -307,10 +307,10 @@ const prices = useMemo<ProductPrice[]>(
                   <div className="flex items-center justify-between gap-3">
                     <div>
                       <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
-                        Select number of IPS
+                        Select number of IPs
                       </p>
                       <p className="text-2xl font-bold tracking-tight">
-                        {selectedPrice ? formatMoney(selectedPrice.price, selectedPrice.currency) : '—'}
+                        {selectedPrice ? `${selectedPrice.number_of_ips}` : '—'}
                       </p>
                     </div>
                     <span className="text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
@@ -319,9 +319,6 @@ const prices = useMemo<ProductPrice[]>(
                   </div>
                   <div className="flex items-center justify-between gap-3">
                     <Label>IP Pricing</Label>
-                    <span className="text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
-                      Wraps automatically
-                    </span>
                   </div>
                   <div className="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(108px,1fr))]">
                     {(product?.prices ?? []).map((p: ProductPrice, i: number) => {
@@ -354,11 +351,9 @@ const prices = useMemo<ProductPrice[]>(
                           </span>
                           {isSelected ? (
                             <span className="mt-2 text-xs font-medium text-primary">
-                              {formatMoney(p.price, p.currency)}
+                              <Check className="mx-auto size-4" />
                             </span>
-                          ) : (
-                            <span className="mt-2 text-xs text-muted-foreground">Select</span>
-                          )}
+                          ) : null}
                         </button>
                       );
                     })}
@@ -368,8 +363,7 @@ const prices = useMemo<ProductPrice[]>(
                   </div>
                 </div>
 
-                <div className="space-y-3">
-                  <Label>Select number of keys</Label>
+                  <div className="space-y-3">
                   <div className="flex items-center justify-between rounded-xl border border-border/70 bg-background p-2">
                     <Button
                       type="button"
@@ -391,7 +385,7 @@ const prices = useMemo<ProductPrice[]>(
                       +
                     </Button>
                   </div>
-                  <p className="text-xs text-muted-foreground">Available: 6</p>
+                  
                 </div>
 
                 <div className="rounded-xl border border-border/70 bg-muted/40 p-4">
@@ -405,23 +399,15 @@ const prices = useMemo<ProductPrice[]>(
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Price</p>
-                      <p className="mt-1 text-sm font-semibold">
-                        {selectedPrice ? formatMoney(selectedPrice.price, selectedPrice.currency) : "—"}
-                      </p>
+                      <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">&nbsp;</p>
+                      <p className="mt-1 text-sm font-semibold">&nbsp;</p>
                     </div>
                   </div>
 
-                  <div className="mt-4 flex items-center justify-between border-t border-border/60 pt-4">
+                  <div className="mt-4 border-t border-border/60 pt-4">
                     <div>
                       <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Quantity</p>
                       <p className="mt-1 text-sm font-semibold">{quantity}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Total</p>
-                      <p className="mt-1 text-lg font-semibold">
-                        {selectedPrice ? formatMoney(total, selectedPlan?.currency ?? "GHS") : "—"}
-                      </p>
                     </div>
                   </div>
                 </div>
@@ -516,9 +502,7 @@ const prices = useMemo<ProductPrice[]>(
                     <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Select number of keys</p>
                     <p className="text-sm text-muted-foreground">Available: 6</p>
                   </div>
-                  <span className="text-2xl font-bold tracking-tight">
-                    {formatMoney(total, selectedPlan?.currency ?? "GHS")}
-                  </span>
+                  <span className="text-2xl font-bold tracking-tight">&nbsp;</span>
                 </div>
 
                 <Button
