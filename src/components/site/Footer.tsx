@@ -1,7 +1,11 @@
 import { Link } from "@tanstack/react-router";
+
 import { Brand } from "@/components/site/Brand";
+import { readSiteSettings } from "@/lib/site-settings";
 
 export function Footer() {
+  const { siteTagline, siteName } = readSiteSettings();
+
   return (
     <footer className="border-t border-border/60 bg-card/40">
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-4">
@@ -9,10 +13,7 @@ export function Footer() {
           <div className="flex items-center gap-2">
             <Brand />
           </div>
-          <p className="mt-4 max-w-xs text-sm text-muted-foreground">
-            Premium residential, mobile and datacenter proxies delivered fast, with
-            human support and local payment options.
-          </p>
+          <p className="mt-4 max-w-xs text-sm text-muted-foreground">{siteTagline}</p>
         </div>
 
         <div>
@@ -62,7 +63,7 @@ export function Footer() {
         </div>
       </div>
       <div className="border-t border-border/60 py-6 text-center text-xs text-muted-foreground">
-        © {new Date().getFullYear()} BrokeFlex. All rights reserved.
+        © {new Date().getFullYear()} {siteName}. All rights reserved.
       </div>
     </footer>
   );

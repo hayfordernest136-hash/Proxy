@@ -1,22 +1,22 @@
 import { cn } from "@/lib/utils";
+import { readSiteSettings } from "@/lib/site-settings";
 
 /**
  * Floating WhatsApp support button.
  *
- * Reads the target phone number from the environment variable
- * `VITE_WHATSAPP_NUMBER` (international format without the leading +).
- *
- * Example .env value:
- *   VITE_WHATSAPP_NUMBER=233501234567
+ * Reads the target phone number from the saved site settings, with the
+ * environment variable used as a fallback for the initial default value.
  */
 
 const WHATSAPP_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER as string | undefined;
 
-const WHATSAPP_LINK = WHATSAPP_NUMBER
-  ? `https://wa.me/${WHATSAPP_NUMBER}`
-  : undefined;
-
 export function WhatsAppButton() {
+  const { whatsappNumber } = readSiteSettings();
+  const resolvedWhatsAppNumber = whatsappNumber || WHATSAPP_NUMBER;
+  const WHATSAPP_LINK = resolvedWhatsAppNumber
+    ? `https://wa.me/${resolvedWhatsAppNumber}`
+    : undefined;
+
   if (!WHATSAPP_LINK) return null;
 
   return (
