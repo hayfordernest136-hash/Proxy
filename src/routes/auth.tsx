@@ -66,6 +66,7 @@ function AuthPage() {
   const [busy, setBusy] = useState(false);
   const [googleBusy, setGoogleBusy] = useState(false);
   const [googleClient, setGoogleClient] = useState<any | null>(null);
+  const [googleSdkReady, setGoogleSdkReady] = useState(false);
   const [sentConfirmation, setSentConfirmation] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -109,7 +110,16 @@ function AuthPage() {
     let initInterval: number | undefined;
     const tryInit = () => {
       const google = (window as any).google;
-      if (!google?.accounts?.oauth2?.initCodeClient) return;
+      if (!google?.accounts) {
+        setGoogleSdkReady(false);
+        return;
+      }
+
+      setGoogleSdkReady(true);
+
+      if (googleClient || !google?.accounts?.oauth2?.initCodeClient) {
+        return;
+      }
 
       const client = google.accounts.oauth2.initCodeClient({
         client_id: GOOGLE_CLIENT_ID,
@@ -127,9 +137,7 @@ function AuthPage() {
     };
 
     tryInit();
-    if (!googleClient) {
-      initInterval = window.setInterval(tryInit, 250);
-    }
+    initInterval = window.setInterval(tryInit, 250);
 
     return () => {
       if (initInterval) {
@@ -151,12 +159,24 @@ function AuthPage() {
 
     const google = (window as any).google;
     if (!google?.accounts) {
-      toast.error('Google sign-in is unavailable right now.');
+      toast.info('Google sign-in is still loading. Please try again in a moment.');
+      return;
+    }
+
+    if (!googleSdkReady && !googleClient) {
+      toast.info('Google sign-in is still loading. Please try again in a moment.');
       return;
     }
 
     if (googleClient) {
-      googleClient.requestCode();
+      setGoogleBusy(true);
+      try {
+        googleClient.requestCode();
+      } catch (err: any) {
+        toast.error(err?.message || 'Google sign-in failed. Please try again.');
+      } finally {
+        setGoogleBusy(false);
+      }
       return;
     }
 
@@ -171,12 +191,19 @@ function AuthPage() {
         },
       });
       setGoogleClient(client);
-      client.requestCode();
+      setGoogleBusy(true);
+      try {
+        client.requestCode();
+      } catch (err: any) {
+        toast.error(err?.message || 'Google sign-in failed. Please try again.');
+      } finally {
+        setGoogleBusy(false);
+      }
       return;
     }
 
     if (!google?.accounts?.id) {
-      toast.error('Google sign-in is still loading. Please try again in a moment.');
+      toast.info('Google sign-in is still loading. Please try again in a moment.');
       return;
     }
 
