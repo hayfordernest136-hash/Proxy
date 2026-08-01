@@ -305,22 +305,16 @@ const prices = useMemo<ProductPrice[]>(
               <CardContent className="space-y-6 p-6">
                 <div className="space-y-3">
                   <div className="flex items-center justify-between gap-3">
-                    <div>
-                      <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
-                        Select number of IPs
-                      </p>
-                      <p className="text-2xl font-bold tracking-tight">
-                        {selectedPrice ? `${selectedPrice.number_of_ips}` : '—'}
-                      </p>
-                    </div>
-                    <span className="text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
-                      {selectedPrice ? `${selectedPrice.number_of_ips} IPs` : 'Choose a plan'}
-                    </span>
+                    <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+                      Select number of IPs
+                    </p>
+                    {selectedPrice ? (
+                      <span className="text-base font-bold tracking-tight text-primary">
+                        {formatMoney(selectedPrice.price, selectedPrice.currency)}
+                      </span>
+                    ) : null}
                   </div>
-                  <div className="flex items-center justify-between gap-3">
-                    <Label>IP Pricing</Label>
-                  </div>
-                  <div className="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(108px,1fr))]">
+                  <div className="grid gap-2 [grid-template-columns:repeat(auto-fit,minmax(80px,1fr))]">
                     {(product?.prices ?? []).map((p: ProductPrice, i: number) => {
                       const isSelected =
                         (product?.plans ?? []).some(
@@ -340,18 +334,18 @@ const prices = useMemo<ProductPrice[]>(
                             else setPlanId(p.id);
                           }}
                           className={cn(
-                            "flex min-h-[88px] flex-col justify-center rounded-xl border px-3 py-3 text-center transition-all",
+                            "flex flex-col justify-center rounded-xl border px-2 py-2 text-center transition-all",
                             isSelected
                               ? "border-primary bg-primary/10 shadow-sm"
                               : "border-border bg-background hover:border-primary/40 hover:bg-primary/5",
                           )}
                         >
-                          <span className="text-sm font-semibold">
+                          <span className="text-xs font-semibold">
                             {p.number_of_ips} {p.number_of_ips === 1 ? "IP" : "IPs"}
                           </span>
                           {isSelected ? (
-                            <span className="mt-2 text-xs font-medium text-primary">
-                              <Check className="mx-auto size-4" />
+                            <span className="mt-1 text-xs font-medium text-primary">
+                              <Check className="mx-auto size-3" />
                             </span>
                           ) : null}
                         </button>
@@ -360,55 +354,6 @@ const prices = useMemo<ProductPrice[]>(
                     {(product?.prices ?? []).length === 0 ? (
                       <p className="text-sm text-muted-foreground">No pricing available right now.</p>
                     ) : null}
-                  </div>
-                </div>
-
-                  <div className="space-y-3">
-                  <div className="flex items-center justify-between rounded-xl border border-border/70 bg-background p-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      onClick={() => setQuantity((value) => Math.max(1, value - 1))}
-                      aria-label="Decrease keys"
-                    >
-                      -
-                    </Button>
-                    <span className="min-w-12 text-center text-lg font-semibold">{quantity}</span>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      onClick={() => setQuantity((value) => Math.min(100, value + 1))}
-                      aria-label="Increase keys"
-                    >
-                      +
-                    </Button>
-                  </div>
-                  
-                </div>
-
-                <div className="rounded-xl border border-border/70 bg-muted/40 p-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Selected</p>
-                      <p className="mt-1 text-sm font-semibold">
-                        {selectedPrice
-                          ? `${selectedPrice.number_of_ips} ${selectedPrice.number_of_ips === 1 ? "IP" : "IPs"}`
-                          : "Choose an option"}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">&nbsp;</p>
-                      <p className="mt-1 text-sm font-semibold">&nbsp;</p>
-                    </div>
-                  </div>
-
-                  <div className="mt-4 border-t border-border/60 pt-4">
-                    <div>
-                      <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Quantity</p>
-                      <p className="mt-1 text-sm font-semibold">{quantity}</p>
-                    </div>
                   </div>
                 </div>
 
@@ -452,34 +397,6 @@ const prices = useMemo<ProductPrice[]>(
                     </div>
 
                     <div className="space-y-2">
-                      <Label>Account Type</Label>
-                      <div className="flex gap-2" role="radiogroup" aria-label="Account Type">
-                        <button
-                          type="button"
-                          aria-pressed={accountType === 'new'}
-                          onClick={() => setAccountType('new')}
-                          className={cn(
-                            'rounded-md px-3 py-2 text-sm font-medium transition-colors',
-                            accountType === 'new' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground',
-                          )}
-                        >
-                          New Account
-                        </button>
-                        <button
-                          type="button"
-                          aria-pressed={accountType === 'existing'}
-                          onClick={() => setAccountType('existing')}
-                          className={cn(
-                            'rounded-md px-3 py-2 text-sm font-medium transition-colors',
-                            accountType === 'existing' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground',
-                          )}
-                        >
-                          Existing Account
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
                       <Label htmlFor="refill-password">Password</Label>
                       <Input
                         id="refill-password"
@@ -490,20 +407,44 @@ const prices = useMemo<ProductPrice[]>(
                         placeholder="Enter your account password"
                       />
                     </div>
+
+                    <div className="space-y-2">
+                      <Label>Account Type</Label>
+                      <div className="flex gap-2" role="radiogroup" aria-label="Account Type">
+                        <button
+                          type="button"
+                          aria-pressed={accountType === 'new'}
+                          onClick={() => setAccountType('new')}
+                          className={cn(
+                            'rounded-md border px-3 py-2 text-sm font-medium transition-colors',
+                            accountType === 'new'
+                              ? 'border-yellow-500 bg-yellow-500/20 text-yellow-700 shadow-sm'
+                              : 'border-transparent text-muted-foreground hover:border-yellow-500/40 hover:bg-yellow-500/10',
+                          )}
+                        >
+                          New Account
+                        </button>
+                        <button
+                          type="button"
+                          aria-pressed={accountType === 'existing'}
+                          onClick={() => setAccountType('existing')}
+                          className={cn(
+                            'rounded-md border px-3 py-2 text-sm font-medium transition-colors',
+                            accountType === 'existing'
+                              ? 'border-yellow-500 bg-yellow-500/20 text-yellow-700 shadow-sm'
+                              : 'border-transparent text-muted-foreground hover:border-yellow-500/40 hover:bg-yellow-500/10',
+                          )}
+                        >
+                          Existing Account
+                        </button>
+                      </div>
+                    </div>
                     <p className="text-xs text-muted-foreground">
                       Credentials are stored securely and only visible to our fulfilment
                       team.
                     </p>
                   </div>
                 ) : null}
-
-                <div className="flex items-center justify-between border-t border-border/60 pt-4">
-                  <div>
-                    <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Select number of keys</p>
-                    <p className="text-sm text-muted-foreground">Available: 6</p>
-                  </div>
-                  <span className="text-2xl font-bold tracking-tight">&nbsp;</span>
-                </div>
 
                 <Button
                   className="w-full"
