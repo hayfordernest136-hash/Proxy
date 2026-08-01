@@ -19,7 +19,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { apiFetch } from "@/lib/api";
 import { useSession } from "@/hooks/useSession";
@@ -97,7 +96,7 @@ function ProductDetailPage() {
   const [delivery, setDelivery] = useState<DeliveryMethod>("cd_key");
   const [refillEmail, setRefillEmail] = useState("");
   const [refillPassword, setRefillPassword] = useState("");
-  const [refillNotes, setRefillNotes] = useState("");
+  const [accountType, setAccountType] = useState<'new' | 'existing' | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   const { data: product, isLoading } = useQuery({
@@ -142,6 +141,14 @@ const prices = useMemo<ProductPrice[]>(
       toast.error("Enter the email or username of the account to refill.");
       return;
     }
+    if (delivery === 'account_refill' && !accountType) {
+      toast.error('Select an account type (New or Existing).');
+      return;
+    }
+    if (delivery === 'account_refill' && (!refillPassword || refillPassword.trim().length < 1)) {
+      toast.error('Enter the account password.');
+      return;
+    }
 
     setSubmitting(true);
     try {
@@ -167,8 +174,7 @@ const prices = useMemo<ProductPrice[]>(
             delivery === 'account_refill' ? refillEmail.trim().slice(0, 255) : null,
           refill_password:
             delivery === 'account_refill' && refillPassword ? refillPassword.slice(0, 255) : null,
-          refill_notes:
-            delivery === 'account_refill' ? refillNotes.trim().slice(0, 1000) || null : null,
+          account_type: delivery === 'account_refill' ? (accountType ?? 'existing') : null,
         }),
       });
 
@@ -458,25 +464,44 @@ const prices = useMemo<ProductPrice[]>(
                         placeholder="you@example.com"
                       />
                     </div>
+
                     <div className="space-y-2">
-                      <Label htmlFor="refill-password">Password (only if required)</Label>
+                      <Label>Account Type</Label>
+                      <div className="flex gap-2" role="radiogroup" aria-label="Account Type">
+                        <button
+                          type="button"
+                          aria-pressed={accountType === 'new'}
+                          onClick={() => setAccountType('new')}
+                          className={cn(
+                            'rounded-md px-3 py-2 text-sm font-medium transition-colors',
+                            accountType === 'new' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground',
+                          )}
+                        >
+                          New Account
+                        </button>
+                        <button
+                          type="button"
+                          aria-pressed={accountType === 'existing'}
+                          onClick={() => setAccountType('existing')}
+                          className={cn(
+                            'rounded-md px-3 py-2 text-sm font-medium transition-colors',
+                            accountType === 'existing' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground',
+                          )}
+                        >
+                          Existing Account
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="refill-password">Password</Label>
                       <Input
                         id="refill-password"
                         type="password"
                         maxLength={255}
                         value={refillPassword}
                         onChange={(e) => setRefillPassword(e.target.value)}
-                        placeholder="Leave blank if not needed"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="refill-notes">Additional notes</Label>
-                      <Textarea
-                        id="refill-notes"
-                        maxLength={1000}
-                        value={refillNotes}
-                        onChange={(e) => setRefillNotes(e.target.value)}
-                        placeholder="e.g. Activate on US account. Do not change password."
+                        placeholder="Enter your account password"
                       />
                     </div>
                     <p className="text-xs text-muted-foreground">

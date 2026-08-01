@@ -24,8 +24,18 @@ export async function createOrderHandler(req: Request, res: Response) {
       delivery_method,
       refill_email,
       refill_password,
-      refill_notes,
+      account_type,
     } = req.body;
+
+    // Basic validation: account refill requires account type and password
+    if (delivery_method === 'account_refill') {
+      if (!account_type || !['new', 'existing'].includes(String(account_type))) {
+        return res.status(400).json({ message: 'Missing or invalid account_type for account refill' });
+      }
+      if (!refill_password || String(refill_password).trim().length === 0) {
+        return res.status(400).json({ message: 'Password is required for account refill' });
+      }
+    }
 
     const order = await createOrder({
       user_id: userId,
@@ -41,7 +51,6 @@ export async function createOrderHandler(req: Request, res: Response) {
       delivery_method,
       refill_email: refill_email ? String(refill_email).slice(0, 255) : null,
       refill_password: refill_password ? String(refill_password).slice(0, 255) : null,
-      refill_notes: refill_notes ? String(refill_notes).slice(0, 1000) : null,
     });
 
     return res.status(201).json(order);
