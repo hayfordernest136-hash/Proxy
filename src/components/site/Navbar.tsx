@@ -12,7 +12,7 @@ import { Brand } from "@/components/site/Brand";
 const NAV = [
   { to: "/", label: "Home" },
   { to: "/products", label: "Proxies" },
-  { to: "/pricing", label: "Pricing" },
+  { to: "/data", label: "Data" },
   { to: "/support", label: "Support" },
 ];
 

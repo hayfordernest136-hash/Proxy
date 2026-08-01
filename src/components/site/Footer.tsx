@@ -24,8 +24,8 @@ export function Footer() {
               </Link>
             </li>
             <li>
-              <Link to="/pricing" className="hover:text-foreground">
-                Pricing
+              <Link to="/data" className="hover:text-foreground">
+                Data
               </Link>
             </li>
           </ul>

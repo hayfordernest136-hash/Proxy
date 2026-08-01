@@ -107,7 +107,7 @@ function HomePage() {
                 </Link>
               </Button>
               <Button asChild size="lg" variant="outline">
-                <Link to="/pricing">See pricing</Link>
+                <Link to="/data">Data</Link>
               </Button>
             </div>
 
