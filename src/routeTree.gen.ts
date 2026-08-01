@@ -22,8 +22,19 @@ import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authentic
 import { Route as AuthenticatedCheckoutOrderIdRouteImport } from './routes/_authenticated/checkout/$orderId'
 import { Route as AuthenticatedOrdersIndexRouteImport } from './routes/_authenticated/orders/index'
 import { Route as AuthenticatedOrdersOrderIdRouteImport } from './routes/_authenticated/orders/$orderId'
+import { Route as AuthenticatedAdminAnalyticsIndexRouteImport } from './routes/_authenticated/admin/analytics/index'
+import { Route as AuthenticatedAdminCategoriesIndexRouteImport } from './routes/_authenticated/admin/categories/index'
+import { Route as AuthenticatedAdminCustomersIndexRouteImport } from './routes/_authenticated/admin/customers/index'
+import { Route as AuthenticatedAdminNotificationsIndexRouteImport } from './routes/_authenticated/admin/notifications/index'
+import { Route as AuthenticatedAdminOrdersIndexRouteImport } from './routes/_authenticated/admin/orders/index'
+import { Route as AuthenticatedAdminPaymentsIndexRouteImport } from './routes/_authenticated/admin/payments/index'
+import { Route as AuthenticatedAdminPricingTemplatesIndexRouteImport } from './routes/_authenticated/admin/pricing-templates/index'
 import { Route as AuthenticatedAdminProductsIndexRouteImport } from './routes/_authenticated/admin/products/index'
 import { Route as AuthenticatedAdminProductsNewRouteImport } from './routes/_authenticated/admin/products/new'
+import { Route as AuthenticatedAdminSettingsIndexRouteImport } from './routes/_authenticated/admin/settings/index'
+import { Route as AuthenticatedAdminSupportIndexRouteImport } from './routes/_authenticated/admin/support/index'
+import { Route as AuthenticatedAdminTransactionsIndexRouteImport } from './routes/_authenticated/admin/transactions/index'
+import { Route as AuthenticatedAdminWalletIndexRouteImport } from './routes/_authenticated/admin/wallet/index'
 import { Route as AuthenticatedAdminProductsProductIdEditRouteImport } from './routes/_authenticated/admin/products/$productId/edit'
 
 const IndexRoute = IndexRouteImport.update({
@@ -93,6 +104,48 @@ const AuthenticatedOrdersOrderIdRoute =
     path: '/orders/$orderId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAdminAnalyticsIndexRoute =
+  AuthenticatedAdminAnalyticsIndexRouteImport.update({
+    id: '/analytics/',
+    path: '/analytics/',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminCategoriesIndexRoute =
+  AuthenticatedAdminCategoriesIndexRouteImport.update({
+    id: '/categories/',
+    path: '/categories/',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminCustomersIndexRoute =
+  AuthenticatedAdminCustomersIndexRouteImport.update({
+    id: '/customers/',
+    path: '/customers/',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminNotificationsIndexRoute =
+  AuthenticatedAdminNotificationsIndexRouteImport.update({
+    id: '/notifications/',
+    path: '/notifications/',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminOrdersIndexRoute =
+  AuthenticatedAdminOrdersIndexRouteImport.update({
+    id: '/orders/',
+    path: '/orders/',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminPaymentsIndexRoute =
+  AuthenticatedAdminPaymentsIndexRouteImport.update({
+    id: '/payments/',
+    path: '/payments/',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminPricingTemplatesIndexRoute =
+  AuthenticatedAdminPricingTemplatesIndexRouteImport.update({
+    id: '/pricing-templates/',
+    path: '/pricing-templates/',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 const AuthenticatedAdminProductsIndexRoute =
   AuthenticatedAdminProductsIndexRouteImport.update({
     id: '/products/',
@@ -103,6 +156,30 @@ const AuthenticatedAdminProductsNewRoute =
   AuthenticatedAdminProductsNewRouteImport.update({
     id: '/products/new',
     path: '/products/new',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminSettingsIndexRoute =
+  AuthenticatedAdminSettingsIndexRouteImport.update({
+    id: '/settings/',
+    path: '/settings/',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminSupportIndexRoute =
+  AuthenticatedAdminSupportIndexRouteImport.update({
+    id: '/support/',
+    path: '/support/',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminTransactionsIndexRoute =
+  AuthenticatedAdminTransactionsIndexRouteImport.update({
+    id: '/transactions/',
+    path: '/transactions/',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminWalletIndexRoute =
+  AuthenticatedAdminWalletIndexRouteImport.update({
+    id: '/wallet/',
+    path: '/wallet/',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
 const AuthenticatedAdminProductsProductIdEditRoute =
@@ -126,7 +203,18 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/orders/': typeof AuthenticatedOrdersIndexRoute
   '/admin/products/new': typeof AuthenticatedAdminProductsNewRoute
+  '/admin/analytics/': typeof AuthenticatedAdminAnalyticsIndexRoute
+  '/admin/categories/': typeof AuthenticatedAdminCategoriesIndexRoute
+  '/admin/customers/': typeof AuthenticatedAdminCustomersIndexRoute
+  '/admin/notifications/': typeof AuthenticatedAdminNotificationsIndexRoute
+  '/admin/orders/': typeof AuthenticatedAdminOrdersIndexRoute
+  '/admin/payments/': typeof AuthenticatedAdminPaymentsIndexRoute
+  '/admin/pricing-templates/': typeof AuthenticatedAdminPricingTemplatesIndexRoute
   '/admin/products/': typeof AuthenticatedAdminProductsIndexRoute
+  '/admin/settings/': typeof AuthenticatedAdminSettingsIndexRoute
+  '/admin/support/': typeof AuthenticatedAdminSupportIndexRoute
+  '/admin/transactions/': typeof AuthenticatedAdminTransactionsIndexRoute
+  '/admin/wallet/': typeof AuthenticatedAdminWalletIndexRoute
   '/admin/products/$productId/edit': typeof AuthenticatedAdminProductsProductIdEditRoute
 }
 export interface FileRoutesByTo {
@@ -142,7 +230,18 @@ export interface FileRoutesByTo {
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/orders': typeof AuthenticatedOrdersIndexRoute
   '/admin/products/new': typeof AuthenticatedAdminProductsNewRoute
+  '/admin/analytics': typeof AuthenticatedAdminAnalyticsIndexRoute
+  '/admin/categories': typeof AuthenticatedAdminCategoriesIndexRoute
+  '/admin/customers': typeof AuthenticatedAdminCustomersIndexRoute
+  '/admin/notifications': typeof AuthenticatedAdminNotificationsIndexRoute
+  '/admin/orders': typeof AuthenticatedAdminOrdersIndexRoute
+  '/admin/payments': typeof AuthenticatedAdminPaymentsIndexRoute
+  '/admin/pricing-templates': typeof AuthenticatedAdminPricingTemplatesIndexRoute
   '/admin/products': typeof AuthenticatedAdminProductsIndexRoute
+  '/admin/settings': typeof AuthenticatedAdminSettingsIndexRoute
+  '/admin/support': typeof AuthenticatedAdminSupportIndexRoute
+  '/admin/transactions': typeof AuthenticatedAdminTransactionsIndexRoute
+  '/admin/wallet': typeof AuthenticatedAdminWalletIndexRoute
   '/admin/products/$productId/edit': typeof AuthenticatedAdminProductsProductIdEditRoute
 }
 export interface FileRoutesById {
@@ -161,7 +260,18 @@ export interface FileRoutesById {
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/orders/': typeof AuthenticatedOrdersIndexRoute
   '/_authenticated/admin/products/new': typeof AuthenticatedAdminProductsNewRoute
+  '/_authenticated/admin/analytics/': typeof AuthenticatedAdminAnalyticsIndexRoute
+  '/_authenticated/admin/categories/': typeof AuthenticatedAdminCategoriesIndexRoute
+  '/_authenticated/admin/customers/': typeof AuthenticatedAdminCustomersIndexRoute
+  '/_authenticated/admin/notifications/': typeof AuthenticatedAdminNotificationsIndexRoute
+  '/_authenticated/admin/orders/': typeof AuthenticatedAdminOrdersIndexRoute
+  '/_authenticated/admin/payments/': typeof AuthenticatedAdminPaymentsIndexRoute
+  '/_authenticated/admin/pricing-templates/': typeof AuthenticatedAdminPricingTemplatesIndexRoute
   '/_authenticated/admin/products/': typeof AuthenticatedAdminProductsIndexRoute
+  '/_authenticated/admin/settings/': typeof AuthenticatedAdminSettingsIndexRoute
+  '/_authenticated/admin/support/': typeof AuthenticatedAdminSupportIndexRoute
+  '/_authenticated/admin/transactions/': typeof AuthenticatedAdminTransactionsIndexRoute
+  '/_authenticated/admin/wallet/': typeof AuthenticatedAdminWalletIndexRoute
   '/_authenticated/admin/products/$productId/edit': typeof AuthenticatedAdminProductsProductIdEditRoute
 }
 export interface FileRouteTypes {
@@ -180,7 +290,18 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/orders/'
     | '/admin/products/new'
+    | '/admin/analytics/'
+    | '/admin/categories/'
+    | '/admin/customers/'
+    | '/admin/notifications/'
+    | '/admin/orders/'
+    | '/admin/payments/'
+    | '/admin/pricing-templates/'
     | '/admin/products/'
+    | '/admin/settings/'
+    | '/admin/support/'
+    | '/admin/transactions/'
+    | '/admin/wallet/'
     | '/admin/products/$productId/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -196,7 +317,18 @@ export interface FileRouteTypes {
     | '/admin'
     | '/orders'
     | '/admin/products/new'
+    | '/admin/analytics'
+    | '/admin/categories'
+    | '/admin/customers'
+    | '/admin/notifications'
+    | '/admin/orders'
+    | '/admin/payments'
+    | '/admin/pricing-templates'
     | '/admin/products'
+    | '/admin/settings'
+    | '/admin/support'
+    | '/admin/transactions'
+    | '/admin/wallet'
     | '/admin/products/$productId/edit'
   id:
     | '__root__'
@@ -214,7 +346,18 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/'
     | '/_authenticated/orders/'
     | '/_authenticated/admin/products/new'
+    | '/_authenticated/admin/analytics/'
+    | '/_authenticated/admin/categories/'
+    | '/_authenticated/admin/customers/'
+    | '/_authenticated/admin/notifications/'
+    | '/_authenticated/admin/orders/'
+    | '/_authenticated/admin/payments/'
+    | '/_authenticated/admin/pricing-templates/'
     | '/_authenticated/admin/products/'
+    | '/_authenticated/admin/settings/'
+    | '/_authenticated/admin/support/'
+    | '/_authenticated/admin/transactions/'
+    | '/_authenticated/admin/wallet/'
     | '/_authenticated/admin/products/$productId/edit'
   fileRoutesById: FileRoutesById
 }
@@ -321,6 +464,55 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOrdersOrderIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/analytics/': {
+      id: '/_authenticated/admin/analytics/'
+      path: '/analytics'
+      fullPath: '/admin/analytics/'
+      preLoaderRoute: typeof AuthenticatedAdminAnalyticsIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/categories/': {
+      id: '/_authenticated/admin/categories/'
+      path: '/categories'
+      fullPath: '/admin/categories/'
+      preLoaderRoute: typeof AuthenticatedAdminCategoriesIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/customers/': {
+      id: '/_authenticated/admin/customers/'
+      path: '/customers'
+      fullPath: '/admin/customers/'
+      preLoaderRoute: typeof AuthenticatedAdminCustomersIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/notifications/': {
+      id: '/_authenticated/admin/notifications/'
+      path: '/notifications'
+      fullPath: '/admin/notifications/'
+      preLoaderRoute: typeof AuthenticatedAdminNotificationsIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/orders/': {
+      id: '/_authenticated/admin/orders/'
+      path: '/orders'
+      fullPath: '/admin/orders/'
+      preLoaderRoute: typeof AuthenticatedAdminOrdersIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/payments/': {
+      id: '/_authenticated/admin/payments/'
+      path: '/payments'
+      fullPath: '/admin/payments/'
+      preLoaderRoute: typeof AuthenticatedAdminPaymentsIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/pricing-templates/': {
+      id: '/_authenticated/admin/pricing-templates/'
+      path: '/pricing-templates'
+      fullPath: '/admin/pricing-templates/'
+      preLoaderRoute: typeof AuthenticatedAdminPricingTemplatesIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/_authenticated/admin/products/': {
       id: '/_authenticated/admin/products/'
       path: '/products'
@@ -333,6 +525,34 @@ declare module '@tanstack/react-router' {
       path: '/products/new'
       fullPath: '/admin/products/new'
       preLoaderRoute: typeof AuthenticatedAdminProductsNewRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/settings/': {
+      id: '/_authenticated/admin/settings/'
+      path: '/settings'
+      fullPath: '/admin/settings/'
+      preLoaderRoute: typeof AuthenticatedAdminSettingsIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/support/': {
+      id: '/_authenticated/admin/support/'
+      path: '/support'
+      fullPath: '/admin/support/'
+      preLoaderRoute: typeof AuthenticatedAdminSupportIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/transactions/': {
+      id: '/_authenticated/admin/transactions/'
+      path: '/transactions'
+      fullPath: '/admin/transactions/'
+      preLoaderRoute: typeof AuthenticatedAdminTransactionsIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/wallet/': {
+      id: '/_authenticated/admin/wallet/'
+      path: '/wallet'
+      fullPath: '/admin/wallet/'
+      preLoaderRoute: typeof AuthenticatedAdminWalletIndexRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
     '/_authenticated/admin/products/$productId/edit': {
@@ -348,7 +568,18 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
   AuthenticatedAdminProductsNewRoute: typeof AuthenticatedAdminProductsNewRoute
+  AuthenticatedAdminAnalyticsIndexRoute: typeof AuthenticatedAdminAnalyticsIndexRoute
+  AuthenticatedAdminCategoriesIndexRoute: typeof AuthenticatedAdminCategoriesIndexRoute
+  AuthenticatedAdminCustomersIndexRoute: typeof AuthenticatedAdminCustomersIndexRoute
+  AuthenticatedAdminNotificationsIndexRoute: typeof AuthenticatedAdminNotificationsIndexRoute
+  AuthenticatedAdminOrdersIndexRoute: typeof AuthenticatedAdminOrdersIndexRoute
+  AuthenticatedAdminPaymentsIndexRoute: typeof AuthenticatedAdminPaymentsIndexRoute
+  AuthenticatedAdminPricingTemplatesIndexRoute: typeof AuthenticatedAdminPricingTemplatesIndexRoute
   AuthenticatedAdminProductsIndexRoute: typeof AuthenticatedAdminProductsIndexRoute
+  AuthenticatedAdminSettingsIndexRoute: typeof AuthenticatedAdminSettingsIndexRoute
+  AuthenticatedAdminSupportIndexRoute: typeof AuthenticatedAdminSupportIndexRoute
+  AuthenticatedAdminTransactionsIndexRoute: typeof AuthenticatedAdminTransactionsIndexRoute
+  AuthenticatedAdminWalletIndexRoute: typeof AuthenticatedAdminWalletIndexRoute
   AuthenticatedAdminProductsProductIdEditRoute: typeof AuthenticatedAdminProductsProductIdEditRoute
 }
 
@@ -356,7 +587,24 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
   {
     AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
     AuthenticatedAdminProductsNewRoute: AuthenticatedAdminProductsNewRoute,
+    AuthenticatedAdminAnalyticsIndexRoute:
+      AuthenticatedAdminAnalyticsIndexRoute,
+    AuthenticatedAdminCategoriesIndexRoute:
+      AuthenticatedAdminCategoriesIndexRoute,
+    AuthenticatedAdminCustomersIndexRoute:
+      AuthenticatedAdminCustomersIndexRoute,
+    AuthenticatedAdminNotificationsIndexRoute:
+      AuthenticatedAdminNotificationsIndexRoute,
+    AuthenticatedAdminOrdersIndexRoute: AuthenticatedAdminOrdersIndexRoute,
+    AuthenticatedAdminPaymentsIndexRoute: AuthenticatedAdminPaymentsIndexRoute,
+    AuthenticatedAdminPricingTemplatesIndexRoute:
+      AuthenticatedAdminPricingTemplatesIndexRoute,
     AuthenticatedAdminProductsIndexRoute: AuthenticatedAdminProductsIndexRoute,
+    AuthenticatedAdminSettingsIndexRoute: AuthenticatedAdminSettingsIndexRoute,
+    AuthenticatedAdminSupportIndexRoute: AuthenticatedAdminSupportIndexRoute,
+    AuthenticatedAdminTransactionsIndexRoute:
+      AuthenticatedAdminTransactionsIndexRoute,
+    AuthenticatedAdminWalletIndexRoute: AuthenticatedAdminWalletIndexRoute,
     AuthenticatedAdminProductsProductIdEditRoute:
       AuthenticatedAdminProductsProductIdEditRoute,
   }
