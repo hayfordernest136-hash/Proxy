@@ -1,28 +1,68 @@
 type ParseResult = { quantity: number; unit?: string; price: number; currency?: string };
 
+function normalizeUnit(unit?: string) {
+  const value = unit?.trim().toLowerCase();
+  if (!value) return undefined;
+  if (["ip", "ips", "ipv4", "ipv6"].includes(value)) return "ip";
+  if (["gb", "gbs"].includes(value)) return "gb";
+  return value;
+}
+
 const SmartPricingParser = {
-  parse(input: string): ParseResult[] {
-    const lines = input.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+  parse(input: string, fallbackUnit?: string): ParseResult[] {
+    const lines = input
+      .split(/\r?\n/)
+      .map((line) => line.replace(/^[-*•]\s*/, "").trim())
+      .filter(Boolean);
+
     const results: ParseResult[] = [];
 
     for (const line of lines) {
-      // Accept forms: "10ip = 20", "10 IP=20", "10 GB = 5", "10ip=20usd"
-      const parts = line.split(/=|:/).map((p) => p.trim());
+      const patterns = [
+        /^(\d+(?:\.\d+)?)\s*([A-Za-z%]+)?\s*(?:=|:|->)\s*(\d+(?:\.\d+)?)\s*([A-Za-z]+)?$/i,
+        /^(\d+(?:\.\d+)?)\s*([A-Za-z%]+)?\s*,\s*(\d+(?:\.\d+)?)\s*([A-Za-z]+)?$/i,
+        /^(\d+(?:\.\d+)?)\s*([A-Za-z%]+)?\s+(\d+(?:\.\d+)?)\s*([A-Za-z]+)?$/i,
+      ];
+
+      let matched = false;
+
+      for (const pattern of patterns) {
+        const match = line.match(pattern);
+        if (!match) continue;
+
+        const [, quantityText, unitText, priceText, currencyText] = match;
+        const quantity = Number(quantityText);
+        const price = Number(priceText);
+
+        if (!Number.isNaN(quantity) && !Number.isNaN(price)) {
+          results.push({
+            quantity,
+            unit: normalizeUnit(unitText ?? fallbackUnit),
+            price,
+            currency: currencyText?.trim().toUpperCase(),
+          });
+          matched = true;
+          break;
+        }
+      }
+
+      if (matched) continue;
+
+      const parts = line.split(/=|:|,|\s+/).map((part) => part.trim()).filter(Boolean);
       if (parts.length < 2) continue;
-      const left = parts[0];
-      const right = parts[1];
 
-      // parse left -> quantity + unit
-      const leftMatch = left.match(/^(\d+(?:\.\d+)?)(?:\s*([A-Za-z%]+))?$/);
-      const qty = leftMatch ? Number(leftMatch[1]) : NaN;
-      const unit = leftMatch && leftMatch[2] ? leftMatch[2] : undefined;
+      const qtyText = parts[0];
+      const priceText = parts[1];
+      const qty = Number(qtyText);
+      const price = Number(priceText);
 
-      // parse right -> price + optional currency
-      const rightMatch = right.match(/^(\d+(?:\.\d+)?)(?:\s*([A-Za-z]+))?$/);
-      const price = rightMatch ? Number(rightMatch[1]) : NaN;
-      const currency = rightMatch && rightMatch[2] ? rightMatch[2].toUpperCase() : undefined;
-
-      if (!isNaN(qty) && !isNaN(price)) results.push({ quantity: qty, unit, price, currency });
+      if (!Number.isNaN(qty) && !Number.isNaN(price)) {
+        results.push({
+          quantity: qty,
+          unit: normalizeUnit(fallbackUnit),
+          price,
+        });
+      }
     }
 
     return results;

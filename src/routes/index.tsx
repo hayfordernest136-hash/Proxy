@@ -25,13 +25,13 @@ import { DELIVERY_DISCLAIMER } from "@/lib/order-status";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "BrokeFlex — Buy Residential & Mobile Proxies Instantly" },
+      { title: "Brokeflex Data — Buy Residential & Mobile Proxies Instantly" },
       {
         name: "description",
         content:
           "Premium residential, ISP, mobile and datacenter proxies. Instant CD key delivery or account refill, paid securely with Paystack.",
       },
-      { property: "og:title", content: "BrokeFlex — Buy Proxies Instantly" },
+      { property: "og:title", content: "Brokeflex Data — Buy Proxies Instantly" },
       {
         property: "og:description",
         content:

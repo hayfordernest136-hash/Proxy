@@ -63,7 +63,7 @@ export default function PricingEditor({ initial = [], unit = "ip", onChange }: P
   }
 
   function handleParse(text: string) {
-    const parsed = SmartPricingParser.parse(text);
+    const parsed = SmartPricingParser.parse(text, unit);
     applyParsed(parsed);
   }
 
@@ -106,12 +106,14 @@ export default function PricingEditor({ initial = [], unit = "ip", onChange }: P
             <option value="merge">Merge</option>
           </select>
           <button
+            type="button"
             className="px-3 py-2 rounded bg-primary text-primary-foreground"
             onClick={() => handleParse(bulkText)}
           >
             Quick Generate
           </button>
           <button
+            type="button"
             className="px-3 py-2 rounded border"
             onClick={() => { setBulkText(""); }}
           >
@@ -131,15 +133,15 @@ export default function PricingEditor({ initial = [], unit = "ip", onChange }: P
         <div className="mb-2 flex items-center justify-between">
           <h3 className="text-sm font-medium">Pricing rows</h3>
           <div className="flex items-center gap-2">
-            <button className="text-sm text-muted-foreground" onClick={addRow}>Add row</button>
-            <button className="text-sm text-muted-foreground" onClick={() => {
+            <button type="button" className="text-sm text-muted-foreground" onClick={addRow}>Add row</button>
+            <button type="button" className="text-sm text-muted-foreground" onClick={() => {
               // export JSON
               const data = JSON.stringify(rows, null, 2);
               const blob = new Blob([data], { type: 'application/json' });
               const url = URL.createObjectURL(blob);
               const a = document.createElement('a'); a.href = url; a.download = 'pricing.json'; a.click(); URL.revokeObjectURL(url);
             }}>Export JSON</button>
-            <button className="text-sm text-muted-foreground" onClick={() => {
+            <button type="button" className="text-sm text-muted-foreground" onClick={() => {
               // export CSV
               const csv = rows.map(r => `${r.number_of_ips},${r.price},${r.currency}`).join('\n');
               const blob = new Blob([csv], { type: 'text/csv' });
@@ -168,7 +170,7 @@ export default function PricingEditor({ initial = [], unit = "ip", onChange }: P
               <span className="text-sm text-muted-foreground">{unitLabel}</span>
               <input type="number" value={r.price} onChange={(e) => handleRowChange(i, { price: Number(e.target.value) })} className="w-28 rounded border p-1" />
               <input value={r.currency} onChange={(e) => handleRowChange(i, { currency: e.target.value })} className="w-20 rounded border p-1" />
-              <button className="px-2 py-1 rounded border text-sm" onClick={() => removeRow(i)}>Remove</button>
+              <button type="button" className="px-2 py-1 rounded border text-sm" onClick={() => removeRow(i)}>Remove</button>
             </div>
           ))}
         </div>

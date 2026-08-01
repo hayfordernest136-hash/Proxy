@@ -33,9 +33,9 @@ import {
 export const Route = createFileRoute("/_authenticated/orders/$orderId")({
   head: () => ({
     meta: [
-      { title: "Order Details — BrokeFlex" },
+      { title: "Order Details — Brokeflex Data" },
       { name: "description", content: "Live status, timeline and delivery for your proxy order." },
-      { property: "og:title", content: "Order Details — BrokeFlex" },
+      { property: "og:title", content: "Order Details — Brokeflex Data" },
       { property: "og:description", content: "Live status and delivery for your proxy order." },
     ],
   }),

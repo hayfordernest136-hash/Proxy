@@ -6,7 +6,7 @@ export type SiteSettings = {
 };
 
 export const DEFAULT_SITE_SETTINGS: SiteSettings = {
-  siteName: "BrokeFlex",
+  siteName: "Brokeflex Data",
   siteTagline:
     "Premium residential, mobile and datacenter proxies delivered fast, with human support and local payment options.",
   whatsappNumber: (typeof import.meta !== "undefined" ? import.meta.env.VITE_WHATSAPP_NUMBER : undefined) ?? "",

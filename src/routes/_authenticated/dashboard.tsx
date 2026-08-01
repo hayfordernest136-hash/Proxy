@@ -45,12 +45,12 @@ import {
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
     meta: [
-      { title: "Your Dashboard — BrokeFlex" },
+      { title: "Your Dashboard — Brokeflex Data" },
       {
         name: "description",
         content: "Track proxy orders, collect CD keys and read notifications.",
       },
-      { property: "og:title", content: "Your Dashboard — BrokeFlex" },
+      { property: "og:title", content: "Your Dashboard — Brokeflex Data" },
       { property: "og:description", content: "Track your proxy orders and CD keys." },
     ],
   }),

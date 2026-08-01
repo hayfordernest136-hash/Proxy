@@ -24,13 +24,13 @@ export const Route = createFileRoute("/auth")({
   validateSearch: searchSchema,
   head: () => ({
     meta: [
-      { title: "Log in or Create an Account — BrokeFlex" },
+      { title: "Log in or Create an Account — Brokeflex Data" },
       {
         name: "description",
         content:
           "Sign in to track your proxy orders, collect CD keys and manage account refills.",
       },
-      { property: "og:title", content: "Log in — BrokeFlex" },
+      { property: "og:title", content: "Log in — Brokeflex Data" },
       {
         property: "og:description",
         content: "Sign in to track your proxy orders and collect CD keys.",
@@ -228,7 +228,7 @@ function AuthPage() {
         if (data?.token) {
           window.localStorage.setItem('auth-token', data.token);
         }
-        toast.success('Welcome to BrokeFlex!');
+        toast.success('Welcome to Brokeflex Data!');
         navigate({ to: data?.user?.role === 'admin' ? '/admin' : '/dashboard', replace: true });
       } catch (err: any) {
         setBusy(false);

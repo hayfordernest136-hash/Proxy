@@ -14,13 +14,13 @@ import { apiFetch } from "@/lib/api";
 export const Route = createFileRoute("/products/")({
   head: () => ({
     meta: [
-      { title: "All Proxy Products — BrokeFlex" },
+      { title: "All Proxy Products — Brokeflex Data" },
       {
         name: "description",
         content:
           "Browse every proxy we sell: rotating residential, static ISP, mobile 4G/5G, dedicated IPv4 and bandwidth plans.",
       },
-      { property: "og:title", content: "All Proxy Products — BrokeFlex" },
+      { property: "og:title", content: "All Proxy Products — Brokeflex Data" },
       {
         property: "og:description",
         content: "Rotating residential, static ISP, mobile and dedicated IPv4 proxies.",

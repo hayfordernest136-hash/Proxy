@@ -71,7 +71,7 @@ export const Route = createFileRoute("/products/$slug")({
       .join(" ");
     return {
       meta: [
-        { title: `${pretty} — Buy Proxy Plans | BrokeFlex` },
+        { title: `${pretty} — Buy Proxy Plans | Brokeflex Data` },
         {
           name: "description",
           content: `Buy ${pretty} proxy plans with instant CD key delivery or account refill. Transparent pricing, secure checkout.`,
@@ -93,34 +93,39 @@ function getUnitLabel(unit: "ip" | "gb" | undefined, quantity = 1) {
 }
 
 function renderDescriptionWithLinks(text: string) {
-  const normalized = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+  const lines = text.split(/\r?\n/);
 
-  return normalized.split("\n").map((line, lineIndex) => (
-    <span key={`line-${lineIndex}`} className="block">
-      {line.split(/(https?:\/\/[^\s]+|www\.[^\s]+)/gi).map((segment, index) => {
-        if (!segment) return null;
+  return lines.map((line, lineIndex) => {
+    const segments = line.split(/(https?:\/\/[^\s]+|www\.[^\s]+)/gi);
 
-        const isLink = /^https?:\/\//i.test(segment) || /^www\./i.test(segment);
-        if (!isLink) {
-          return <span key={`${segment}-${index}`}>{segment}</span>;
-        }
+    return (
+      <span key={`line-${lineIndex}`} className="block whitespace-pre-wrap break-words">
+        {segments.map((segment, index) => {
+          if (!segment) return null;
 
-        const href = /^www\./i.test(segment) ? `https://${segment}` : segment;
+          const isLink = /^https?:\/\//i.test(segment) || /^www\./i.test(segment);
+          if (!isLink) {
+            return <span key={`${segment}-${index}`}>{segment}</span>;
+          }
 
-        return (
-          <a
-            key={`${segment}-${index}`}
-            href={href}
-            target="_blank"
-            rel="noreferrer"
-            className="font-semibold text-amber-400 underline decoration-amber-400/70 underline-offset-2 transition-colors hover:text-amber-300"
-          >
-            {segment}
-          </a>
-        );
-      })}
-    </span>
-  ));
+          const href = /^www\./i.test(segment) ? `https://${segment}` : segment;
+
+          return (
+            <a
+              key={`${segment}-${index}`}
+              href={href}
+              target="_blank"
+              rel="noreferrer"
+              className="font-semibold text-amber-400 underline decoration-amber-400/70 underline-offset-2 transition-colors hover:text-amber-300"
+            >
+              {segment}
+            </a>
+          );
+        })}
+        {lineIndex < lines.length - 1 ? <br /> : null}
+      </span>
+    );
+  });
 }
 
 function ProductDetailPage() {
@@ -298,7 +303,7 @@ const prices = useMemo<ProductPrice[]>(
               <h1 className="mt-4 text-3xl font-extrabold tracking-tight sm:text-4xl">
                 {product.name}
               </h1>
-              <div className="mt-4 whitespace-pre-line text-muted-foreground">
+              <div className="mt-4 text-muted-foreground">
                 {renderDescriptionWithLinks(product.description)}
               </div>
             </div>

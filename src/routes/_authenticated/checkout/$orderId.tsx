@@ -16,9 +16,9 @@ import { DELIVERY_ETA, DELIVERY_LABEL, type DeliveryMethod } from "@/lib/order-s
 export const Route = createFileRoute("/_authenticated/checkout/$orderId")({
   head: () => ({
     meta: [
-      { title: "Secure Checkout — BrokeFlex" },
+      { title: "Secure Checkout — Brokeflex Data" },
       { name: "description", content: "Complete payment to start fulfilment of your proxy order." },
-      { property: "og:title", content: "Secure Checkout — BrokeFlex" },
+      { property: "og:title", content: "Secure Checkout — Brokeflex Data" },
       { property: "og:description", content: "Complete payment for your proxy order." },
     ],
   }),

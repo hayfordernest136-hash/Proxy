@@ -29,9 +29,9 @@ import {
 export const Route = createFileRoute("/_authenticated/orders/")({
   head: () => ({
     meta: [
-      { title: "Order History — BrokeFlex" },
+      { title: "Order History — Brokeflex Data" },
       { name: "description", content: "Every proxy order you have placed and its status." },
-      { property: "og:title", content: "Order History — BrokeFlex" },
+      { property: "og:title", content: "Order History — Brokeflex Data" },
       { property: "og:description", content: "Every proxy order you have placed." },
     ],
   }),

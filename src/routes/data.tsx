@@ -5,12 +5,12 @@ import { SiteLayout } from "@/components/site/SiteLayout";
 export const Route = createFileRoute("/data")({
   head: () => ({
     meta: [
-      { title: "Data — BrokeFlex" },
+      { title: "Data — Brokeflex Data" },
       {
         name: "description",
         content: "Data purchases will be available soon.",
       },
-      { property: "og:title", content: "Data — BrokeFlex" },
+      { property: "og:title", content: "Data — Brokeflex Data" },
       {
         property: "og:description",
         content: "Data purchases will be available soon.",

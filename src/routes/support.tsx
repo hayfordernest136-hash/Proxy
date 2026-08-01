@@ -8,12 +8,12 @@ import { WhatsAppButton } from "@/components/site/WhatsAppButton";
 export const Route = createFileRoute("/support")({
   head: () => ({
     meta: [
-      { title: "Support Center — BrokeFlex" },
+      { title: "Support Center — Brokeflex Data" },
       {
         name: "description",
         content: "Contact our support team through WhatsApp for help with your account, payments, orders, and services.",
       },
-      { property: "og:title", content: "Support Center — BrokeFlex" },
+      { property: "og:title", content: "Support Center — Brokeflex Data" },
       {
         property: "og:description",
         content: "Get help with your account, payments, orders, and services through WhatsApp support.",

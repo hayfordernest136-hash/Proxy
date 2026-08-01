@@ -80,13 +80,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "BrokeFlex — Premium Proxy Platform" },
+      { title: "Brokeflex Data — Premium Proxy Platform" },
       {
         name: "description",
         content:
           "Buy residential, mobile, ISP and datacenter proxies with instant CD key delivery or account refill.",
       },
-      { property: "og:title", content: "BrokeFlex — Premium Proxy Platform" },
+      { property: "og:title", content: "Brokeflex Data — Premium Proxy Platform" },
       {
         property: "og:description",
         content:
