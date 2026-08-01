@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
@@ -64,6 +64,8 @@ function ProductsPage() {
         p.description.toLowerCase().includes(query.toLowerCase())),
   );
 
+  const navigate = useNavigate();
+
   return (
     <SiteLayout>
       <section className="hero-glow border-b border-border/60">
@@ -113,7 +115,7 @@ function ProductsPage() {
                   {/* If admin, show Edit button overlay */}
                   {user?.role === 'admin' ? (
                     <div className="absolute right-3 top-3 z-10">
-                      <Button size="sm" onClick={() => window.location.href = `/_authenticated/admin?manage=${encodeURIComponent(p.slug)}`}>
+                      <Button size="sm" onClick={() => navigate({ to: `/admin/products/${p.id}/edit` })}>
                         Edit Product
                       </Button>
                     </div>

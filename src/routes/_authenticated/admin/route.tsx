@@ -2,13 +2,14 @@ import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { Loader2 } from "lucide-react";
 
+import AdminLayout from "@/components/site/AdminLayout";
 import { useSession } from "@/hooks/useSession";
 
 export const Route = createFileRoute("/_authenticated/admin")({
-  component: AdminLayout,
+  component: AdminPage,
 });
 
-function AdminLayout() {
+function AdminPage() {
   const { user, loading } = useSession();
   const isAdmin = user?.role === "admin";
   const isLoading = loading;
@@ -26,5 +27,9 @@ function AdminLayout() {
     );
   }
 
-  return <Outlet />;
+  return (
+    <AdminLayout>
+      <Outlet />
+    </AdminLayout>
+  );
 }
