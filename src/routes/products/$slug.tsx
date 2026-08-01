@@ -92,23 +92,37 @@ function getUnitLabel(unit: "ip" | "gb" | undefined, quantity = 1) {
   return `${quantity} ${quantity === 1 ? "IP" : "IPs"}`;
 }
 
-function escapeHtml(value: string) {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/\"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
+function renderDescriptionWithLinks(text: string) {
+  return text.split(/\r?\n/).map((line, lineIndex) => {
+    const segments = line.split(/(https?:\/\/[^\s]+|www\.[^\s]+)/gi);
 
-function renderDescriptionHtml(text: string) {
-  const escaped = escapeHtml(text)
-    .replace(/\r\n/g, "\n")
-    .replace(/\n/g, "<br />");
+    return (
+      <span key={`line-${lineIndex}`} className="block whitespace-pre-wrap break-words">
+        {segments.map((segment, index) => {
+          if (!segment) return null;
 
-  return escaped.replace(/(https?:\/\/[^\s<]+|www\.[^\s<]+)/gi, (match) => {
-    const href = /^www\./i.test(match) ? `https://${match}` : match;
-    return `<a href="${href}" target="_blank" rel="noreferrer" class="font-semibold text-amber-400 underline decoration-amber-400/70 underline-offset-2 transition-colors hover:text-amber-300">${match}</a>`;
+          const isLink = /^https?:\/\//i.test(segment) || /^www\./i.test(segment);
+          if (!isLink) {
+            return <span key={`${segment}-${index}`}>{segment}</span>;
+          }
+
+          const href = /^www\./i.test(segment) ? `https://${segment}` : segment;
+
+          return (
+            <a
+              key={`${segment}-${index}`}
+              href={href}
+              target="_blank"
+              rel="noreferrer"
+              className="font-semibold text-amber-400 underline decoration-amber-400/70 underline-offset-2 transition-colors hover:text-amber-300"
+            >
+              {segment}
+            </a>
+          );
+        })}
+        {lineIndex < text.split(/\r?\n/).length - 1 ? <br /> : null}
+      </span>
+    );
   });
 }
 
@@ -287,10 +301,9 @@ const prices = useMemo<ProductPrice[]>(
               <h1 className="mt-4 text-3xl font-extrabold tracking-tight sm:text-4xl">
                 {product.name}
               </h1>
-              <div
-                className="mt-4 whitespace-pre-wrap text-muted-foreground"
-                dangerouslySetInnerHTML={{ __html: renderDescriptionHtml(product.description) }}
-              />
+              <div className="mt-4 text-muted-foreground">
+                {renderDescriptionWithLinks(product.description)}
+              </div>
             </div>
 
             <Card className="border-border/70">
