@@ -104,7 +104,7 @@ function ProductsPage() {
           </div>
         </div>
 
-        <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-10 grid grid-cols-2 gap-3 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {isLoading
             ? Array.from({ length: 9 }).map((_, i) => (
                 <Skeleton key={i} className="h-80 rounded-xl" />
