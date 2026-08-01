@@ -18,6 +18,7 @@ type AdminProduct = {
   duration_days?: number | null;
   image_url?: string;
   features?: string[] | string;
+  pricing_unit?: "ip" | "gb";
   is_active?: number;
   supports_cd_key?: number;
   supports_account_refill?: number;
@@ -48,6 +49,7 @@ function normalizeProduct(product: AdminProduct): ProductDraft {
     supports_cd_key: product.supports_cd_key ? 1 : 0,
     supports_account_refill: product.supports_account_refill ? 1 : 0,
     availability_status: product.availability_status ?? "available",
+    pricing_unit: product.pricing_unit === "gb" ? "gb" : "ip",
     prices: (product.prices ?? []).map((row: any, index: number) => ({
       id: row.id ?? `row-${index}`,
       number_of_ips: Number(row.number_of_ips ?? row.quantity ?? 0),

@@ -34,6 +34,11 @@ const schemaFixes = [
   },
   {
     table: 'products',
+    column: 'pricing_unit',
+    ddl: "ALTER TABLE products ADD COLUMN pricing_unit VARCHAR(16) NOT NULL DEFAULT 'ip'",
+  },
+  {
+    table: 'products',
     column: 'updated_at',
     ddl: "ALTER TABLE products ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP",
   },

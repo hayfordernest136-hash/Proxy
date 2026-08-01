@@ -12,10 +12,13 @@ type ProductPrice = {
 
 type PricingEditorProps = {
   initial?: ProductPrice[];
+  unit?: "ip" | "gb";
   onChange?: (prices: ProductPrice[]) => void;
 };
 
-export default function PricingEditor({ initial = [], onChange }: PricingEditorProps) {
+export default function PricingEditor({ initial = [], unit = "ip", onChange }: PricingEditorProps) {
+  const unitLabel = unit === "gb" ? "GB" : "IP";
+  const quantityLabel = unit === "gb" ? "GB" : "IPs";
   const [rows, setRows] = useState<ProductPrice[]>(
     initial.map((r, i) => ({ ...r, id: r.id ?? i }))
   );
@@ -92,7 +95,7 @@ export default function PricingEditor({ initial = [], onChange }: PricingEditorP
         <textarea
           value={bulkText}
           onChange={(e) => setBulkText(e.target.value)}
-          placeholder={`10ip = 20\n25ip=45\n50ip=80`}
+          placeholder={unit === "gb" ? `10gb = 20\n25gb=45\n50gb=80` : `10ip = 20\n25ip=45\n50ip=80`}
           className="w-full mt-2 rounded border p-2 text-sm"
           rows={6}
         />
@@ -162,6 +165,7 @@ export default function PricingEditor({ initial = [], onChange }: PricingEditorP
           {rows.map((r, i) => (
             <div key={r.id} className="flex gap-2 items-center">
               <input type="number" value={r.number_of_ips} onChange={(e) => handleRowChange(i, { number_of_ips: Number(e.target.value) })} className="w-24 rounded border p-1" />
+              <span className="text-sm text-muted-foreground">{unitLabel}</span>
               <input type="number" value={r.price} onChange={(e) => handleRowChange(i, { price: Number(e.target.value) })} className="w-28 rounded border p-1" />
               <input value={r.currency} onChange={(e) => handleRowChange(i, { currency: e.target.value })} className="w-20 rounded border p-1" />
               <button className="px-2 py-1 rounded border text-sm" onClick={() => removeRow(i)}>Remove</button>
@@ -175,7 +179,7 @@ export default function PricingEditor({ initial = [], onChange }: PricingEditorP
         <div className="mt-2 bg-muted/20 p-3 rounded">
           {rows.length === 0 ? <div className="text-sm text-muted-foreground">No pricing</div> : rows.map((r) => (
             <div key={r.id} className="flex justify-between text-sm">
-              <span>{r.number_of_ips} {r.number_of_ips === 1 ? 'IP' : 'IPs'}</span>
+              <span>{r.number_of_ips} {r.number_of_ips === 1 ? unitLabel : quantityLabel}</span>
               <span>{r.currency} {r.price}</span>
             </div>
           ))}

@@ -14,11 +14,14 @@ export type ProductCardData = {
   location: string;
   image_url: string | null;
   features: string[];
+  pricing_unit?: "ip" | "gb";
   from_price?: number | null;
   currency?: string;
 };
 
 export function ProductCard({ product }: { product: ProductCardData }) {
+  const unitLabel = product.pricing_unit === "gb" ? "GB pricing" : "IP pricing";
+
   return (
     <Card className="group overflow-hidden border-border/70 bg-card/70 p-0 transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:card-elevated">
       <div className="relative aspect-[16/9] w-full overflow-hidden bg-secondary">
@@ -55,6 +58,9 @@ export function ProductCard({ product }: { product: ProductCardData }) {
           </span>
           <span className="inline-flex items-center gap-1.5">
             <Layers className="size-3.5" /> {product.features.length} features
+          </span>
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-border/60 px-2 py-1 text-[11px] font-medium text-foreground">
+            {unitLabel}
           </span>
         </div>
 

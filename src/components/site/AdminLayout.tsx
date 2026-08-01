@@ -18,20 +18,33 @@ import {
 } from "lucide-react";
 import type { ReactNode } from "react";
 
-const navItems = [
-  { label: "Dashboard", to: "/admin", icon: LayoutDashboard },
-  { label: "Products", to: "/admin/products", icon: Package },
-  { label: "Orders", to: "/admin/orders", icon: ShoppingCart },
-  { label: "Customers", to: "/admin/customers", icon: Users },
-  { label: "Pricing Templates", to: "/admin/pricing-templates", icon: CreditCard },
-  { label: "Categories", to: "/admin/categories", icon: Package },
-  { label: "Payments", to: "/admin/payments", icon: CreditCard },
-  { label: "Wallet", to: "/admin/wallet", icon: Wallet },
-  { label: "Transactions", to: "/admin/transactions", icon: ReceiptText },
-  { label: "Support", to: "/admin/support", icon: LifeBuoy },
-  { label: "Notifications", to: "/admin/notifications", icon: BellRing },
-  { label: "Analytics", to: "/admin/analytics", icon: BarChart3 },
-  { label: "Settings", to: "/admin/settings", icon: Settings },
+const navGroups = [
+  {
+    title: "Overview",
+    items: [
+      { label: "Dashboard", to: "/admin", icon: LayoutDashboard },
+      { label: "Products", to: "/admin/products", icon: Package },
+      { label: "Orders", to: "/admin/orders", icon: ShoppingCart },
+      { label: "Customers", to: "/admin/customers", icon: Users },
+    ],
+  },
+  {
+    title: "Operations",
+    items: [
+      { label: "Pricing", to: "/admin/pricing-templates", icon: CreditCard },
+      { label: "Categories", to: "/admin/categories", icon: Package },
+      { label: "Payments", to: "/admin/payments", icon: CreditCard },
+      { label: "Wallet", to: "/admin/wallet", icon: Wallet },
+      { label: "Transactions", to: "/admin/transactions", icon: ReceiptText },
+      { label: "Support", to: "/admin/support", icon: LifeBuoy },
+      { label: "Notifications", to: "/admin/notifications", icon: BellRing },
+      { label: "Analytics", to: "/admin/analytics", icon: BarChart3 },
+    ],
+  },
+  {
+    title: "System",
+    items: [{ label: "Settings", to: "/admin/settings", icon: Settings }],
+  },
 ] as const;
 
 function AdminSidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => void }) {
@@ -59,27 +72,37 @@ function AdminSidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: (
         </button>
       </div>
 
-      <nav className="flex-1 space-y-1 overflow-y-auto px-2 py-4">
-        {navItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = location.pathname === item.to || location.pathname.startsWith(`${item.to}/`);
+      <nav className="flex-1 space-y-4 overflow-y-auto px-2 py-4">
+        {navGroups.map((group) => (
+          <div key={group.title} className="space-y-1">
+            {!collapsed ? (
+              <p className="px-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground/80">
+                {group.title}
+              </p>
+            ) : null}
 
-          return (
-            <Link
-              key={item.to}
-              to={item.to}
-              className={
-                "flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition " +
-                (isActive
-                  ? "bg-primary text-primary-foreground"
-                  : "text-foreground hover:bg-muted")
-              }
-            >
-              <Icon className="size-4 shrink-0" />
-              {!collapsed ? <span>{item.label}</span> : null}
-            </Link>
-          );
-        })}
+            {group.items.map((item) => {
+              const Icon = item.icon;
+              const isActive = location.pathname === item.to || location.pathname.startsWith(`${item.to}/`);
+
+              return (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  className={
+                    "flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition " +
+                    (isActive
+                      ? "bg-primary text-primary-foreground shadow-sm"
+                      : "text-foreground hover:bg-muted")
+                  }
+                >
+                  <Icon className="size-4 shrink-0" />
+                  {!collapsed ? <span>{item.label}</span> : null}
+                </Link>
+              );
+            })}
+          </div>
+        ))}
       </nav>
 
       <div className="border-t border-border/60 p-4 text-xs text-muted-foreground">
@@ -130,21 +153,28 @@ export function AdminLayout({ children }: { children?: ReactNode }) {
               <X className="size-4" />
             </button>
           </div>
-          <nav className="space-y-1 p-3">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              return (
-                <Link
-                  key={item.to}
-                  to={item.to}
-                  onClick={() => setMobileOpen(false)}
-                  className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium hover:bg-muted"
-                >
-                  <Icon className="size-4" />
-                  {item.label}
-                </Link>
-              );
-            })}
+          <nav className="space-y-4 p-3">
+            {navGroups.map((group) => (
+              <div key={group.title} className="space-y-1">
+                <p className="px-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground/80">
+                  {group.title}
+                </p>
+                {group.items.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <Link
+                      key={item.to}
+                      to={item.to}
+                      onClick={() => setMobileOpen(false)}
+                      className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium hover:bg-muted"
+                    >
+                      <Icon className="size-4" />
+                      {item.label}
+                    </Link>
+                  );
+                })}
+              </div>
+            ))}
           </nav>
         </div>
 

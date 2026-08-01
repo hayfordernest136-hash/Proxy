@@ -55,6 +55,7 @@ type Product = {
   location: string;
   image_url: string | null;
   features: string[];
+  pricing_unit?: "ip" | "gb";
   supports_cd_key: boolean | number;
   supports_account_refill: boolean | number;
   duration_days?: number | null;
@@ -85,6 +86,11 @@ export const Route = createFileRoute("/products/$slug")({
   },
   component: ProductDetailPage,
 });
+
+function getUnitLabel(unit: "ip" | "gb" | undefined, quantity = 1) {
+  if (unit === "gb") return `${quantity} ${quantity === 1 ? "GB" : "GBs"}`;
+  return `${quantity} ${quantity === 1 ? "IP" : "IPs"}`;
+}
 
 function ProductDetailPage() {
   const { slug } = Route.useParams();
@@ -153,7 +159,7 @@ const prices = useMemo<ProductPrice[]>(
     setSubmitting(true);
     try {
       const planIdToUse = selectedPlan?.id ?? ((product.plans ?? []).find((pl:any)=>pl.number_of_ips === selectedPrice?.number_of_ips)?.id ?? null);
-      const planNameToUse = selectedPrice ? `${selectedPrice.number_of_ips} IPs` : (selectedPlan?.name ?? '');
+      const planNameToUse = selectedPrice ? getUnitLabel(product.pricing_unit, selectedPrice.number_of_ips) : (selectedPlan?.name ?? '');
       const unitPriceToUse = selectedPrice ? selectedPrice.price : (selectedPlan?.price ?? 0);
       const currencyToUse = selectedPrice ? selectedPrice.currency : (selectedPlan?.currency ?? 'GHS');
 
@@ -306,7 +312,7 @@ const prices = useMemo<ProductPrice[]>(
                 <div className="space-y-3">
                   <div className="flex items-center justify-between gap-3">
                     <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
-                      Select number of IPs
+                      Select number of {product.pricing_unit === "gb" ? "GBs" : "IPs"}
                     </p>
                     {selectedPrice ? (
                       <span className="text-base font-bold tracking-tight text-primary">
@@ -341,7 +347,7 @@ const prices = useMemo<ProductPrice[]>(
                           )}
                         >
                           <span className="text-xs font-semibold">
-                            {p.number_of_ips} {p.number_of_ips === 1 ? "IP" : "IPs"}
+                            {getUnitLabel(product.pricing_unit, p.number_of_ips)}
                           </span>
                           {isSelected ? (
                             <span className="mt-1 text-xs font-medium text-primary">

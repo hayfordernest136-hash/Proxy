@@ -9,6 +9,7 @@ type ProductRow = {
   location: string;
   image_url: string | null;
   features: any;
+  pricing_unit?: string | null;
   supports_cd_key: number;
   supports_account_refill: number;
   is_active: number;
@@ -66,6 +67,7 @@ function normalizeProduct(product: ProductRow) {
     ...product,
     image_url: product.image_url ?? null,
     features: parseFeatures(product.features),
+    pricing_unit: (product.pricing_unit ?? 'ip').toLowerCase() === 'gb' ? 'gb' : 'ip',
     supports_cd_key: Boolean(product.supports_cd_key),
     supports_account_refill: Boolean(product.supports_account_refill),
     is_active: Boolean(product.is_active),
@@ -150,6 +152,7 @@ export async function createProduct(product: {
   location: string;
   image_url?: string | null;
   features?: string[];
+  pricing_unit?: 'ip' | 'gb';
   supports_cd_key?: boolean;
   supports_account_refill?: boolean;
   is_active?: boolean;
@@ -180,8 +183,8 @@ export async function createProduct(product: {
   try {
     await conn.beginTransaction();
     const [result] = await conn.query(
-      `INSERT INTO products (slug, name, description, proxy_type, location, image_url, features, supports_cd_key, supports_account_refill, is_active, sort_order, number_of_ips, duration_days, discount_price, availability_status)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO products (slug, name, description, proxy_type, location, image_url, features, pricing_unit, supports_cd_key, supports_account_refill, is_active, sort_order, number_of_ips, duration_days, discount_price, availability_status)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         slug,
         product.name,
@@ -190,6 +193,7 @@ export async function createProduct(product: {
         product.location,
         product.image_url ?? null,
         JSON.stringify(product.features ?? []),
+        product.pricing_unit ?? 'ip',
         (product.supports_cd_key ?? true) ? 1 : 0,
         (product.supports_account_refill ?? true) ? 1 : 0,
         product.is_active ? 1 : 0,
@@ -233,7 +237,7 @@ export async function updateProduct(productId: number, patch: Partial<Record<str
   try {
     await conn.beginTransaction();
     const allowedFields = new Set([
-      'slug', 'name', 'description', 'proxy_type', 'location', 'image_url', 'features', 'supports_cd_key', 'supports_account_refill', 'is_active', 'sort_order', 'number_of_ips', 'duration_days', 'discount_price', 'availability_status',
+      'slug', 'name', 'description', 'proxy_type', 'location', 'image_url', 'features', 'pricing_unit', 'supports_cd_key', 'supports_account_refill', 'is_active', 'sort_order', 'number_of_ips', 'duration_days', 'discount_price', 'availability_status',
     ]);
     const fields: string[] = [];
     const params: any[] = [];

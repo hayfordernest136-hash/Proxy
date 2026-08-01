@@ -21,6 +21,7 @@ type AdminProduct = {
   name: string;
   proxy_type: string;
   location: string;
+  pricing_unit?: "ip" | "gb";
   is_active: number;
   prices?: Array<{ id: number; number_of_ips: number; price: number; currency: string; sort_order?: number }>;
 };
@@ -32,6 +33,7 @@ export const Route = createFileRoute("/_authenticated/admin/products/")({
 function ProductsAdminPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
+  const [unitFilter, setUnitFilter] = useState<"all" | "ip" | "gb">("all");
   const queryClient = useQueryClient();
 
   const { data: products, isLoading } = useQuery({
@@ -70,14 +72,16 @@ function ProductsAdminPage() {
         statusFilter === "all" ||
         (statusFilter === "active" && product.is_active === 1) ||
         (statusFilter === "inactive" && product.is_active === 0);
+      const matchesUnit =
+        unitFilter === "all" || (product.pricing_unit ?? "ip") === unitFilter;
       const matchesTerm =
         !term ||
         product.name.toLowerCase().includes(term) ||
         product.proxy_type.toLowerCase().includes(term) ||
         product.location.toLowerCase().includes(term);
-      return matchesStatus && matchesTerm;
+      return matchesStatus && matchesUnit && matchesTerm;
     });
-  }, [products, search, statusFilter]);
+  }, [products, search, statusFilter, unitFilter]);
 
   return (
     <div className="mx-auto max-w-7xl space-y-8 px-4 py-12 sm:px-6">
@@ -95,7 +99,7 @@ function ProductsAdminPage() {
 
       <Card className="border-border/70">
         <CardContent className="p-6">
-          <div className="grid gap-4 sm:grid-cols-[1fr_auto] sm:items-end">
+          <div className="grid gap-4 sm:grid-cols-[1fr_auto_auto] sm:items-end">
             <div className="flex items-center gap-3">
               <Search className="size-4 text-muted-foreground" />
               <Input
@@ -105,7 +109,7 @@ function ProductsAdminPage() {
                 onChange={(event) => setSearch(event.target.value)}
               />
             </div>
-            <div className="grid gap-2 sm:grid-cols-2">
+            <div className="grid gap-2">
               <Label className="text-sm">Status filter</Label>
               <select
                 className="rounded-xl border border-border/70 bg-background px-3 py-2 text-sm text-foreground"
@@ -115,6 +119,18 @@ function ProductsAdminPage() {
                 <option value="all">All statuses</option>
                 <option value="active">Active</option>
                 <option value="inactive">Inactive</option>
+              </select>
+            </div>
+            <div className="grid gap-2">
+              <Label className="text-sm">Pricing unit</Label>
+              <select
+                className="rounded-xl border border-border/70 bg-background px-3 py-2 text-sm text-foreground"
+                value={unitFilter}
+                onChange={(event) => setUnitFilter(event.target.value as any)}
+              >
+                <option value="all">All units</option>
+                <option value="ip">IP</option>
+                <option value="gb">GB</option>
               </select>
             </div>
           </div>
@@ -140,13 +156,14 @@ function ProductsAdminPage() {
                   <TableRow>
                     <TableHead>Name</TableHead>
                     <TableHead>Type / Location</TableHead>
-                    <TableHead>Pricing</TableHead>
+                    <TableHead>Pricing / Unit</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filtered.map((product) => {
+                    const unitLabel = product.pricing_unit === "gb" ? "GB" : "IP";
                     const priceLabel =
                       product.prices && product.prices.length
                         ? `${formatMoney(Math.min(...product.prices.map((row) => row.price)))} – ${formatMoney(
@@ -161,7 +178,10 @@ function ProductsAdminPage() {
                           <div>{product.proxy_type}</div>
                           <div className="text-sm text-muted-foreground">{product.location}</div>
                         </TableCell>
-                        <TableCell>{priceLabel}</TableCell>
+                        <TableCell>
+                          <div>{priceLabel}</div>
+                          <div className="text-sm text-muted-foreground">{unitLabel} pricing</div>
+                        </TableCell>
                         <TableCell>
                           <Badge variant="outline" className={product.is_active ? "border-foreground text-foreground" : "border-muted text-muted-foreground"}>
                             {product.is_active ? "Active" : "Inactive"}

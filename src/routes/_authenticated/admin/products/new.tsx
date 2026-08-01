@@ -36,6 +36,7 @@ function AdminNewProductPage() {
     duration_days: null,
     image_url: "",
     features: [],
+    pricing_unit: "ip",
     is_active: 1,
     supports_cd_key: 1,
     supports_account_refill: 1,

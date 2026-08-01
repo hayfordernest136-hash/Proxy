@@ -23,6 +23,7 @@ export type ProductDraft = {
   duration_days: number | null;
   image_url: string;
   features: string[];
+  pricing_unit: "ip" | "gb";
   is_active: number;
   supports_cd_key: number;
   supports_account_refill: number;
@@ -155,6 +156,26 @@ export default function ProductEdit({
                   }
                 />
               </div>
+              <div className="space-y-2">
+                <Label>Pricing unit</Label>
+                <Select
+                  value={values.pricing_unit ?? "ip"}
+                  onValueChange={(value) =>
+                    onChange({
+                      ...values,
+                      pricing_unit: value === "gb" ? "gb" : "ip",
+                    })
+                  }
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Choose unit" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ip">IP</SelectItem>
+                    <SelectItem value="gb">GB</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
 
@@ -210,6 +231,7 @@ export default function ProductEdit({
             <div className="mt-4">
               <PricingEditor
                 initial={values.prices}
+                unit={values.pricing_unit ?? "ip"}
                 onChange={(next) => onChange({ ...values, prices: next })}
               />
             </div>

@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS products (
   location VARCHAR(120) NOT NULL,
   image_url VARCHAR(500),
   features JSON,
+  pricing_unit VARCHAR(16) NOT NULL DEFAULT 'ip',
   supports_cd_key TINYINT(1) NOT NULL DEFAULT 1,
   supports_account_refill TINYINT(1) NOT NULL DEFAULT 1,
   is_active TINYINT(1) NOT NULL DEFAULT 1,
