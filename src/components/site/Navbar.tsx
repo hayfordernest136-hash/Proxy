@@ -11,8 +11,8 @@ import { Brand } from "@/components/site/Brand";
 
 const NAV = [
   { to: "/", label: "Home" },
-  { to: "/products", label: "Proxies" },
   { to: "/data", label: "Data" },
+  { to: "/products", label: "Proxies" },
   { to: "/support", label: "Support" },
 ];
 
