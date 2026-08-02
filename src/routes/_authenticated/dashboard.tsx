@@ -1,13 +1,14 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+﻿import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Bell, CheckCircle2, Copy, Eye, EyeOff, Gift, Package, ShoppingBag, Sparkles, User } from "lucide-react";
+import { Bell, CheckCircle2, Copy, Eye, EyeOff, Gift, Menu, Package, ShoppingBag, Sparkles, User, Wifi } from "lucide-react";
 import { toast } from "sonner";
 
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   DropdownMenu,
@@ -45,12 +46,12 @@ import {
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
     meta: [
-      { title: "Your Dashboard — Brokeflex Data" },
+      { title: "Your Dashboard - BrokeFlex" },
       {
         name: "description",
         content: "Track proxy orders, collect CD keys and read notifications.",
       },
-      { property: "og:title", content: "Your Dashboard — Brokeflex Data" },
+      { property: "og:title", content: "Your Dashboard - BrokeFlex" },
       { property: "og:description", content: "Track your proxy orders and CD keys." },
     ],
   }),
@@ -116,9 +117,20 @@ function DashboardPage() {
   const active = (orders ?? []).filter(
     (o) => !["completed", "cancelled", "refunded"].includes(o.status),
   );
-  const spent = (orders ?? [])
+  const proxyOrders = (orders ?? []).filter(
+    (o) => o.delivery_method !== "data_bundle",
+  );
+  const dataOrders = (orders ?? []).filter((o) => o.delivery_method === "data_bundle");
+  const proxyActive = proxyOrders.filter(
+    (o) => !["completed", "cancelled", "refunded"].includes(o.status),
+  );
+  const dataActive = dataOrders.filter(
+    (o) => !["completed", "cancelled", "refunded"].includes(o.status),
+  );
+  const paidOrders = (orders ?? [])
     .filter((o) => o.payment_status === "paid")
     .reduce((sum, o) => sum + Number(o.total_amount), 0);
+  const currency = orders?.[0]?.currency ?? "GHS";
 
   const markReadMutation = useMutation({
     mutationFn: async () => {
@@ -216,10 +228,92 @@ function DashboardPage() {
               Hi{user?.name ? `, ${user.name.split(" ")[0]}` : ""} 👋
             </h1>
             <p className="mt-1 text-muted-foreground">
-              Here is everything happening with your proxies.
+              Here is everything happening with your proxy and data orders.
             </p>
           </div>
           <div className="flex items-center gap-3">
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="outline" size="icon" className="rounded-full">
+                  <Menu className="size-4" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left">
+                <SheetHeader>
+                  <SheetTitle>Dashboard stats</SheetTitle>
+                  <SheetDescription>
+                    Quick access to your order counts and current totals.
+                  </SheetDescription>
+                </SheetHeader>
+                <div className="mt-6 grid gap-3">
+                  {[
+                    { label: "Total orders", value: orders?.length ?? 0 },
+                    { label: "Active orders", value: active.length },
+                    { label: "Data orders", value: dataOrders.length },
+                    { label: "Proxy orders", value: proxyOrders.length },
+                    { label: "Paid value", value: formatMoney(paidOrders, currency) },
+                    {
+                      label: "Pending support",
+                      value: orders?.filter((o) => o.support_message_unread).length ?? 0,
+                    },
+                  ].map((item) => (
+                    <Card key={item.label} className="border-border/70">
+                      <CardContent className="p-4">
+                        <p className="text-sm text-muted-foreground">{item.label}</p>
+                        <p className="mt-1 text-xl font-semibold">{item.value}</p>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </SheetContent>
+            </Sheet>
+
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="outline" size="icon" className="rounded-full">
+                  <Bell className="size-4" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right">
+                <SheetHeader>
+                  <SheetTitle>Notifications</SheetTitle>
+                  <SheetDescription>
+                    All notifications for your account and orders.
+                  </SheetDescription>
+                </SheetHeader>
+                <div className="mt-6 space-y-3">
+                  {notifications?.length ? (
+                    notifications.map((notification) => (
+                      <div
+                        key={notification.id}
+                        className={
+                          "rounded-xl border p-4 text-sm " +
+                          (notification.is_read
+                            ? "border-border/60"
+                            : "border-primary/40 bg-primary/5")
+                        }
+                      >
+                        <p className="font-medium">{notification.title}</p>
+                        <p className="mt-1 text-muted-foreground">{notification.body}</p>
+                        <p className="mt-2 text-xs text-muted-foreground">
+                          {formatDate(notification.created_at)}
+                        </p>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-sm text-muted-foreground">No notifications yet.</p>
+                  )}
+                </div>
+                {notifications?.some((n) => !n.is_read) ? (
+                  <div className="mt-6 flex justify-end">
+                    <Button size="sm" variant="secondary" onClick={markAllRead}>
+                      Mark all read
+                    </Button>
+                  </div>
+                ) : null}
+              </SheetContent>
+            </Sheet>
+
             <Button asChild>
               <Link to="/products">
                 <ShoppingBag className="mr-2 size-4" /> Buy more proxies
@@ -245,30 +339,6 @@ function DashboardPage() {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-3">
-          {[
-            { label: "Total orders", value: orders?.length ?? 0, icon: Package },
-            { label: "Active orders", value: active.length, icon: Bell },
-            {
-              label: "Total spent",
-              value: formatMoney(spent),
-              icon: User,
-            },
-          ].map((s) => (
-            <Card key={s.label} className="border-border/70">
-              <CardContent className="flex items-center gap-4 p-6">
-                <span className="grid size-10 place-items-center rounded-xl bg-primary/12 text-primary">
-                  <s.icon className="size-5" />
-                </span>
-                <div>
-                  <p className="text-sm text-muted-foreground">{s.label}</p>
-                  <p className="text-xl font-bold tracking-tight">{s.value}</p>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
         </div>
 
         <AlertDialog open={supportDialogOpen} onOpenChange={async (open) => {
@@ -305,60 +375,63 @@ function DashboardPage() {
         </AlertDialog>
 
         <div className="grid gap-6 lg:grid-cols-[1.6fr_1fr]">
-          <Card className="border-border/70">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <h2 className="font-semibold tracking-tight">Recent orders</h2>
-                <Button asChild variant="ghost" size="sm">
-                  <Link to="/orders">View all</Link>
-                </Button>
-              </div>
+          <div className="space-y-6">
+            <Card className="border-border/70">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <h2 className="font-semibold tracking-tight">Recent orders</h2>
+                  <Button asChild variant="ghost" size="sm">
+                    <Link to="/orders">View all</Link>
+                  </Button>
+                </div>
 
-              <div className="mt-4 space-y-3">
-                {isLoading ? (
-                  Array.from({ length: 3 }).map((_, i) => (
-                    <Skeleton key={i} className="h-20 rounded-lg" />
-                  ))
-                ) : orders?.length ? (
-                  orders.slice(0, 5).map((o) => (
-                    <Link
-                      key={o.id}
-                      to="/orders/$orderId"
-                      params={{ orderId: o.id }}
-                      className="block rounded-lg border border-border/70 p-4 transition-colors hover:border-primary/40"
-                    >
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <div>
-                          <p className="font-medium">
-                            Order #{o.order_number} · {o.product_name}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            {o.plan_name} · {DELIVERY_LABEL[o.delivery_method as DeliveryMethod]} ·{" "}
-                            {formatDate(o.created_at)}
-                          </p>
+                <div className="mt-4 space-y-3">
+                  {isLoading ? (
+                    Array.from({ length: 3 }).map((_, i) => (
+                      <Skeleton key={i} className="h-20 rounded-lg" />
+                    ))
+                  ) : orders?.length ? (
+                    orders.slice(0, 5).map((o) => (
+                      <Link
+                        key={o.id}
+                        to="/orders/$orderId"
+                        params={{ orderId: o.id }}
+                        className="block rounded-lg border border-border/70 p-4 transition-colors hover:border-primary/40"
+                      >
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <div>
+                            <p className="font-medium">
+                              Order #{o.order_number} - {o.product_name}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              {o.plan_name} - {DELIVERY_LABEL[o.delivery_method as DeliveryMethod]} -
+                              {formatDate(o.created_at)}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <Badge
+                              variant="outline"
+                              className={statusTone(o.status as OrderStatus)}
+                            >
+                              {ORDER_STATUS_LABEL[o.status as OrderStatus]}
+                            </Badge>
+                            <p className="mt-1 text-sm font-semibold">
+                              {formatMoney(o.total_amount, o.currency)}
+                            </p>
+                          </div>
                         </div>
-                        <div className="text-right">
-                          <Badge
-                            variant="outline"
-                            className={statusTone(o.status as OrderStatus)}
-                          >
-                            {ORDER_STATUS_LABEL[o.status as OrderStatus]}
-                          </Badge>
-                          <p className="mt-1 text-sm font-semibold">
-                            {formatMoney(o.total_amount, o.currency)}
-                          </p>
-                        </div>
-                      </div>
-                    </Link>
-                  ))
-                ) : (
-                  <p className="py-8 text-center text-sm text-muted-foreground">
-                    No orders yet. <Link to="/products" className="text-primary">Browse proxies</Link>.
-                  </p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+                      </Link>
+                    ))
+                  ) : (
+                    <p className="py-8 text-center text-sm text-muted-foreground">
+                      No orders yet. <Link to="/products" className="text-primary">Browse proxies</Link>.
+                    </p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+          </div>
 
           <div className="space-y-6">
             <Card className="border-border/70 bg-gradient-to-br from-primary/10 via-background to-background">
@@ -434,7 +507,7 @@ function DashboardPage() {
                     <p className="mt-2 text-sm text-muted-foreground">
                       {rewardUnlocked
                         ? 'Your reward is ready and can be applied automatically on eligible orders.'
-                        : `You’re ${referralStatus?.successfulReferrals ?? 0} of 10 referrals away from unlocking the bonus.`}
+                        : `You're ${referralStatus?.successfulReferrals ?? 0} of 10 referrals away from unlocking the bonus.`}
                     </p>
                   </div>
 
@@ -456,67 +529,6 @@ function DashboardPage() {
               </CardContent>
             </Card>
 
-            <Card className="border-border/70">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <h2 className="font-semibold tracking-tight">Profile</h2>
-                    <p className="mt-1 text-sm text-muted-foreground">Keep your account details up to date.</p>
-                  </div>
-                  <Button variant="outline" size="sm" onClick={() => setProfileOpen(true)}>
-                    <User className="mr-2 size-4" /> Manage
-                  </Button>
-                </div>
-                <dl className="mt-4 space-y-3 text-sm">
-                  <div>
-                    <dt className="text-muted-foreground">Name</dt>
-                    <dd>{user?.name ?? "—"}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-muted-foreground">Email</dt>
-                    <dd className="break-all">{user?.email}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-muted-foreground">Member since</dt>
-                    <dd>{formatDate(user?.created_at)}</dd>
-                  </div>
-                </dl>
-              </CardContent>
-            </Card>
-
-            <Card className="border-border/70">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <h2 className="font-semibold tracking-tight">Notifications</h2>
-                  {notifications?.some((n) => !n.is_read) ? (
-                    <Button variant="ghost" size="sm" onClick={markAllRead}>
-                      Mark all read
-                    </Button>
-                  ) : null}
-                </div>
-                <div className="mt-4 space-y-3">
-                  {notifications?.length ? (
-                    notifications.map((n) => (
-                      <div
-                        key={n.id}
-                        className={
-                          "rounded-lg border p-3 text-sm " +
-                          (n.is_read ? "border-border/60" : "border-primary/40 bg-primary/5")
-                        }
-                      >
-                        <p className="font-medium">{n.title}</p>
-                        <p className="text-muted-foreground">{n.body}</p>
-                        <p className="mt-1 text-xs text-muted-foreground">
-                          {formatDate(n.created_at)}
-                        </p>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-sm text-muted-foreground">Nothing yet.</p>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
           </div>
         </div>
         <Dialog open={profileOpen} onOpenChange={setProfileOpen}>

@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+﻿import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import {
@@ -71,12 +71,12 @@ export const Route = createFileRoute("/products/$slug")({
       .join(" ");
     return {
       meta: [
-        { title: `${pretty} — Buy Proxy Plans | Brokeflex Data` },
+        { title: `${pretty} - Buy Proxy Plans | BrokeFlex` },
         {
           name: "description",
           content: `Buy ${pretty} proxy plans with instant CD key delivery or account refill. Transparent pricing, secure checkout.`,
         },
-        { property: "og:title", content: `${pretty} — Buy Proxy Plans` },
+        { property: "og:title", content: `${pretty} - Buy Proxy Plans` },
         {
           property: "og:description",
           content: `Buy ${pretty} proxy plans with instant delivery.`,
@@ -505,7 +505,7 @@ const prices = useMemo<ProductPrice[]>(
                 </Button>
 
                 <p className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
-                  <ShieldCheck className="size-3.5" /> Secure checkout ·{" "}
+                  <ShieldCheck className="size-3.5" /> Secure checkout -
                   <Clock className="size-3.5" /> Fast delivery
                 </p>
               </CardContent>

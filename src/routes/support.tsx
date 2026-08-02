@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+﻿import { createFileRoute } from "@tanstack/react-router";
 import { Clock, LifeBuoy, MessageCircle } from "lucide-react";
 
 import { SiteLayout } from "@/components/site/SiteLayout";
@@ -8,15 +8,15 @@ import { WhatsAppButton } from "@/components/site/WhatsAppButton";
 export const Route = createFileRoute("/support")({
   head: () => ({
     meta: [
-      { title: "Support Center — Brokeflex Data" },
+      { title: "Support Center - BrokeFlex Data" },
       {
         name: "description",
-        content: "Contact our support team through WhatsApp for help with your account, payments, orders, and services.",
+        content: "Contact our support team through WhatsApp for help with data bundles, proxy orders, payments, and account issues.",
       },
-      { property: "og:title", content: "Support Center — Brokeflex Data" },
+      { property: "og:title", content: "Support Center - BrokeFlex Data" },
       {
         property: "og:description",
-        content: "Get help with your account, payments, orders, and services through WhatsApp support.",
+        content: "Get help with data bundles, proxy orders, payments, and account issues through WhatsApp support.",
       },
     ],
   }),
@@ -31,7 +31,7 @@ function SupportPage() {
           <div className="max-w-3xl">
             <h1 className="text-4xl font-extrabold tracking-tight">Support Center</h1>
             <p className="mt-4 text-lg text-muted-foreground">
-              Need help? We are here to assist you. If you have any questions, problems, or need assistance with your account, payments, or services, contact us directly through WhatsApp.
+              Need help? We are here for you. Whether you bought a data bundle or a proxy plan, our team is ready to assist with your orders, payments and account. Reach out to us directly on WhatsApp.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <div className="flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-4 py-2 text-sm text-muted-foreground">
@@ -51,15 +51,26 @@ function SupportPage() {
               <h2 className="text-xl font-semibold tracking-tight">Contact Support</h2>
             </div>
             <p className="text-sm leading-7 text-muted-foreground">
-              Click the WhatsApp button below to chat with us directly. We can help with account and login issues, payment problems, service questions, order or subscription issues, technical difficulties, and general inquiries.
+              Click the WhatsApp button below to chat with us directly. Our support team helps customers with every service we offer, including data bundles and proxies.
             </p>
+            <div className="rounded-xl border border-border/70 bg-muted/50 p-4">
+              <p className="text-sm font-medium text-foreground">We can help you with:</p>
+              <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+                <li>Data bundle purchases</li>
+                <li>Failed transactions</li>
+                <li>Delayed deliveries</li>
+                <li>Proxy orders</li>
+                <li>Proxy setup issues</li>
+                <li>Account and wallet issues</li>
+              </ul>
+            </div>
             <div className="rounded-xl border border-border/70 bg-muted/50 p-4">
               <p className="text-sm font-medium text-foreground">When contacting support, please provide:</p>
               <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
-                <li>• Your name</li>
-                <li>• Email address or account details</li>
-                <li>• A description of your issue</li>
-                <li>• Screenshots or error messages (if applicable)</li>
+                <li>Your name</li>
+                <li>Email address or account details</li>
+                <li>A description of your issue</li>
+                <li>Screenshots or error messages, if available</li>
               </ul>
             </div>
           </CardContent>

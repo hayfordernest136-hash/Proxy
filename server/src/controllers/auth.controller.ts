@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import {
   createUser,
   findUserByEmail,
+  findUserById,
   findUserByReferralCode,
   resolveUserRole,
   updateUserPassword,
@@ -9,8 +10,22 @@ import {
   verifyPassword,
 } from '../services/user.service';
 import { createReferral } from '../services/referral.service';
+import {
+  consumeResetToken,
+  createPasswordResetToken,
+  findValidResetToken,
+  invalidateUserResetTokens,
+} from '../services/password-reset.service';
+import {
+  sendLoginNotificationEmail,
+  sendPasswordResetEmail,
+  sendWelcomeEmail,
+} from '../services/auth-email.service';
 import { clearAuthCookie, getAuthToken, setAuthCookie, signToken } from '../utils/jwt';
 import { isValidEmail, isValidPassword } from '../middleware/validate.middleware';
+
+const GENERIC_FORGOT_PASSWORD_MESSAGE =
+  'If an account exists with this email, a password reset link has been sent.';
 
 export async function register(req: Request, res: Response) {
   try {
@@ -27,7 +42,10 @@ export async function register(req: Request, res: Response) {
     }
 
     if (!isValidPassword(String(password))) {
-      return res.status(400).json({ message: 'Password must be at least 6 characters' });
+      return res.status(400).json({
+        message:
+          'Password must be at least 8 characters and include an uppercase letter, a lowercase letter, and a number.',
+      });
     }
 
     if (String(password) !== String(confirm_password)) {
@@ -51,6 +69,14 @@ export async function register(req: Request, res: Response) {
       if (referrer && referrer.id !== user.id && referrer.email.toLowerCase() !== user.email.toLowerCase()) {
         await createReferral(referrer.id, user.id, user.email, String(referral_code).trim());
       }
+    }
+
+    // Best-effort welcome email from support@brokeflexdata.com.
+    // Never blocks registration — users can log in immediately.
+    try {
+      await sendWelcomeEmail({ userName: user.name, email: user.email });
+    } catch (error: any) {
+      console.warn('[Auth] Welcome email failed to send:', error?.message || error);
     }
 
     const token = signToken({ sub: user.id, role: user.role });
@@ -79,10 +105,16 @@ export async function login(req: Request, res: Response) {
     }
 
     const user = await findUserByEmail(normalizedEmail);
-    if (!user) return res.status(404).json({ message: 'Account not found.' });
+    if (!user) {
+      clearAuthCookie(res);
+      return res.status(404).json({ message: 'Account not found.' });
+    }
 
     const valid = await verifyPassword(String(password), user.password_hash);
-    if (!valid) return res.status(401).json({ message: 'Invalid email or password.' });
+    if (!valid) {
+      clearAuthCookie(res);
+      return res.status(401).json({ message: 'Invalid email or password.' });
+    }
 
     const role = resolveUserRole(normalizedEmail, user.role);
     if (role === 'admin' && user.role !== 'admin') {
@@ -91,6 +123,14 @@ export async function login(req: Request, res: Response) {
 
     const token = signToken({ sub: user.id, role });
     setAuthCookie(res, token);
+
+    // Best-effort login notification email for security awareness.
+    try {
+      await sendLoginNotificationEmail({ userName: user.name, email: user.email });
+    } catch (error: any) {
+      console.warn('[Auth] Login notification email failed to send:', error?.message || error);
+    }
+
     return res.json({ ok: true, token, user: { id: user.id, name: user.name, email: user.email, role } });
   } catch (error: any) {
     console.error('Login failed:', error);
@@ -135,8 +175,11 @@ export async function updateProfile(req: Request, res: Response) {
       if (!current_password || !new_password || !confirm_password) {
         return res.status(400).json({ message: 'Please fill in the current password, new password, and confirmation' });
       }
-      if (String(new_password).length < 6) {
-        return res.status(400).json({ message: 'New password must be at least 6 characters' });
+      if (!isValidPassword(String(new_password))) {
+        return res.status(400).json({
+          message:
+            'New password must be at least 8 characters and include an uppercase letter, a lowercase letter, and a number.',
+        });
       }
       if (String(new_password) !== String(confirm_password)) {
         return res.status(400).json({ message: 'New passwords do not match' });
@@ -183,7 +226,7 @@ export async function me(req: Request, res: Response) {
     const payloadVerified = verifyToken(token);
     if (!payloadVerified) {
       clearAuthCookie(res);
-      return res.json({ user: null });
+      return res.status(401).json({ message: 'Unauthorized' });
     }
 
     const { findUserById } = await import('../services/user.service');
@@ -203,5 +246,89 @@ export async function me(req: Request, res: Response) {
   } catch (error: any) {
     console.error('Failed to fetch user session:', error);
     return res.json({ user: null });
+  }
+}
+
+/**
+ * POST /api/auth/forgot-password
+ * Sends a single-use, time-limited password reset link when an account exists.
+ * Always responds with the same generic message to avoid leaking account existence.
+ */
+export async function forgotPassword(req: Request, res: Response) {
+  try {
+    const rawEmail = String(req.body?.email || '').trim().toLowerCase();
+    if (!isValidEmail(rawEmail)) {
+      return res.status(400).json({ message: 'Enter a valid email address.' });
+    }
+
+    const user = await findUserByEmail(rawEmail);
+    if (user) {
+      const { rawToken, expiresAt } = await createPasswordResetToken(user.id);
+      await sendPasswordResetEmail({
+        userName: user.name,
+        email: user.email,
+        rawToken,
+        expiresAt,
+      });
+    }
+
+    return res.json({ ok: true, message: GENERIC_FORGOT_PASSWORD_MESSAGE });
+  } catch (error: any) {
+    console.error('Failed to process password reset request:', error);
+    return res.status(500).json({ message: 'Unable to process the password reset request.' });
+  }
+}
+
+/**
+ * POST /api/auth/reset-password
+ * Validates a single-use reset token, then sets a new password for the account.
+ */
+export async function resetPassword(req: Request, res: Response) {
+  try {
+    const rawToken = String(req.body?.token || '').trim();
+    const newPassword = String(req.body?.new_password || '');
+    const confirmPassword = String(req.body?.confirm_password || '');
+
+    if (!rawToken) {
+      return res.status(400).json({ message: 'Missing reset token.' });
+    }
+
+    if (!isValidPassword(newPassword)) {
+      return res.status(400).json({
+        message:
+          'Password must be at least 8 characters and include an uppercase letter, a lowercase letter, and a number.',
+      });
+    }
+
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({ message: 'Passwords do not match.' });
+    }
+
+    const valid = await findValidResetToken(rawToken);
+    if (!valid) {
+      return res.status(400).json({
+        message: 'This reset link is invalid or has expired. Please request a new one.',
+      });
+    }
+
+    const { tokenRow } = valid;
+
+    // Double-check the user still exists before updating anything.
+    const user = await findUserById(tokenRow.user_id);
+    if (!user) {
+      return res.status(404).json({ message: 'Account not found.' });
+    }
+
+    await updateUserPassword(user.id, newPassword);
+    await consumeResetToken(tokenRow.id);
+    await invalidateUserResetTokens(user.id);
+
+    // Clear any existing session cookie so the new password must be used next login.
+    clearAuthCookie(res);
+
+    return res.json({ ok: true, message: 'Your password has been reset. You can now log in.' });
+  } catch (error: any) {
+    console.error('Failed to reset password:', error);
+    return res.status(500).json({ message: 'Unable to reset password.' });
   }
 }

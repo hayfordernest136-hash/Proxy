@@ -3,9 +3,9 @@ import { pool } from '../config/db';
 export type OrderRow = {
   id: number;
   order_number: number;
-  user_id: number;
-  product_id: number;
-  plan_id: number;
+  user_id: number | null;
+  product_id: number | null;
+  plan_id: number | null;
   product_name: string;
   plan_name: string;
   proxy_type: string;
@@ -16,6 +16,9 @@ export type OrderRow = {
   payment_total_amount: string;
   currency: string;
   delivery_method: string;
+  customer_email: string | null;
+  customer_name: string | null;
+  order_type: string | null;
   refill_email: string | null;
   refill_password: string | null;
   refill_notes: string | null;
@@ -29,6 +32,7 @@ export type OrderRow = {
   admin_notes: string | null;
   refill_proof_url: string | null;
   delivery_status: string | null;
+  fulfillment_reference: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -51,9 +55,9 @@ export async function getNextOrderNumber(connection?: any) {
 }
 
 export async function createOrder(order: {
-  user_id: number;
-  product_id: number;
-  plan_id: number;
+  user_id?: number | null;
+  product_id?: number | null;
+  plan_id?: number | null;
   product_name: string;
   plan_name: string;
   proxy_type: string;
@@ -62,6 +66,9 @@ export async function createOrder(order: {
   total_amount: number;
   currency: string;
   delivery_method: string;
+  customer_email?: string | null;
+  customer_name?: string | null;
+  order_type?: string | null;
   refill_email?: string | null;
   refill_password?: string | null;
   refill_notes?: string | null;
@@ -73,15 +80,16 @@ export async function createOrder(order: {
     const order_number = await getNextOrderNumber(connection);
     const paymentFee = 0;
     const paymentTotalAmount = Number(order.total_amount);
+    const orderType = order.order_type?.trim() || (order.delivery_method === 'data_bundle' ? 'data' : 'proxy');
     const [result] = await connection.query(
       `INSERT INTO orders
-        (order_number, user_id, product_id, plan_id, product_name, plan_name, proxy_type, quantity, unit_price, total_amount, payment_fee, payment_total_amount, currency, delivery_method, refill_email, refill_password, refill_notes, status, payment_status, support_message_unread, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+        (order_number, user_id, product_id, plan_id, product_name, plan_name, proxy_type, quantity, unit_price, total_amount, payment_fee, payment_total_amount, currency, delivery_method, customer_email, customer_name, order_type, refill_email, refill_password, refill_notes, status, payment_status, support_message_unread, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
       [
         order_number,
-        order.user_id,
-        order.product_id,
-        order.plan_id,
+        order.user_id ?? null,
+        order.product_id ?? null,
+        order.plan_id ?? null,
         order.product_name,
         order.plan_name,
         order.proxy_type,
@@ -92,6 +100,9 @@ export async function createOrder(order: {
         paymentTotalAmount,
         order.currency,
         order.delivery_method,
+        order.customer_email ?? null,
+        order.customer_name ?? null,
+        orderType,
         order.refill_email ?? null,
         order.refill_password ?? null,
         order.refill_notes ?? null,
@@ -161,6 +172,14 @@ export async function getOrderById(orderId: number) {
   return (rows as OrderRow[])[0] ?? null;
 }
 
+export async function getOrderByFulfillmentReference(reference: string) {
+  const [rows] = await pool.query(
+    'SELECT * FROM orders WHERE fulfillment_reference = ? LIMIT 1',
+    [reference],
+  );
+  return (rows as OrderRow[])[0] ?? null;
+}
+
 export async function getOrdersByUserId(userId: number) {
   const [rows] = await pool.query('SELECT * FROM orders WHERE user_id = ? ORDER BY created_at DESC', [userId]);
   return rows as OrderRow[];
@@ -198,7 +217,7 @@ export async function getAllOrders() {
   return rows as OrderRow[];
 }
 
-export async function updateOrder(orderId: number, patch: Partial<Pick<OrderRow, 'status' | 'cd_key' | 'admin_notes' | 'refill_proof_url' | 'delivery_status' | 'support_message_unread'>>) {
+export async function updateOrder(orderId: number, patch: Partial<Pick<OrderRow, 'status' | 'cd_key' | 'admin_notes' | 'refill_proof_url' | 'delivery_status' | 'support_message_unread' | 'fulfillment_reference'>>) {
   const fields = [] as string[];
   const params = [] as any[];
 
@@ -226,6 +245,11 @@ export async function updateOrder(orderId: number, patch: Partial<Pick<OrderRow,
   if ((patch as any).support_message_unread !== undefined) {
     fields.push('support_message_unread = ?');
     params.push((patch as any).support_message_unread);
+  }
+
+  if ((patch as any).fulfillment_reference !== undefined) {
+    fields.push('fulfillment_reference = ?');
+    params.push((patch as any).fulfillment_reference);
   }
 
   if (fields.length === 0) {

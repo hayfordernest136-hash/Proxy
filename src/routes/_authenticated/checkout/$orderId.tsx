@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+﻿import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { CreditCard, Loader2, ShieldCheck } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -16,9 +16,9 @@ import { DELIVERY_ETA, DELIVERY_LABEL, type DeliveryMethod } from "@/lib/order-s
 export const Route = createFileRoute("/_authenticated/checkout/$orderId")({
   head: () => ({
     meta: [
-      { title: "Secure Checkout — Brokeflex Data" },
-      { name: "description", content: "Complete payment to start fulfilment of your proxy order." },
-      { property: "og:title", content: "Secure Checkout — Brokeflex Data" },
+      { title: "Secure Checkout - BrokeFlex" },
+      { name: "description", content: "Complete payment to start fulfillment of your proxy order." },
+      { property: "og:title", content: "Secure Checkout - BrokeFlex" },
       { property: "og:description", content: "Complete payment for your proxy order." },
     ],
   }),
@@ -101,7 +101,7 @@ function CheckoutPage() {
           method: "POST",
           body: JSON.stringify({ orderId, reference }),
         });
-        toast.success("Payment confirmed — fulfilment has started.");
+        toast.success("Payment confirmed - fulfillment has started.");
         navigate({ to: "/orders/$orderId", params: { orderId } });
       } catch (e) {
         toast.error(e instanceof Error ? e.message : "Unable to confirm payment.");

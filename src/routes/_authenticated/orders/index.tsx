@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+﻿import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 
@@ -29,20 +29,22 @@ import {
 export const Route = createFileRoute("/_authenticated/orders/")({
   head: () => ({
     meta: [
-      { title: "Order History — Brokeflex Data" },
+      { title: "Order History - BrokeFlex" },
       { name: "description", content: "Every proxy order you have placed and its status." },
-      { property: "og:title", content: "Order History — Brokeflex Data" },
+      { property: "og:title", content: "Order History - BrokeFlex" },
       { property: "og:description", content: "Every proxy order you have placed." },
     ],
   }),
   component: OrdersPage,
 });
 
-const FILTERS = ["All", "Active", "Completed", "Cancelled"] as const;
+const STATUS_FILTERS = ["All", "Active", "Completed", "Cancelled"] as const;
+const TYPE_FILTERS = ["All", "Proxy", "Data"] as const;
 
 function OrdersPage() {
   const { user } = useSession();
-  const [filter, setFilter] = useState<(typeof FILTERS)[number]>("All");
+  const [statusFilter, setStatusFilter] = useState<(typeof STATUS_FILTERS)[number]>("All");
+  const [typeFilter, setTypeFilter] = useState<(typeof TYPE_FILTERS)[number]>("All");
 
   const { data, isLoading } = useQuery({
     queryKey: ["my-orders", user?.id],
@@ -52,11 +54,20 @@ function OrdersPage() {
     },
   });
 
-  const orders = (data ?? []).filter((o) => {
-    if (filter === "All") return true;
-    if (filter === "Completed") return o.status === "completed";
-    if (filter === "Cancelled") return ["cancelled", "refunded"].includes(o.status);
-    return !["completed", "cancelled", "refunded"].includes(o.status);
+  const orders = data ?? [];
+  const filteredOrders = orders.filter((o) => {
+    const matchesStatus =
+      statusFilter === "All" ||
+      (statusFilter === "Completed" && o.status === "completed") ||
+      (statusFilter === "Cancelled" && ["cancelled", "refunded"].includes(o.status)) ||
+      (statusFilter === "Active" && !["completed", "cancelled", "refunded"].includes(o.status));
+
+    const matchesType =
+      typeFilter === "All" ||
+      (typeFilter === "Proxy" && o.delivery_method !== "data_bundle") ||
+      (typeFilter === "Data" && o.delivery_method === "data_bundle");
+
+    return matchesStatus && matchesType;
   });
 
   return (
@@ -69,17 +80,31 @@ function OrdersPage() {
               Track every purchase and pick up your keys.
             </p>
           </div>
-          <div className="flex gap-2">
-            {FILTERS.map((f) => (
-              <Button
-                key={f}
-                size="sm"
-                variant={filter === f ? "default" : "outline"}
-                onClick={() => setFilter(f)}
-              >
-                {f}
-              </Button>
-            ))}
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap gap-2">
+              {STATUS_FILTERS.map((f) => (
+                <Button
+                  key={f}
+                  size="sm"
+                  variant={statusFilter === f ? "default" : "outline"}
+                  onClick={() => setStatusFilter(f)}
+                >
+                  {f}
+                </Button>
+              ))}
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {TYPE_FILTERS.map((f) => (
+                <Button
+                  key={f}
+                  size="sm"
+                  variant={typeFilter === f ? "default" : "outline"}
+                  onClick={() => setTypeFilter(f)}
+                >
+                  {f}
+                </Button>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -112,7 +137,7 @@ function OrdersPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {orders.map((o) => (
+                    {filteredOrders.map((o) => (
                       <TableRow key={o.id}>
                         <TableCell className="font-medium">#{o.order_number}</TableCell>
                         <TableCell>{o.product_name}</TableCell>

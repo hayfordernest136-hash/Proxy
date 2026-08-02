@@ -61,9 +61,9 @@ CREATE TABLE IF NOT EXISTS product_prices (
 CREATE TABLE IF NOT EXISTS orders (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   order_number BIGINT NOT NULL UNIQUE,
-  user_id BIGINT NOT NULL,
-  product_id BIGINT NOT NULL,
-  plan_id BIGINT NOT NULL,
+  user_id BIGINT NULL,
+  product_id BIGINT NULL,
+  plan_id BIGINT NULL,
   product_name VARCHAR(180) NOT NULL,
   plan_name VARCHAR(150) NOT NULL,
   proxy_type VARCHAR(80) NOT NULL,
@@ -74,6 +74,9 @@ CREATE TABLE IF NOT EXISTS orders (
   payment_total_amount DECIMAL(10,2) NOT NULL DEFAULT 0,
   currency VARCHAR(8) NOT NULL,
   delivery_method VARCHAR(80) NOT NULL,
+  customer_email VARCHAR(255),
+  customer_name VARCHAR(120),
+  order_type VARCHAR(32) DEFAULT 'proxy',
   refill_email VARCHAR(255),
   refill_password VARCHAR(255),
   refill_notes TEXT,
@@ -81,6 +84,7 @@ CREATE TABLE IF NOT EXISTS orders (
   payment_status VARCHAR(60) NOT NULL DEFAULT 'unpaid',
   payment_reference VARCHAR(255),
   payment_provider VARCHAR(64),
+  fulfillment_reference VARCHAR(255),
   referral_discount_applied TINYINT(1) NOT NULL DEFAULT 0,
   support_message_unread TINYINT(1) NOT NULL DEFAULT 0,
   cd_key TEXT,
@@ -90,6 +94,19 @@ CREATE TABLE IF NOT EXISTS orders (
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
   FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
   FOREIGN KEY (plan_id) REFERENCES plans(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS email_logs (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  email_type VARCHAR(64) NOT NULL,
+  recipient VARCHAR(255) NOT NULL,
+  order_id BIGINT NULL,
+  status VARCHAR(16) NOT NULL DEFAULT 'sent',
+  error_message TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  INDEX (order_id),
+  INDEX (status),
+  INDEX (created_at)
 );
 
 CREATE TABLE IF NOT EXISTS order_events (
@@ -124,4 +141,16 @@ CREATE TABLE IF NOT EXISTS referrals (
   completed_at TIMESTAMP NULL,
   FOREIGN KEY (referrer_user_id) REFERENCES users(id) ON DELETE CASCADE,
   FOREIGN KEY (referred_user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS password_reset_tokens (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  user_id BIGINT NOT NULL,
+  token_hash CHAR(64) NOT NULL UNIQUE,
+  expires_at TIMESTAMP NOT NULL,
+  used_at TIMESTAMP NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  INDEX (user_id),
+  INDEX (expires_at)
 );

@@ -7,6 +7,27 @@ import {
   getOrderEvents,
   markSupportMessageRead,
 } from '../services/order.service';
+import {
+  sendAdminAlertEmail,
+  sendOrderReceivedEmail,
+} from '../services/order-email.service';
+
+type OrderRow = Awaited<ReturnType<typeof getOrderById>>;
+
+function sanitizeOrderForCustomer(order: any) {
+  if (!order) return null;
+  const {
+    refill_password,
+    payment_reference,
+    payment_provider,
+    fulfillment_reference,
+    customer_email,
+    customer_name,
+    order_type,
+    ...publicOrder
+  } = order;
+  return publicOrder;
+}
 
 export async function createOrderHandler(req: Request, res: Response) {
   try {
@@ -53,7 +74,14 @@ export async function createOrderHandler(req: Request, res: Response) {
       refill_password: refill_password ? String(refill_password).slice(0, 255) : null,
     });
 
-    return res.status(201).json(order);
+    // Notify the customer the order was received and alert the admin team.
+    const createdOrder = await getOrderById(order.id);
+    if (createdOrder) {
+      await sendOrderReceivedEmail(createdOrder);
+      await sendAdminAlertEmail(createdOrder, 'new_order');
+    }
+
+    return res.status(201).json(sanitizeOrderForCustomer(order));
   } catch (error) {
     console.error('Failed to create order:', error);
     return res.status(500).json({ message: 'Unable to create order' });
@@ -65,7 +93,7 @@ export async function getOrderHandler(req: Request, res: Response) {
     const orderId = Number(req.params.orderId);
     const order = await getOrderById(orderId);
     if (!order) return res.status(404).json({ message: 'Order not found' });
-    return res.json(order);
+    return res.json(sanitizeOrderForCustomer(order));
   } catch (error) {
     console.error('Failed to load order:', error);
     return res.status(500).json({ message: 'Unable to load order' });
@@ -83,7 +111,7 @@ export async function updateOrderHandler(req: Request, res: Response) {
       if (!order) {
         return res.status(400).json({ message: 'Referral discount cannot be applied' });
       }
-      return res.json(order);
+      return res.json(sanitizeOrderForCustomer(order));
     }
 
     return res.status(400).json({ message: 'No valid update provided' });
@@ -97,7 +125,7 @@ export async function getUserOrdersHandler(req: Request, res: Response) {
   try {
     const userId = Number((req as any).userId);
     const orders = await getOrdersByUserId(userId);
-    return res.json(orders);
+    return res.json(orders.map(sanitizeOrderForCustomer));
   } catch (error) {
     console.error('Failed to load user orders:', error);
     return res.status(500).json({ message: 'Unable to load orders' });
@@ -128,7 +156,7 @@ export async function markSupportMessageReadHandler(req: Request, res: Response)
       return res.status(404).json({ message: 'Order not found or not owned by user' });
     }
 
-    return res.json({ ok: true, order });
+    return res.json({ ok: true, order: sanitizeOrderForCustomer(order) });
   } catch (error) {
     console.error('Failed to mark support message read:', error);
     return res.status(500).json({ message: 'Unable to mark support message read' });

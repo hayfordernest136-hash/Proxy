@@ -1,6 +1,6 @@
-# ProxZone
+# BrokeFlex Data
 
-This repository is the ProxZone web application — a lightweight, production-ready proxy management platform built with TanStack Start, React and Tailwind CSS.
+This repository is the BrokeFlex Data web application — a lightweight, production-ready platform for buying mobile data bundles and proxy solutions, built with TanStack Start, React and Tailwind CSS.
 
 ## Development
 

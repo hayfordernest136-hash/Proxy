@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+﻿import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
@@ -14,13 +14,13 @@ import { apiFetch } from "@/lib/api";
 export const Route = createFileRoute("/products/")({
   head: () => ({
     meta: [
-      { title: "All Proxy Products — Brokeflex Data" },
+      { title: "All Proxy Products - BrokeFlex" },
       {
         name: "description",
         content:
           "Browse every proxy we sell: rotating residential, static ISP, mobile 4G/5G, dedicated IPv4 and bandwidth plans.",
       },
-      { property: "og:title", content: "All Proxy Products — Brokeflex Data" },
+      { property: "og:title", content: "All Proxy Products - BrokeFlex" },
       {
         property: "og:description",
         content: "Rotating residential, static ISP, mobile and dedicated IPv4 proxies.",
@@ -70,7 +70,7 @@ function ProductsPage() {
     <SiteLayout>
       <section className="hero-glow border-b border-border/60">
         <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
-          <h1 className="text-4xl font-extrabold tracking-tight">Proxy products</h1>
+          <h1 className="text-4xl font-extrabold tracking-tight">Proxy plans</h1>
           <p className="mt-3 max-w-2xl text-muted-foreground">
             Every provider we resell, with live pricing set by our team. Pick a plan,
             choose CD Key or Account Refill, and pay securely.

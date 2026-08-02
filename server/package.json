@@ -1,5 +1,5 @@
 {
-  "name": "proxyzone-server",
+  "name": "brokeflex-data-server",
   "version": "1.0.0",
   "private": true,
   "scripts": {
@@ -20,7 +20,8 @@
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.0",
     "morgan": "^1.10.0",
-    "mysql2": "^3.6.0"
+    "mysql2": "^3.6.0",
+    "resend": "^6.18.1"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",

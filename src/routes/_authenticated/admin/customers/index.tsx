@@ -40,19 +40,19 @@ function AdminCustomersPage() {
         <Card>
           <CardContent className="p-5">
             <p className="text-sm text-muted-foreground">Accounts</p>
-            <p className="mt-2 text-2xl font-bold">{users?.length ?? "—"}</p>
+            <p className="mt-2 text-2xl font-bold">{users?.length ?? "N/A"}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-5">
             <p className="text-sm text-muted-foreground">Active admins</p>
-            <p className="mt-2 text-2xl font-bold">{users?.filter((u) => u.role === "admin").length ?? "—"}</p>
+            <p className="mt-2 text-2xl font-bold">{users?.filter((u) => u.role === "admin").length ?? "N/A"}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-5">
             <p className="text-sm text-muted-foreground">Referral rewards</p>
-            <p className="mt-2 text-2xl font-bold">{users?.filter((u) => u.referral_reward_used_at).length ?? "—"}</p>
+            <p className="mt-2 text-2xl font-bold">{users?.filter((u) => u.referral_reward_used_at).length ?? "N/A"}</p>
           </CardContent>
         </Card>
       </div>

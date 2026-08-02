@@ -33,7 +33,6 @@ dist-ssr
 
 # Generated workspace and editor metadata
 .workspace/
-.lovable/
 Proxy/
 
 # Environment files

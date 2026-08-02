@@ -15,7 +15,7 @@ function AdminAnalyticsPage() {
       </div>
       <div className="grid gap-4 md:grid-cols-3">
         <Card><CardContent className="p-5"><p className="text-sm text-muted-foreground">Orders</p><p className="mt-2 text-2xl font-bold">Live</p></CardContent></Card>
-        <Card><CardContent className="p-5"><p className="text-sm text-muted-foreground">Conversion</p><p className="mt-2 text-2xl font-bold">—</p></CardContent></Card>
+        <Card><CardContent className="p-5"><p className="text-sm text-muted-foreground">Conversion</p><p className="mt-2 text-2xl font-bold">N/A</p></CardContent></Card>
         <Card><CardContent className="p-5"><p className="text-sm text-muted-foreground">Watchlist</p><p className="mt-2 text-2xl font-bold">Stable</p></CardContent></Card>
       </div>
     </div>

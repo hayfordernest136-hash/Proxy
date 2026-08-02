@@ -5,7 +5,7 @@ const {
   DB_PORT = '3306',
   DB_USER = 'root',
   DB_PASSWORD = '',
-  DB_NAME = 'proxyzone',
+  DB_NAME = 'brokeflex_data',
 } = process.env;
 
 const MAX_RETRIES = 5;

@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+﻿import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -13,7 +13,9 @@ import { useSession } from "@/hooks/useSession";
 import { Brand } from "@/components/site/Brand";
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID ?? '';
-const GOOGLE_CALLBACK_URL = import.meta.env.VITE_GOOGLE_CALLBACK_URL ?? `${window.location.origin}/auth`;
+const GOOGLE_CALLBACK_URL =
+  import.meta.env.VITE_GOOGLE_CALLBACK_URL ??
+  (typeof window !== 'undefined' ? `${window.location.origin}/auth` : '');
 
 const searchSchema = z.object({
   mode: z.enum(["login", "register"]).optional(),
@@ -24,16 +26,17 @@ export const Route = createFileRoute("/auth")({
   validateSearch: searchSchema,
   head: () => ({
     meta: [
-      { title: "Log in or Create an Account — Brokeflex Data" },
+      { title: "Log in or Create an Account - BrokeFlex Data" },
       {
         name: "description",
         content:
-          "Sign in to track your proxy orders, collect CD keys and manage account refills.",
+          "Sign in to track your data orders and proxy purchases, collect CD keys and manage account refills.",
       },
-      { property: "og:title", content: "Log in — Brokeflex Data" },
+      { property: "og:title", content: "Log in - BrokeFlex Data" },
       {
         property: "og:description",
-        content: "Sign in to track your proxy orders and collect CD keys.",
+        content:
+          "Sign in to track your data orders and proxy purchases, collect CD keys and manage your account.",
       },
     ],
     scripts: GOOGLE_CLIENT_ID
@@ -255,7 +258,7 @@ function AuthPage() {
         if (data?.token) {
           window.localStorage.setItem('auth-token', data.token);
         }
-        toast.success('Welcome to Brokeflex Data!');
+        toast.success('Welcome to BrokeFlex!');
         navigate({ to: data?.user?.role === 'admin' ? '/admin' : '/dashboard', replace: true });
       } catch (err: any) {
         setBusy(false);
@@ -411,6 +414,17 @@ function AuthPage() {
                     </div>
                   </div>
 
+                  {mode === "login" ? (
+                    <div className="flex items-center justify-end">
+                      <Link
+                        to="/forgot-password"
+                        className="text-xs font-medium text-muted-foreground transition-colors hover:text-primary"
+                      >
+                        Forgot password?
+                      </Link>
+                    </div>
+                  ) : null}
+
                   {mode === "register" ? (
                     <div className="space-y-2">
                       <Label htmlFor="confirmPassword">Confirm Password</Label>
@@ -449,7 +463,7 @@ function AuthPage() {
 
         <p className="mt-6 text-center text-sm text-muted-foreground">
           <Link to="/" className="hover:text-foreground">
-            ← Back to site
+            Back to site
           </Link>
         </p>
       </div>

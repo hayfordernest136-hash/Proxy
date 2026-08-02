@@ -2,6 +2,9 @@ import { Router } from 'express';
 import {
   getAdminDashboardHandler,
   getAdminOrdersHandler,
+  getAdminOrderHandler,
+  getAdminOrderRemaStatusHandler,
+  getAdminRemaDebugHandler,
   getAdminUsersHandler,
   updateOrderHandler,
   updateUserRoleHandler,
@@ -22,6 +25,8 @@ const router = Router();
 router.use(requireAuth, requireAdmin);
 router.get('/dashboard', getAdminDashboardHandler);
 router.get('/orders', getAdminOrdersHandler);
+router.get('/orders/:orderId', getAdminOrderHandler);
+router.get('/orders/:orderId/rema-status', getAdminOrderRemaStatusHandler);
 router.get('/users', getAdminUsersHandler);
 router.patch('/users/:userId', updateUserRoleHandler);
 router.patch('/orders/:orderId', updateOrderHandler);
@@ -36,6 +41,7 @@ router.delete('/products/:productId', adminDeleteProductHandler);
 router.post('/products/:productId/plans', adminCreatePlanHandler);
 router.patch('/plans/:planId', adminUpdatePlanHandler);
 router.delete('/plans/:planId', adminDeletePlanHandler);
+router.get('/rema/debug', getAdminRemaDebugHandler);
 
 // Uploads (base64)
 router.post('/uploads', adminUploadHandler);

@@ -156,32 +156,152 @@ export async function getAllUsersWithReferralStats(limit = 50) {
 }
 
 export async function getAdminDashboardStats() {
-  const [usersRows] = await pool.query(
+  const [summaryRows] = await pool.query(
     `SELECT
-      COUNT(*) AS total_users,
+      COUNT(*) AS total_orders,
+      SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) AS total_completed_orders,
+      SUM(CASE WHEN status = 'processing' THEN 1 ELSE 0 END) AS total_processing_orders,
+      SUM(CASE WHEN status IN ('awaiting_payment', 'paid', 'purchasing_proxy', 'delivering') THEN 1 ELSE 0 END) AS total_pending_orders,
+      SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) AS total_failed_orders,
+      SUM(CASE WHEN status = 'refunded' THEN 1 ELSE 0 END) AS total_refunded_orders,
+      SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) AS total_cancelled_orders,
+      COALESCE(SUM(CASE WHEN payment_status = 'paid' THEN total_amount ELSE 0 END), 0) AS total_revenue,
+      COALESCE(SUM(CASE WHEN DATE(created_at) = CURRENT_DATE AND payment_status = 'paid' THEN total_amount ELSE 0 END), 0) AS today_revenue,
+      COALESCE(SUM(CASE WHEN DATE_FORMAT(created_at, '%Y-%m') = DATE_FORMAT(CURRENT_DATE, '%Y-%m') AND payment_status = 'paid' THEN total_amount ELSE 0 END), 0) AS month_revenue,
+      SUM(CASE WHEN delivery_method = 'data_bundle' THEN 1 ELSE 0 END) AS total_data_orders,
+      SUM(CASE WHEN delivery_method <> 'data_bundle' THEN 1 ELSE 0 END) AS total_proxy_orders,
+      COALESCE(SUM(CASE WHEN delivery_method = 'data_bundle' AND payment_status = 'paid' THEN total_amount ELSE 0 END), 0) AS total_data_sales,
+      COALESCE(SUM(CASE WHEN delivery_method <> 'data_bundle' AND payment_status = 'paid' THEN total_amount ELSE 0 END), 0) AS total_proxy_sales,
+      SUM(CASE WHEN user_id IS NULL THEN 1 ELSE 0 END) AS total_guest_orders,
+      COUNT(DISTINCT CASE WHEN user_id IS NULL THEN COALESCE(NULLIF(customer_email, ''), NULLIF(refill_email, '')) ELSE NULL END) AS total_guest_customers,
+      COUNT(DISTINCT CASE WHEN user_id IS NOT NULL THEN user_id ELSE NULL END) AS total_active_customers
+     FROM orders`,
+  );
+
+  const [customerRows] = await pool.query(
+    `SELECT
+      COUNT(*) AS total_registered_customers,
       SUM(role = 'admin') AS total_admins
      FROM users`,
   );
 
-  const [referralsRows] = await pool.query(
+  const [productRows] = await pool.query(
     `SELECT
-      COUNT(*) AS total_referrals,
-      SUM(status = 'completed') AS completed_referrals,
-      SUM(status = 'pending') AS pending_referrals
-     FROM referrals`,
+      COUNT(*) AS total_proxy_products
+     FROM products
+     WHERE supports_cd_key = 1 OR supports_account_refill = 1`,
   );
 
-  const [ordersRows] = await pool.query(
+  const [emailRows] = await pool.query(
     `SELECT
-      COUNT(*) AS total_orders,
-      COALESCE(SUM(total_amount), 0) AS total_revenue,
-      SUM(payment_status = 'paid') AS paid_orders
+      COUNT(*) AS total_emails_sent,
+      SUM(status = 'failed') AS total_failed_emails
+     FROM email_logs`,
+  );
+
+  const [topBundlesRows] = await pool.query(
+    `SELECT
+      COALESCE(plan_name, 'Unknown bundle') AS bundle,
+      COUNT(*) AS orders,
+      COALESCE(SUM(total_amount), 0) AS revenue
+     FROM orders
+     WHERE delivery_method = 'data_bundle'
+     GROUP BY bundle
+     ORDER BY orders DESC
+     LIMIT 5`,
+  );
+
+  const [topProxyRows] = await pool.query(
+    `SELECT
+      COALESCE(product_name, 'Unknown product') AS product,
+      COUNT(*) AS orders,
+      COALESCE(SUM(total_amount), 0) AS revenue
+     FROM orders
+     WHERE delivery_method <> 'data_bundle'
+     GROUP BY product
+     ORDER BY orders DESC
+     LIMIT 5`,
+  );
+
+  const [statusRows] = await pool.query(
+    `SELECT
+      status,
+      COUNT(*) AS count
+     FROM orders
+     GROUP BY status`,
+  );
+
+  const [guestRows] = await pool.query(
+    `SELECT
+      SUM(user_id IS NULL) AS guest_orders,
+      SUM(user_id IS NOT NULL) AS registered_orders
      FROM orders`,
   );
 
+  const [revenueByNetworkRows] = await pool.query(
+    `SELECT
+      COALESCE(NULLIF(proxy_type, ''), 'Unknown') AS name,
+      COALESCE(SUM(CASE WHEN payment_status = 'paid' THEN total_amount ELSE 0 END), 0) AS revenue
+     FROM orders
+     WHERE delivery_method = 'data_bundle'
+     GROUP BY name
+     ORDER BY revenue DESC
+     LIMIT 8`,
+  );
+
+  const [revenueByProxyTypeRows] = await pool.query(
+    `SELECT
+      COALESCE(NULLIF(proxy_type, ''), 'Unknown') AS name,
+      COALESCE(SUM(CASE WHEN delivery_method <> 'data_bundle' AND payment_status = 'paid' THEN total_amount ELSE 0 END), 0) AS revenue
+     FROM orders
+     GROUP BY name
+     ORDER BY revenue DESC
+     LIMIT 8`,
+  );
+
+  const [dailySalesRows] = await pool.query(
+    `SELECT
+      DATE(created_at) AS date,
+      COALESCE(SUM(CASE WHEN payment_status = 'paid' THEN total_amount ELSE 0 END), 0) AS revenue,
+      COUNT(*) AS orders
+     FROM orders
+     WHERE created_at >= DATE_SUB(CURRENT_DATE, INTERVAL 13 DAY)
+     GROUP BY DATE(created_at)
+     ORDER BY DATE(created_at)`,
+  );
+
+  const [monthlyRevenueRows] = await pool.query(
+    `SELECT
+      DATE_FORMAT(created_at, '%Y-%m') AS period,
+      COALESCE(SUM(CASE WHEN payment_status = 'paid' THEN total_amount ELSE 0 END), 0) AS revenue
+     FROM orders
+     WHERE created_at >= DATE_FORMAT(DATE_SUB(CURRENT_DATE, INTERVAL 5 MONTH), '%Y-%m-01')
+     GROUP BY period
+     ORDER BY period`,
+  );
+
   return {
-    ...(usersRows as any[])[0],
-    ...(referralsRows as any[])[0],
-    ...(ordersRows as any[])[0],
+    ...(summaryRows as any[])[0],
+    ...(customerRows as any[])[0],
+    ...(productRows as any[])[0],
+    ...(emailRows as any[])[0],
+    top_selling_bundles: topBundlesRows as any[],
+    top_selling_proxy_products: topProxyRows as any[],
+    order_status_distribution: statusRows as any[],
+    guest_vs_registered: [
+      { label: 'Guest', value: Number((guestRows as any[])[0]?.guest_orders ?? 0) },
+      { label: 'Registered', value: Number((guestRows as any[])[0]?.registered_orders ?? 0) },
+    ],
+    revenue_by_network: revenueByNetworkRows as any[],
+    revenue_by_proxy_type: revenueByProxyTypeRows as any[],
+    daily_sales: (dailySalesRows as any[]).map((row) => ({
+      date: String(row.date),
+      revenue: Number(row.revenue ?? 0),
+      orders: Number(row.orders ?? 0),
+    })),
+    monthly_revenue: (monthlyRevenueRows as any[]).map((row) => ({
+      month: String(row.period),
+      revenue: Number(row.revenue ?? 0),
+    })),
   } as any;
 }

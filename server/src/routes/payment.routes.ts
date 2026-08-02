@@ -1,14 +1,13 @@
 import { Router } from 'express';
 import { confirmPaymentHandler, initiatePaymentHandler, paystackWebhookHandler } from '../controllers/payment.controller';
-import { requireAuth } from '../middleware/auth.middleware';
 
 const router = Router();
 
 // Paystack webhook - no auth required (verified by signature)
 router.post('/webhook', paystackWebhookHandler);
 
-// Authenticated payment routes
-router.post('/initiate', requireAuth, initiatePaymentHandler);
-router.post('/confirm', requireAuth, confirmPaymentHandler);
+// Payment routes are shared by guest and authenticated buyers.
+router.post('/initiate', initiatePaymentHandler);
+router.post('/confirm', confirmPaymentHandler);
 
 export default router;

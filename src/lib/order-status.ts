@@ -6,9 +6,10 @@ export type OrderStatus =
   | "delivering"
   | "completed"
   | "cancelled"
-  | "refunded";
+  | "refunded"
+  | "failed";
 
-export type DeliveryMethod = "cd_key" | "account_refill";
+export type DeliveryMethod = "cd_key" | "account_refill" | "data_bundle";
 
 export const ORDER_STATUS_LABEL: Record<OrderStatus, string> = {
   awaiting_payment: "Awaiting Payment",
@@ -19,6 +20,7 @@ export const ORDER_STATUS_LABEL: Record<OrderStatus, string> = {
   completed: "Completed",
   cancelled: "Cancelled",
   refunded: "Refunded",
+  failed: "Failed",
 };
 
 export const ORDER_STATUS_MESSAGE: Record<OrderStatus, string> = {
@@ -28,9 +30,10 @@ export const ORDER_STATUS_MESSAGE: Record<OrderStatus, string> = {
   purchasing_proxy:
     "We have received your payment and are currently purchasing your proxy.",
   delivering: "Your proxy is being delivered right now.",
-  completed: "Your order has been completed. Enjoy your proxy!",
+  completed: "Your order has been completed. Enjoy your service.",
   cancelled: "This order was cancelled.",
   refunded: "This order was refunded.",
+  failed: "There was an issue fulfilling your order. Please contact support.",
 };
 
 /** Ordered timeline shown to customers. */
@@ -55,11 +58,13 @@ export const TIMELINE_LABEL: Record<string, string> = {
 export const DELIVERY_LABEL: Record<DeliveryMethod, string> = {
   cd_key: "CD Key",
   account_refill: "Account Refill",
+  data_bundle: "Data bundle",
 };
 
 export const DELIVERY_ETA: Record<DeliveryMethod, string> = {
   cd_key: "Usually within 2 minutes after payment",
   account_refill: "Usually within 5-7 minutes after payment",
+  data_bundle: "Usually within 5-10 minutes after payment",
 };
 
 export const DELIVERY_DISCLAIMER =

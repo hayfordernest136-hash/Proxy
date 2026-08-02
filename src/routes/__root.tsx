@@ -1,4 +1,4 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+﻿import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   Outlet,
   Link,
@@ -80,17 +80,17 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Brokeflex Data — Premium Proxy Platform" },
+      { title: "BrokeFlex Data - Data Bundles & Proxy Solutions" },
       {
         name: "description",
         content:
-          "Buy residential, mobile, ISP and datacenter proxies with instant CD key delivery or account refill.",
+          "Buy affordable mobile data bundles and reliable proxy solutions in one place. Instant delivery and secure Paystack checkout.",
       },
-      { property: "og:title", content: "Brokeflex Data — Premium Proxy Platform" },
+      { property: "og:title", content: "BrokeFlex Data - Data Bundles & Proxy Solutions" },
       {
         property: "og:description",
         content:
-          "Buy residential, mobile, ISP and datacenter proxies with instant CD key delivery or account refill.",
+          "Affordable mobile data bundles and reliable proxies, with instant delivery and human support.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -106,7 +106,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap",
       },
-      { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
+      { rel: "icon", href: "/logo.png", type: "image/png" },
     ],
   }),
 

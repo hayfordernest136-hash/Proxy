@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
-import { apiFetch, setOnUnauthorized } from "@/lib/api";
+import { apiFetch, registerOnUnauthorized } from "@/lib/api";
+import { useNavigate } from "@tanstack/react-router";
 
 function clearStoredAuthToken() {
   if (typeof window !== "undefined") {
     window.localStorage.removeItem("auth-token");
   }
 }
-import { useNavigate } from "@tanstack/react-router";
 
 export function useSession() {
   const [user, setUser] = useState<any | null | undefined>(undefined);
@@ -29,7 +29,7 @@ export function useSession() {
   };
 
   useEffect(() => {
-    setOnUnauthorized(() => {
+    const unregister = registerOnUnauthorized(() => {
       clearStoredAuthToken();
       setUser(null);
       setLoading(false);
@@ -42,6 +42,8 @@ export function useSession() {
       }
       setLoading(false);
     })();
+
+    return unregister;
   }, []);
 
   return { session: null, user, loading, error, refreshSession };
@@ -55,8 +57,10 @@ export function useAuthRedirect() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    setOnUnauthorized(() => {
+    const unregister = registerOnUnauthorized(() => {
       navigate({ to: "/auth", search: { mode: "login" }, replace: true });
     });
+
+    return unregister;
   }, [navigate]);
 }

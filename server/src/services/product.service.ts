@@ -115,6 +115,14 @@ export async function getProductBySlug(slug: string) {
   return normalizeProduct(product);
 }
 
+export async function getProductById(id: number) {
+  if (!Number.isFinite(id)) return null;
+  const [rows] = await pool.query('SELECT * FROM products WHERE id = ? LIMIT 1', [id]);
+  const product = (rows as ProductRow[])[0];
+  if (!product) return null;
+  return normalizeProduct(product);
+}
+
 export async function getPlansByProductIds(productIds: number[]) {
   if (productIds.length === 0) return [];
   const [rows] = await pool.query(

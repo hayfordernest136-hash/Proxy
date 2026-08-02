@@ -24,14 +24,14 @@ export function verifyToken(token: string) {
 }
 
 export function getAuthToken(req: Request): string | null {
-  const cookieToken = req.cookies?.token;
-  if (typeof cookieToken === 'string' && cookieToken.trim()) {
-    return cookieToken;
-  }
-
   const authorization = req.headers.authorization;
   if (typeof authorization === 'string' && authorization.startsWith('Bearer ')) {
     return authorization.slice(7).trim();
+  }
+
+  const cookieToken = req.cookies?.token;
+  if (typeof cookieToken === 'string' && cookieToken.trim()) {
+    return cookieToken;
   }
 
   return null;

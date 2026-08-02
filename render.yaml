@@ -1,25 +1,27 @@
 services:
   # Frontend - TanStack Start SSR Web Service
   - type: web
-    name: proxyflex-frontend
+    name: brokeflex-data-frontend
     env: node
     region: oregon
     rootDir: .
-    buildCommand: NITRO_PRESET=node-server npm install --include=dev && npm run build
-    startCommand: node dist/server/server.js
+    buildCommand: npm install --include=dev && npm run build
+    startCommand: npm run start
     envVars:
       - key: NODE_ENV
         value: production
-      - key: NITRO_PRESET
-        value: node-server
       - key: VITE_API_BASE
-        value: https://proxyflex.onrender.com
+        value: https://brokeflex-data-api.onrender.com
       - key: VITE_PAYSTACK_PUBLIC_KEY
         sync: false
+      - key: VITE_GOOGLE_CLIENT_ID
+        sync: false
+      - key: VITE_GOOGLE_CALLBACK_URL
+        value: https://brokeflex-data-frontend.onrender.com/auth
 
   # Backend API Web Service
   - type: web
-    name: proxyflex
+    name: brokeflex-data-api
     env: node
     region: oregon
     rootDir: server
@@ -44,8 +46,26 @@ services:
       - key: JWT_SECRET
         sync: false
       - key: FRONTEND_URL
-        value: https://proxyflex-frontend.onrender.com
+        value: https://brokeflex-data-frontend.onrender.com
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_CALLBACK_URL
+        value: https://brokeflex-data-frontend.onrender.com/auth
       - key: PAYSTACK_SECRET_KEY
         sync: false
       - key: PAYSTACK_PUBLIC_KEY
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: MAIL_FROM
+        value: "BrokeFlex <no-reply@brokeflexdata.com>"
+      - key: SUPPORT_EMAIL
+        value: "support@brokeflexdata.com"
+      - key: PAYMENT_EMAIL
+        value: "BrokeFlex Payments <payment@brokeflexdata.com>"
+      - key: ADMIN_FROM_EMAIL
+        value: "BrokeFlex Admin <admin@brokeflexdata.com>"
+      - key: ADMIN_NOTIFICATION_EMAIL
         sync: false

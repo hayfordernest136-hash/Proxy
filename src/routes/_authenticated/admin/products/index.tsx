@@ -166,7 +166,7 @@ function ProductsAdminPage() {
                     const unitLabel = product.pricing_unit === "gb" ? "GB" : "IP";
                     const priceLabel =
                       product.prices && product.prices.length
-                        ? `${formatMoney(Math.min(...product.prices.map((row) => row.price)))} – ${formatMoney(
+                        ? `${formatMoney(Math.min(...product.prices.map((row) => row.price)))} - ${formatMoney(
                             Math.max(...product.prices.map((row) => row.price)),
                           )}`
                         : "No pricing";

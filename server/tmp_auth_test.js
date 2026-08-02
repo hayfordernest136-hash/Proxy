@@ -24,7 +24,7 @@ const fetch = require('node-fetch');
       port: 3306,
       user: 'root',
       password: '',
-      database: 'proxyzone',
+      database: 'brokeflex_data',
     });
 
     const [users] = await conn.query('SELECT * FROM users WHERE email = ? LIMIT 1', [email]);

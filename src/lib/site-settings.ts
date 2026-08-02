@@ -1,4 +1,4 @@
-export type SiteSettings = {
+﻿export type SiteSettings = {
   siteName: string;
   siteTagline: string;
   whatsappNumber: string;
@@ -6,14 +6,14 @@ export type SiteSettings = {
 };
 
 export const DEFAULT_SITE_SETTINGS: SiteSettings = {
-  siteName: "Brokeflex Data",
+  siteName: "BrokeFlex Data",
   siteTagline:
-    "Premium residential, mobile and datacenter proxies delivered fast, with human support and local payment options.",
+    "Affordable data bundles and reliable proxy solutions delivered fast, with human support and local payment options.",
   whatsappNumber: (typeof import.meta !== "undefined" ? import.meta.env.VITE_WHATSAPP_NUMBER : undefined) ?? "",
   defaultCurrency: "GHS",
 };
 
-const STORAGE_KEY = "proxzone-site-settings";
+const STORAGE_KEY = "brokeflex-data-site-settings";
 
 export function readSiteSettings(): SiteSettings {
   if (typeof window === "undefined") {

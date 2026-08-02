@@ -108,6 +108,27 @@ const schemaFixes = [
     column: 'admin_notes',
     ddl: "ALTER TABLE orders ADD COLUMN admin_notes TEXT DEFAULT NULL",
   },
+  {
+    table: 'orders',
+    column: 'fulfillment_reference',
+    ddl: "ALTER TABLE orders ADD COLUMN fulfillment_reference VARCHAR(255) DEFAULT NULL",
+  },
+  // Email notification fields
+  {
+    table: 'orders',
+    column: 'customer_email',
+    ddl: "ALTER TABLE orders ADD COLUMN customer_email VARCHAR(255) DEFAULT NULL",
+  },
+  {
+    table: 'orders',
+    column: 'customer_name',
+    ddl: "ALTER TABLE orders ADD COLUMN customer_name VARCHAR(120) DEFAULT NULL",
+  },
+  {
+    table: 'orders',
+    column: 'order_type',
+    ddl: "ALTER TABLE orders ADD COLUMN order_type VARCHAR(32) DEFAULT 'proxy'",
+  },
 ];
 
 async function ensureSchemaColumnExists(table: string, column: string, ddl: string) {
@@ -125,6 +146,27 @@ async function ensureSchemaColumnExists(table: string, column: string, ddl: stri
       console.log(`Added missing column ${table}.${column}`);
     } catch (error: any) {
       console.warn(`Unable to add missing column ${table}.${column}:`, error.message || error);
+    }
+  }
+}
+
+async function ensureNullableOrderColumns() {
+  const dbName = process.env.DB_NAME;
+  if (!dbName) return;
+
+  for (const column of ['user_id', 'product_id', 'plan_id']) {
+    const [rows] = await pool.query(
+      'SELECT IS_NULLABLE FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? AND COLUMN_NAME = ?',
+      [dbName, 'orders', column],
+    );
+    const isNullable = String((rows as any[])[0]?.IS_NULLABLE ?? 'NO').toUpperCase() === 'YES';
+    if (!isNullable) {
+      try {
+        await pool.query(`ALTER TABLE orders MODIFY COLUMN ${column} BIGINT NULL`);
+        console.log(`Made orders.${column} nullable`);
+      } catch (error: any) {
+        console.warn(`Unable to make orders.${column} nullable:`, error.message || error);
+      }
     }
   }
 }
@@ -154,6 +196,8 @@ export async function runMigrations() {
     await ensureSchemaColumnExists(fix.table, fix.column, fix.ddl);
   }
 
+  await ensureNullableOrderColumns();
+
   // Ensure order_events table exists for timeline/history
   try {
     await pool.query(`
@@ -170,6 +214,47 @@ export async function runMigrations() {
     console.log('Ensured order_events table exists.');
   } catch (e: any) {
     console.warn('Unable to ensure order_events table:', e.message || e);
+  }
+
+  // Ensure email_logs table exists for transactional email audit trail
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS email_logs (
+        id BIGINT PRIMARY KEY AUTO_INCREMENT,
+        email_type VARCHAR(64) NOT NULL,
+        recipient VARCHAR(255) NOT NULL,
+        order_id BIGINT NULL,
+        status VARCHAR(16) NOT NULL DEFAULT 'sent',
+        error_message TEXT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        INDEX (order_id),
+        INDEX (status),
+        INDEX (created_at)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `);
+    console.log('Ensured email_logs table exists.');
+  } catch (e: any) {
+    console.warn('Unable to ensure email_logs table:', e.message || e);
+  }
+
+  // Ensure password_reset_tokens table exists for the forgot/reset password flow
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS password_reset_tokens (
+        id BIGINT PRIMARY KEY AUTO_INCREMENT,
+        user_id BIGINT NOT NULL,
+        token_hash CHAR(64) NOT NULL UNIQUE,
+        expires_at TIMESTAMP NOT NULL,
+        used_at TIMESTAMP NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+        INDEX (user_id),
+        INDEX (expires_at)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `);
+    console.log('Ensured password_reset_tokens table exists.');
+  } catch (e: any) {
+    console.warn('Unable to ensure password_reset_tokens table:', e.message || e);
   }
 
   console.log('Migrations applied (or already present).');

@@ -59,7 +59,7 @@ function AdminSidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: (
     >
       <div className="flex items-center justify-between gap-3 border-b border-border/60 p-4">
         <div className="space-y-1 overflow-hidden">
-          <div className="text-sm font-semibold">ProxZone Admin</div>
+          <div className="text-sm font-semibold">BrokeFlex Data Admin</div>
           {!collapsed ? <p className="text-xs text-muted-foreground">Operations dashboard</p> : null}
         </div>
         <button
@@ -146,7 +146,7 @@ export function AdminLayout({ children }: { children?: ReactNode }) {
         >
           <div className="flex items-center justify-between border-b border-border/60 p-4">
             <div>
-              <p className="text-sm font-semibold">ProxZone Admin</p>
+              <p className="text-sm font-semibold">BrokeFlex Data Admin</p>
               <p className="text-xs text-muted-foreground">Operations dashboard</p>
             </div>
             <button type="button" onClick={() => setMobileOpen(false)} className="rounded-md border border-border/70 p-2">

@@ -13,9 +13,15 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as DataRouteImport } from './routes/data'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SupportRouteImport } from './routes/support'
 import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as DataIndexRouteImport } from './routes/data/index'
+import { Route as DataCartRouteImport } from './routes/data/cart'
+import { Route as DataCheckoutRouteImport } from './routes/data/checkout'
+import { Route as DataTrackRouteImport } from './routes/data/track'
 import { Route as ProductsIndexRouteImport } from './routes/products/index'
 import { Route as ProductsSlugRouteImport } from './routes/products/$slug'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
@@ -27,6 +33,7 @@ import { Route as AuthenticatedAdminCategoriesIndexRouteImport } from './routes/
 import { Route as AuthenticatedAdminCustomersIndexRouteImport } from './routes/_authenticated/admin/customers/index'
 import { Route as AuthenticatedAdminNotificationsIndexRouteImport } from './routes/_authenticated/admin/notifications/index'
 import { Route as AuthenticatedAdminOrdersIndexRouteImport } from './routes/_authenticated/admin/orders/index'
+import { Route as AuthenticatedAdminOrdersOrderIdRouteImport } from './routes/_authenticated/admin/orders/$orderId'
 import { Route as AuthenticatedAdminPaymentsIndexRouteImport } from './routes/_authenticated/admin/payments/index'
 import { Route as AuthenticatedAdminPricingTemplatesIndexRouteImport } from './routes/_authenticated/admin/pricing-templates/index'
 import { Route as AuthenticatedAdminProductsIndexRouteImport } from './routes/_authenticated/admin/products/index'
@@ -56,6 +63,16 @@ const DataRoute = DataRouteImport.update({
   path: '/data',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SupportRoute = SupportRouteImport.update({
   id: '/support',
   path: '/support',
@@ -70,6 +87,26 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const DataIndexRoute = DataIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DataRoute,
+} as any)
+const DataCartRoute = DataCartRouteImport.update({
+  id: '/cart',
+  path: '/cart',
+  getParentRoute: () => DataRoute,
+} as any)
+const DataCheckoutRoute = DataCheckoutRouteImport.update({
+  id: '/checkout',
+  path: '/checkout',
+  getParentRoute: () => DataRoute,
+} as any)
+const DataTrackRoute = DataTrackRouteImport.update({
+  id: '/track',
+  path: '/track',
+  getParentRoute: () => DataRoute,
 } as any)
 const ProductsIndexRoute = ProductsIndexRouteImport.update({
   id: '/products/',
@@ -134,6 +171,12 @@ const AuthenticatedAdminOrdersIndexRoute =
     path: '/orders/',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
+const AuthenticatedAdminOrdersOrderIdRoute =
+  AuthenticatedAdminOrdersOrderIdRouteImport.update({
+    id: '/orders/$orderId',
+    path: '/orders/$orderId',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 const AuthenticatedAdminPaymentsIndexRoute =
   AuthenticatedAdminPaymentsIndexRouteImport.update({
     id: '/payments/',
@@ -192,16 +235,23 @@ const AuthenticatedAdminProductsProductIdEditRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/data': typeof DataRoute
+  '/data': typeof DataRouteWithChildren
+  '/forgot-password': typeof ForgotPasswordRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/support': typeof SupportRoute
   '/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/data/cart': typeof DataCartRoute
+  '/data/checkout': typeof DataCheckoutRoute
+  '/data/track': typeof DataTrackRoute
   '/products/$slug': typeof ProductsSlugRoute
+  '/data/': typeof DataIndexRoute
   '/products/': typeof ProductsIndexRoute
   '/checkout/$orderId': typeof AuthenticatedCheckoutOrderIdRoute
   '/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/orders/': typeof AuthenticatedOrdersIndexRoute
+  '/admin/orders/$orderId': typeof AuthenticatedAdminOrdersOrderIdRoute
   '/admin/products/new': typeof AuthenticatedAdminProductsNewRoute
   '/admin/analytics/': typeof AuthenticatedAdminAnalyticsIndexRoute
   '/admin/categories/': typeof AuthenticatedAdminCategoriesIndexRoute
@@ -220,15 +270,21 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/data': typeof DataRoute
+  '/forgot-password': typeof ForgotPasswordRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/support': typeof SupportRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/data/cart': typeof DataCartRoute
+  '/data/checkout': typeof DataCheckoutRoute
+  '/data/track': typeof DataTrackRoute
   '/products/$slug': typeof ProductsSlugRoute
+  '/data': typeof DataIndexRoute
   '/products': typeof ProductsIndexRoute
   '/checkout/$orderId': typeof AuthenticatedCheckoutOrderIdRoute
   '/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/orders': typeof AuthenticatedOrdersIndexRoute
+  '/admin/orders/$orderId': typeof AuthenticatedAdminOrdersOrderIdRoute
   '/admin/products/new': typeof AuthenticatedAdminProductsNewRoute
   '/admin/analytics': typeof AuthenticatedAdminAnalyticsIndexRoute
   '/admin/categories': typeof AuthenticatedAdminCategoriesIndexRoute
@@ -249,16 +305,23 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
-  '/data': typeof DataRoute
+  '/data': typeof DataRouteWithChildren
+  '/forgot-password': typeof ForgotPasswordRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/support': typeof SupportRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/data/cart': typeof DataCartRoute
+  '/data/checkout': typeof DataCheckoutRoute
+  '/data/track': typeof DataTrackRoute
   '/products/$slug': typeof ProductsSlugRoute
+  '/data/': typeof DataIndexRoute
   '/products/': typeof ProductsIndexRoute
   '/_authenticated/checkout/$orderId': typeof AuthenticatedCheckoutOrderIdRoute
   '/_authenticated/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/orders/': typeof AuthenticatedOrdersIndexRoute
+  '/_authenticated/admin/orders/$orderId': typeof AuthenticatedAdminOrdersOrderIdRoute
   '/_authenticated/admin/products/new': typeof AuthenticatedAdminProductsNewRoute
   '/_authenticated/admin/analytics/': typeof AuthenticatedAdminAnalyticsIndexRoute
   '/_authenticated/admin/categories/': typeof AuthenticatedAdminCategoriesIndexRoute
@@ -280,15 +343,22 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/data'
+    | '/forgot-password'
+    | '/reset-password'
     | '/support'
     | '/admin'
     | '/dashboard'
+    | '/data/cart'
+    | '/data/checkout'
+    | '/data/track'
     | '/products/$slug'
+    | '/data/'
     | '/products/'
     | '/checkout/$orderId'
     | '/orders/$orderId'
     | '/admin/'
     | '/orders/'
+    | '/admin/orders/$orderId'
     | '/admin/products/new'
     | '/admin/analytics/'
     | '/admin/categories/'
@@ -307,15 +377,21 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
-    | '/data'
+    | '/forgot-password'
+    | '/reset-password'
     | '/support'
     | '/dashboard'
+    | '/data/cart'
+    | '/data/checkout'
+    | '/data/track'
     | '/products/$slug'
+    | '/data'
     | '/products'
     | '/checkout/$orderId'
     | '/orders/$orderId'
     | '/admin'
     | '/orders'
+    | '/admin/orders/$orderId'
     | '/admin/products/new'
     | '/admin/analytics'
     | '/admin/categories'
@@ -336,15 +412,22 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/data'
+    | '/forgot-password'
+    | '/reset-password'
     | '/support'
     | '/_authenticated/admin'
     | '/_authenticated/dashboard'
+    | '/data/cart'
+    | '/data/checkout'
+    | '/data/track'
     | '/products/$slug'
+    | '/data/'
     | '/products/'
     | '/_authenticated/checkout/$orderId'
     | '/_authenticated/orders/$orderId'
     | '/_authenticated/admin/'
     | '/_authenticated/orders/'
+    | '/_authenticated/admin/orders/$orderId'
     | '/_authenticated/admin/products/new'
     | '/_authenticated/admin/analytics/'
     | '/_authenticated/admin/categories/'
@@ -365,7 +448,9 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
-  DataRoute: typeof DataRoute
+  DataRoute: typeof DataRouteWithChildren
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   SupportRoute: typeof SupportRoute
   ProductsSlugRoute: typeof ProductsSlugRoute
   ProductsIndexRoute: typeof ProductsIndexRoute
@@ -401,6 +486,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DataRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/support': {
       id: '/support'
       path: '/support'
@@ -421,6 +520,34 @@ declare module '@tanstack/react-router' {
       fullPath: '/dashboard'
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/data/': {
+      id: '/data/'
+      path: '/'
+      fullPath: '/data/'
+      preLoaderRoute: typeof DataIndexRouteImport
+      parentRoute: typeof DataRoute
+    }
+    '/data/cart': {
+      id: '/data/cart'
+      path: '/cart'
+      fullPath: '/data/cart'
+      preLoaderRoute: typeof DataCartRouteImport
+      parentRoute: typeof DataRoute
+    }
+    '/data/checkout': {
+      id: '/data/checkout'
+      path: '/checkout'
+      fullPath: '/data/checkout'
+      preLoaderRoute: typeof DataCheckoutRouteImport
+      parentRoute: typeof DataRoute
+    }
+    '/data/track': {
+      id: '/data/track'
+      path: '/track'
+      fullPath: '/data/track'
+      preLoaderRoute: typeof DataTrackRouteImport
+      parentRoute: typeof DataRoute
     }
     '/products/': {
       id: '/products/'
@@ -499,6 +626,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminOrdersIndexRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/admin/orders/$orderId': {
+      id: '/_authenticated/admin/orders/$orderId'
+      path: '/orders/$orderId'
+      fullPath: '/admin/orders/$orderId'
+      preLoaderRoute: typeof AuthenticatedAdminOrdersOrderIdRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/_authenticated/admin/payments/': {
       id: '/_authenticated/admin/payments/'
       path: '/payments'
@@ -567,6 +701,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
+  AuthenticatedAdminOrdersOrderIdRoute: typeof AuthenticatedAdminOrdersOrderIdRoute
   AuthenticatedAdminProductsNewRoute: typeof AuthenticatedAdminProductsNewRoute
   AuthenticatedAdminAnalyticsIndexRoute: typeof AuthenticatedAdminAnalyticsIndexRoute
   AuthenticatedAdminCategoriesIndexRoute: typeof AuthenticatedAdminCategoriesIndexRoute
@@ -586,6 +721,7 @@ interface AuthenticatedAdminRouteRouteChildren {
 const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren =
   {
     AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
+    AuthenticatedAdminOrdersOrderIdRoute: AuthenticatedAdminOrdersOrderIdRoute,
     AuthenticatedAdminProductsNewRoute: AuthenticatedAdminProductsNewRoute,
     AuthenticatedAdminAnalyticsIndexRoute:
       AuthenticatedAdminAnalyticsIndexRoute,
@@ -633,11 +769,29 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
+interface DataRouteChildren {
+  DataCartRoute: typeof DataCartRoute
+  DataCheckoutRoute: typeof DataCheckoutRoute
+  DataTrackRoute: typeof DataTrackRoute
+  DataIndexRoute: typeof DataIndexRoute
+}
+
+const DataRouteChildren: DataRouteChildren = {
+  DataCartRoute: DataCartRoute,
+  DataCheckoutRoute: DataCheckoutRoute,
+  DataTrackRoute: DataTrackRoute,
+  DataIndexRoute: DataIndexRoute,
+}
+
+const DataRouteWithChildren = DataRoute._addFileChildren(DataRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
-  DataRoute: DataRoute,
+  DataRoute: DataRouteWithChildren,
+  ForgotPasswordRoute: ForgotPasswordRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   SupportRoute: SupportRoute,
   ProductsSlugRoute: ProductsSlugRoute,
   ProductsIndexRoute: ProductsIndexRoute,

@@ -16,7 +16,15 @@ export class ApiError extends Error {
 /**
  * Friendly error messages for common HTTP status codes.
  */
-function getFriendlyMessage(statusCode: number): string {
+function getFriendlyMessage(statusCode: number, requestPath: string): string {
+  const isDataPath = requestPath.includes('/api/data');
+  const outOfStockMessage =
+    'Out of Stock\n\nNo data bundles are available at the moment. Please check back later. We restock regularly and our service is available 24/7.';
+
+  if (isDataPath && (statusCode === 500 || statusCode === 502)) {
+    return outOfStockMessage;
+  }
+
   switch (statusCode) {
     case 400:
       return 'There was a problem with your request. Please check your input and try again.';
@@ -32,8 +40,9 @@ function getFriendlyMessage(statusCode: number): string {
       return 'Too many requests. Please wait a moment and try again.';
     case 500:
     case 502:
-    case 503:
       return 'The server is currently unavailable. Please try again later.';
+    case 503:
+      return outOfStockMessage;
     default:
       return 'Something went wrong. Please try again.';
   }
@@ -41,9 +50,9 @@ function getFriendlyMessage(statusCode: number): string {
 
 /**
  * Handle 401 responses by clearing the session.
- * This function is set by the app to trigger a redirect to login.
+ * Multiple components can register handlers, allowing both session cleanup and redirects.
  */
-let onUnauthorized: (() => void) | null = null;
+const onUnauthorizedHandlers = new Set<() => void>();
 
 function getStoredAuthToken(): string | null {
   if (typeof window === 'undefined') return null;
@@ -56,8 +65,11 @@ function clearStoredAuthToken() {
   }
 }
 
-export function setOnUnauthorized(handler: () => void) {
-  onUnauthorized = handler;
+export function registerOnUnauthorized(handler: () => void) {
+  onUnauthorizedHandlers.add(handler);
+  return () => {
+    onUnauthorizedHandlers.delete(handler);
+  };
 }
 
 export async function apiFetch<T = unknown>(path: string, options?: RequestInit) {
@@ -86,15 +98,23 @@ export async function apiFetch<T = unknown>(path: string, options?: RequestInit)
   // Handle 401 - session expired
   if (response.status === 401) {
     clearStoredAuthToken();
-    onUnauthorized?.();
+    onUnauthorizedHandlers.forEach((handler) => handler());
   }
 
   const text = await response.text();
-  const data = text ? JSON.parse(text) : null;
+  let data: any = null;
+  if (text) {
+    try {
+      data = JSON.parse(text);
+    } catch {
+      data = null;
+    }
+  }
 
   if (!response.ok) {
+    const requestPath = url.startsWith('http') ? new URL(url).pathname : url;
     const message =
-      data?.message || getFriendlyMessage(response.status) || response.statusText || 'Request failed';
+      data?.message || getFriendlyMessage(response.status, requestPath) || response.statusText || 'Request failed';
     throw new ApiError(message, response.status);
   }
 

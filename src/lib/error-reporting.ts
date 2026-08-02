@@ -6,11 +6,11 @@ export function reportError(error: unknown, context: ErrorContext = {}) {
   if (typeof window !== "undefined") {
     // Client-side: log to console and attach route info when available
     // eslint-disable-next-line no-console
-    console.error("ProxZone error:", error, { ...context, path: window.location?.pathname });
+    console.error("BrokeFlex Data error:", error, { ...context, path: window.location?.pathname });
   } else {
     // Server-side: ensure errors are logged
     // eslint-disable-next-line no-console
-    console.error("ProxZone server error:", error, context);
+    console.error("BrokeFlex Data server error:", error, context);
   }
 }
 

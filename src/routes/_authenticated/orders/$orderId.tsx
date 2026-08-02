@@ -1,6 +1,6 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+﻿import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Check, Copy, KeyRound, RefreshCw } from "lucide-react";
+import { Check, Copy, KeyRound, RefreshCw, Wifi } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
   AlertDialog,
@@ -33,9 +33,9 @@ import {
 export const Route = createFileRoute("/_authenticated/orders/$orderId")({
   head: () => ({
     meta: [
-      { title: "Order Details — Brokeflex Data" },
+      { title: "Order Details - BrokeFlex" },
       { name: "description", content: "Live status, timeline and delivery for your proxy order." },
-      { property: "og:title", content: "Order Details — Brokeflex Data" },
+      { property: "og:title", content: "Order Details - BrokeFlex" },
       { property: "og:description", content: "Live status and delivery for your proxy order." },
     ],
   }),
@@ -198,6 +198,19 @@ function OrderDetailPage() {
           </Card>
         ) : null}
 
+        {status === "completed" && delivery === "data_bundle" ? (
+          <Card className="border-success/40 bg-success/10">
+            <CardContent className="p-5">
+              <p className="flex items-center gap-2 text-sm font-medium">
+                <Wifi className="size-4" /> Data bundle delivered.
+              </p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Your data bundle has been delivered. Check the phone number you used during checkout for confirmation.
+              </p>
+            </CardContent>
+          </Card>
+        ) : null}
+
         {order.refill_proof_url ? (
           <Card className="border-border/70">
             <CardContent className="p-5">
@@ -217,7 +230,7 @@ function OrderDetailPage() {
                 {[
                   ["Product", order.product_name],
                   ["Plan", order.plan_name],
-                  ["Proxy type", order.proxy_type ?? "—"],
+                  ["Proxy type", order.proxy_type ?? "-"],
                   ["Quantity", String(order.quantity)],
                   ["Delivery method", DELIVERY_LABEL[delivery]],
                   ["Unit price", formatMoney(order.unit_price, order.currency)],

@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
@@ -130,7 +130,7 @@ function AdminOrdersPage() {
                   {filtered.map((order) => (
                     <TableRow key={order.id}>
                       <TableCell className="font-semibold">#{order.order_number}</TableCell>
-                      <TableCell>{order.refill_email ?? "—"}</TableCell>
+                      <TableCell>{order.refill_email ?? "N/A"}</TableCell>
                       <TableCell>{order.product_name}</TableCell>
                       <TableCell>{DELIVERY_LABEL[order.delivery_method]}</TableCell>
                       <TableCell>{formatMoney(order.total_amount, order.currency)}</TableCell>
@@ -141,7 +141,11 @@ function AdminOrdersPage() {
                       </TableCell>
                       <TableCell className="text-muted-foreground">{formatDate(order.created_at)}</TableCell>
                       <TableCell className="text-right">
-                        <Button size="sm" variant="secondary">Open</Button>
+                        <Button size="sm" variant="secondary" asChild>
+                          <Link to="/admin/orders/$orderId" params={{ orderId: order.id }}>
+                            Open
+                          </Link>
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))}

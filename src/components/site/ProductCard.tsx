@@ -19,17 +19,6 @@ export type ProductCardData = {
   currency?: string;
 };
 
-function renderDescriptionPreview(text: string) {
-  const lines = text.split(/\r?\n/);
-
-  return lines.map((line, lineIndex) => (
-    <span key={`${line}-${lineIndex}`} className="block whitespace-pre-wrap break-words">
-      {line}
-      {lineIndex < lines.length - 1 ? <br /> : null}
-    </span>
-  ));
-}
-
 export function ProductCard({ product }: { product: ProductCardData }) {
   const unitLabel = product.pricing_unit === "gb" ? "GB pricing" : "IP pricing";
 
@@ -58,9 +47,6 @@ export function ProductCard({ product }: { product: ProductCardData }) {
       <CardContent className="space-y-3 p-3 sm:space-y-4 sm:p-5">
         <div>
           <h3 className="text-sm font-semibold tracking-tight sm:text-lg">{product.name}</h3>
-          <div className="mt-1 text-[11px] leading-5 text-muted-foreground sm:text-sm">
-            {renderDescriptionPreview(product.description)}
-          </div>
         </div>
 
         <div className="flex flex-wrap gap-2 text-[10px] text-muted-foreground sm:gap-3 sm:text-xs">
@@ -98,3 +84,4 @@ export function ProductCard({ product }: { product: ProductCardData }) {
     </Card>
   );
 }
+

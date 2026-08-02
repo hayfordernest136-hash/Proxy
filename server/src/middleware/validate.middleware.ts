@@ -13,6 +13,10 @@ function sanitizeString(value: string): string {
 /**
  * Sanitize an object recursively.
  */
+function isSensitiveField(key: string) {
+  return /password|token|secret|credential/i.test(key);
+}
+
 function sanitizeObject(obj: any): any {
   if (typeof obj === 'string') {
     return sanitizeString(obj);
@@ -23,7 +27,11 @@ function sanitizeObject(obj: any): any {
   if (obj && typeof obj === 'object') {
     const sanitized: Record<string, any> = {};
     for (const [key, value] of Object.entries(obj)) {
-      sanitized[key] = sanitizeObject(value);
+      if (isSensitiveField(key) && typeof value === 'string') {
+        sanitized[key] = value;
+      } else {
+        sanitized[key] = sanitizeObject(value);
+      }
     }
     return sanitized;
   }
@@ -74,8 +82,19 @@ export function isValidEmail(email: string): boolean {
 }
 
 /**
- * Validate password strength (min 6 chars).
+ * Validate password strength.
+ * Minimum requirements:
+ *  - At least 8 characters
+ *  - At least one uppercase letter
+ *  - At least one lowercase letter
+ *  - At least one number
+ *  - Special characters are recommended but not required.
  */
 export function isValidPassword(password: string): boolean {
-  return password.length >= 6;
+  return (
+    password.length >= 8 &&
+    /[A-Z]/.test(password) &&
+    /[a-z]/.test(password) &&
+    /[0-9]/.test(password)
+  );
 }
