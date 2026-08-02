@@ -166,6 +166,7 @@ export async function getAdminDashboardStats() {
       COUNT(*) AS total_orders,
       SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) AS total_completed_orders,
       SUM(CASE WHEN status = 'processing' THEN 1 ELSE 0 END) AS total_processing_orders,
+      SUM(CASE WHEN status = 'paid' THEN 1 ELSE 0 END) AS total_paid_orders,
       SUM(CASE WHEN status IN ('awaiting_payment', 'paid', 'purchasing_proxy', 'delivering') THEN 1 ELSE 0 END) AS total_pending_orders,
       SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) AS total_failed_orders,
       SUM(CASE WHEN status = 'refunded' THEN 1 ELSE 0 END) AS total_refunded_orders,

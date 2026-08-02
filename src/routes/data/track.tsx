@@ -259,13 +259,11 @@ function DataTrackPage() {
   const [copied, setCopied] = useState(false);
   const [animatedProgress, setAnimatedProgress] = useState(0);
 
+  // Trigger progress animation whenever the target changes.
   useEffect(() => {
     const targetProgress = result ? Math.round((deliveryStep / DELIVERY_STEPS.length) * 100) : 0;
-    const frame = window.requestAnimationFrame(() => {
-      setAnimatedProgress(targetProgress);
-    });
-
-    return () => window.cancelAnimationFrame(frame);
+    // Set animatedProgress to target; CSS transition will animate the width.
+    setAnimatedProgress(targetProgress);
   }, [deliveryStep, result?.orderId, result?.deliveryStatus]);
 
   async function copyOrderId() {
@@ -355,6 +353,38 @@ function DataTrackPage() {
 
   return (
     <SiteLayout>
+      {/* Custom animations for the timeline */}
+      <style>{`
+        @keyframes pop-in {
+          0% { transform: scale(1); }
+          50% { transform: scale(1.3); }
+          100% { transform: scale(1.1); }
+        }
+        @keyframes check-in {
+          0% { transform: scale(0); opacity: 0; }
+          100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes pulse-glow {
+          0%, 100% { 
+            transform: scale(1.04);
+            box-shadow: 0 0 0 8px rgba(16,185,129,0.15);
+          }
+          50% { 
+            transform: scale(1.08);
+            box-shadow: 0 0 0 16px rgba(16,185,129,0.05);
+          }
+        }
+        .completed-circle {
+          animation: pop-in 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+        .current-circle {
+          animation: pulse-glow 2s ease-in-out infinite;
+        }
+        .check-icon {
+          animation: check-in 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+      `}</style>
+
       <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
         <div className="mb-6 flex items-center justify-between gap-4">
           <div>
@@ -420,7 +450,7 @@ function DataTrackPage() {
           <Card className="border-border/70 bg-card/90">
             <CardContent className="p-6">
               {result ? (
-                // ========== REDESIGNED UI ==========
+                // ========== REDESIGNED UI WITH ANIMATIONS ==========
                 <div className="space-y-6">
                   {/* Animated status timeline */}
                   <div className="rounded-2xl bg-muted/30 p-4 ring-1 ring-border/70 sm:p-5">
@@ -450,13 +480,15 @@ function DataTrackPage() {
                     </div>
 
                     <div className="relative mt-2">
+                      {/* Animated progress line */}
                       <div className="absolute left-4 right-4 top-5 h-1.5 overflow-hidden rounded-full bg-border/90 sm:left-5 sm:right-5">
                         <div
-                          className={"h-full rounded-full bg-gradient-to-r from-emerald-500 via-emerald-500 to-emerald-400 transition-[width] duration-700 ease-out "}
+                          className="h-full rounded-full bg-gradient-to-r from-emerald-500 via-emerald-500 to-emerald-400 transition-[width] duration-700 ease-out"
                           style={{ width: `${animatedProgress}%` }}
                         />
                       </div>
 
+                      {/* Step circles */}
                       <div className="relative z-10 grid grid-cols-4 gap-2 sm:gap-3">
                         {DELIVERY_STEPS.map((step, index) => {
                           const stepNumber = index + 1;
@@ -468,23 +500,16 @@ function DataTrackPage() {
                             <div key={step.label} className="flex flex-col items-center text-center">
                               <div
                                 className={[
-                                  "relative flex h-10 w-10 items-center justify-center rounded-full border-2 transition-all duration-500 ease-out",
+                                  "relative flex h-10 w-10 items-center justify-center rounded-full border-2 transition-colors duration-500",
                                   isCompleted
-                                    ? "scale-110 border-emerald-500 bg-emerald-500 text-white shadow-[0_0_0_6px_rgba(16,185,129,0.12)]"
+                                    ? "border-emerald-500 bg-emerald-500 text-white shadow-[0_0_0_6px_rgba(16,185,129,0.12)] completed-circle"
                                     : isCurrent
-                                      ? "animate-pulse border-emerald-500 bg-white text-emerald-600 shadow-[0_0_0_8px_rgba(16,185,129,0.12)] dark:bg-slate-950"
+                                      ? "border-emerald-500 bg-white text-emerald-600 shadow-[0_0_0_8px_rgba(16,185,129,0.12)] dark:bg-slate-950 current-circle"
                                       : "border-border bg-muted text-muted-foreground",
                                 ].join(" ")}
-                                style={{
-                                  transform: isCompleted ? "scale(1.1)" : isCurrent ? "scale(1.04)" : "scale(1)",
-                                  transitionTimingFunction: "cubic-bezier(0.22, 1, 0.36, 1)",
-                                }}
                               >
                                 {isCompleted ? (
-                                  <Check
-                                    className="h-4 w-4 transition-transform duration-300 ease-out"
-                                    style={{ transform: "scale(1.05)" }}
-                                  />
+                                  <Check className="h-4 w-4 check-icon" />
                                 ) : (
                                   <step.icon className={"h-4 w-4 " + (isCurrent ? "text-emerald-600" : "text-current")} />
                                 )}
