@@ -149,6 +149,24 @@ function getDeliveryStep(deliveryStatus: string): number {
   return 1;
 }
 
+function shouldShowFulfillmentDetails(result: DataTrackingResult) {
+  const fulfillmentStatus = (result.fulfillmentStatus || "").toLowerCase();
+  const deliveryStatus = (result.deliveryStatus || "").toLowerCase();
+  const orderStatus = (result.status || "").toLowerCase();
+
+  const hasDetails = Boolean(
+    result.fulfillmentReference || result.fulfillmentMessage || result.fulfillmentStatus,
+  );
+
+  if (!hasDetails) return false;
+
+  return [fulfillmentStatus, deliveryStatus, orderStatus].some((value) =>
+    ["completed", "delivered", "fulfilled", "success", "failed", "cancelled", "refunded", "error"].some((term) =>
+      value.includes(term),
+    ),
+  );
+}
+
 function formatDate(value: string | undefined) {
   if (!value) return "-";
   const date = new Date(value);
@@ -510,13 +528,11 @@ function DataTrackPage() {
                     </div>
                   </div>
 
-                  {/* Rema (optional) */}
-                  {(result.fulfillmentReference ||
-                    result.fulfillmentStatus ||
-                    result.fulfillmentMessage) && (
+                  {/* Rema data details (only once the provider has a real outcome) */}
+                  {shouldShowFulfillmentDetails(result) && (
                     <div className="rounded-xl border border-border/60 bg-muted/20 p-3">
                       <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                        Fulfilment details
+                        Rema data details
                       </p>
                       <div className="mt-1 space-y-1 text-sm">
                         {result.fulfillmentReference && (
