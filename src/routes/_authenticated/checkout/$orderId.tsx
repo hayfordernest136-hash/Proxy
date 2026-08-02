@@ -77,7 +77,11 @@ function CheckoutPage() {
 
       if (response.sandbox) {
         toast.success("Sandbox payment initiated. Confirming order as paid.");
-        navigate({ to: "/orders/$orderId", params: { orderId } });
+        navigate({
+          to: "/payment/success/$orderId",
+          params: { orderId },
+          search: { reference: response.reference },
+        });
         return;
       }
 
@@ -111,7 +115,11 @@ function CheckoutPage() {
           body: JSON.stringify({ orderId, reference }),
         });
         toast.success("Payment confirmed - fulfillment has started.");
-        navigate({ to: "/orders/$orderId", params: { orderId } });
+        navigate({
+          to: "/payment/success/$orderId",
+          params: { orderId },
+          search: { reference: reference ?? undefined },
+        });
       } catch (e) {
         toast.error(e instanceof Error ? e.message : "Unable to confirm payment.");
       } finally {

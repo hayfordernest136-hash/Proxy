@@ -397,11 +397,59 @@ async function fetchRemaOrderStatus(reference: string) {
       status: String(data?.status ?? payload?.status ?? "").trim(),
       reference: String(data?.reference ?? payload?.reference ?? "").trim(),
       message: String(payload?.message ?? data?.message ?? "").trim(),
+      estimatedTime: extractEstimatedTime(data) ?? extractEstimatedTime(payload),
     };
   } catch (error) {
     console.error("Failed to fetch Rema order status:", error);
     return null;
   }
+}
+
+function extractEstimatedTime(payload: any): string | null {
+  const candidateValues = [
+    payload?.estimated_time,
+    payload?.eta,
+    payload?.estimatedTime,
+    payload?.estimated_delivery,
+    payload?.estimated_delivery_time,
+    payload?.estimated_delivery_time_text,
+    payload?.expected_delivery_time,
+    payload?.delivery_eta,
+    payload?.data?.estimated_time,
+    payload?.data?.eta,
+    payload?.data?.estimatedTime,
+    payload?.data?.estimated_delivery,
+    payload?.data?.estimated_delivery_time,
+    payload?.result?.estimated_time,
+    payload?.result?.eta,
+    payload?.result?.estimatedTime,
+    payload?.result?.estimated_delivery,
+    payload?.result?.estimated_delivery_time,
+    payload?.response?.estimated_time,
+    payload?.response?.eta,
+    payload?.response?.estimatedTime,
+    payload?.response?.estimated_delivery,
+    payload?.response?.estimated_delivery_time,
+  ];
+
+  for (const value of candidateValues) {
+    if (typeof value === "string") {
+      const trimmed = value.trim();
+      if (trimmed) return trimmed;
+    }
+    if (typeof value === "number" && Number.isFinite(value)) {
+      return String(value);
+    }
+    if (value && typeof value === "object") {
+      const nested = (value as any).value ?? (value as any).text ?? (value as any).label;
+      if (typeof nested === "string") {
+        const trimmed = nested.trim();
+        if (trimmed) return trimmed;
+      }
+    }
+  }
+
+  return null;
 }
 
 function deriveDisplayStatus(order: OrderRow) {
@@ -600,7 +648,7 @@ export async function trackDataOrderHandler(req: Request, res: Response) {
       });
     }
 
-    let remaStatusInfo: { status: string; reference: string; message: string } | null = null;
+    let remaStatusInfo: { status: string; reference: string; message: string; estimatedTime?: string | null } | null = null;
     let remaReference = String(order.fulfillment_reference || "").trim();
     if (!remaReference) {
       const [logRows] = await pool.query(
@@ -657,6 +705,7 @@ export async function trackDataOrderHandler(req: Request, res: Response) {
       fulfillmentReference,
       fulfillmentStatus,
       fulfillmentMessage,
+      estimatedTime: remaStatusInfo?.estimatedTime || undefined,
     };
 
     return res.json({ ok: true, order: responsePayload });

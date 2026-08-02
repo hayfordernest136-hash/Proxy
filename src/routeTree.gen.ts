@@ -28,6 +28,7 @@ import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authentic
 import { Route as AuthenticatedCheckoutOrderIdRouteImport } from './routes/_authenticated/checkout/$orderId'
 import { Route as AuthenticatedOrdersIndexRouteImport } from './routes/_authenticated/orders/index'
 import { Route as AuthenticatedOrdersOrderIdRouteImport } from './routes/_authenticated/orders/$orderId'
+import { Route as PaymentSuccessOrderIdRouteImport } from './routes/payment/success/$orderId'
 import { Route as AuthenticatedAdminAnalyticsIndexRouteImport } from './routes/_authenticated/admin/analytics/index'
 import { Route as AuthenticatedAdminCategoriesIndexRouteImport } from './routes/_authenticated/admin/categories/index'
 import { Route as AuthenticatedAdminCustomersIndexRouteImport } from './routes/_authenticated/admin/customers/index'
@@ -141,6 +142,11 @@ const AuthenticatedOrdersOrderIdRoute =
     path: '/orders/$orderId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const PaymentSuccessOrderIdRoute = PaymentSuccessOrderIdRouteImport.update({
+  id: '/payment/success/$orderId',
+  path: '/payment/success/$orderId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedAdminAnalyticsIndexRoute =
   AuthenticatedAdminAnalyticsIndexRouteImport.update({
     id: '/analytics/',
@@ -249,6 +255,7 @@ export interface FileRoutesByFullPath {
   '/products/': typeof ProductsIndexRoute
   '/checkout/$orderId': typeof AuthenticatedCheckoutOrderIdRoute
   '/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
+  '/payment/success/$orderId': typeof PaymentSuccessOrderIdRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/orders/': typeof AuthenticatedOrdersIndexRoute
   '/admin/orders/$orderId': typeof AuthenticatedAdminOrdersOrderIdRoute
@@ -282,6 +289,7 @@ export interface FileRoutesByTo {
   '/products': typeof ProductsIndexRoute
   '/checkout/$orderId': typeof AuthenticatedCheckoutOrderIdRoute
   '/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
+  '/payment/success/$orderId': typeof PaymentSuccessOrderIdRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/orders': typeof AuthenticatedOrdersIndexRoute
   '/admin/orders/$orderId': typeof AuthenticatedAdminOrdersOrderIdRoute
@@ -319,6 +327,7 @@ export interface FileRoutesById {
   '/products/': typeof ProductsIndexRoute
   '/_authenticated/checkout/$orderId': typeof AuthenticatedCheckoutOrderIdRoute
   '/_authenticated/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
+  '/payment/success/$orderId': typeof PaymentSuccessOrderIdRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/orders/': typeof AuthenticatedOrdersIndexRoute
   '/_authenticated/admin/orders/$orderId': typeof AuthenticatedAdminOrdersOrderIdRoute
@@ -356,6 +365,7 @@ export interface FileRouteTypes {
     | '/products/'
     | '/checkout/$orderId'
     | '/orders/$orderId'
+    | '/payment/success/$orderId'
     | '/admin/'
     | '/orders/'
     | '/admin/orders/$orderId'
@@ -389,6 +399,7 @@ export interface FileRouteTypes {
     | '/products'
     | '/checkout/$orderId'
     | '/orders/$orderId'
+    | '/payment/success/$orderId'
     | '/admin'
     | '/orders'
     | '/admin/orders/$orderId'
@@ -425,6 +436,7 @@ export interface FileRouteTypes {
     | '/products/'
     | '/_authenticated/checkout/$orderId'
     | '/_authenticated/orders/$orderId'
+    | '/payment/success/$orderId'
     | '/_authenticated/admin/'
     | '/_authenticated/orders/'
     | '/_authenticated/admin/orders/$orderId'
@@ -454,6 +466,7 @@ export interface RootRouteChildren {
   SupportRoute: typeof SupportRoute
   ProductsSlugRoute: typeof ProductsSlugRoute
   ProductsIndexRoute: typeof ProductsIndexRoute
+  PaymentSuccessOrderIdRoute: typeof PaymentSuccessOrderIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -590,6 +603,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/orders/$orderId'
       preLoaderRoute: typeof AuthenticatedOrdersOrderIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/payment/success/$orderId': {
+      id: '/payment/success/$orderId'
+      path: '/payment/success/$orderId'
+      fullPath: '/payment/success/$orderId'
+      preLoaderRoute: typeof PaymentSuccessOrderIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/admin/analytics/': {
       id: '/_authenticated/admin/analytics/'
@@ -795,6 +815,7 @@ const rootRouteChildren: RootRouteChildren = {
   SupportRoute: SupportRoute,
   ProductsSlugRoute: ProductsSlugRoute,
   ProductsIndexRoute: ProductsIndexRoute,
+  PaymentSuccessOrderIdRoute: PaymentSuccessOrderIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

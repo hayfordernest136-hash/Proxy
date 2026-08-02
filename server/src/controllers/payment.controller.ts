@@ -255,6 +255,62 @@ function parseRemaPurchaseResponse(payload: any) {
   return { success, message, reference };
 }
 
+function parseConfirmationMetadata(order: OrderRow) {
+  if (!order.refill_notes) return null;
+
+  try {
+    const parsed = JSON.parse(order.refill_notes);
+    if (parsed && typeof parsed === "object") {
+      return parsed as Record<string, unknown>;
+    }
+  } catch {
+    return null;
+  }
+
+  return null;
+}
+
+function sanitizeOrderForConfirmation(order: OrderRow) {
+  const metadata = parseConfirmationMetadata(order);
+
+  return {
+    id: order.id,
+    order_number: order.order_number,
+    product_name: order.product_name,
+    plan_name: order.plan_name,
+    proxy_type: order.proxy_type,
+    quantity: order.quantity,
+    unit_price: order.unit_price,
+    total_amount: order.total_amount,
+    payment_total_amount: order.payment_total_amount,
+    currency: order.currency,
+    delivery_method: order.delivery_method,
+    order_type: order.order_type,
+    status: order.status,
+    payment_status: order.payment_status,
+    payment_reference: order.payment_reference,
+    delivery_status: order.delivery_status,
+    fulfillment_reference: order.fulfillment_reference,
+    customer_name: order.customer_name || (metadata?.customer_name as string | undefined) || null,
+    customer_email: order.customer_email || (metadata?.customer_email as string | undefined) || null,
+    refill_email: order.refill_email,
+    refill_password: order.refill_password,
+    refill_notes: order.refill_notes,
+    cd_key: order.cd_key,
+    admin_notes: order.admin_notes,
+    created_at: order.created_at,
+    updated_at: order.updated_at,
+    data_metadata: {
+      contact_number: (metadata?.contact_number as string | undefined) || null,
+      delivery_number: (metadata?.delivery_number as string | undefined) || null,
+      network: (metadata?.network as string | undefined) || null,
+      bundle: (metadata?.bundle as string | undefined) || null,
+    },
+    payment_method: order.payment_provider === "sandbox" ? "Sandbox" : "Paystack",
+    is_guest: order.user_id === null,
+  };
+}
+
 function getOrderCustomerEmail(order: OrderRow) {
   if (order.refill_email) return String(order.refill_email).trim();
 
@@ -693,6 +749,41 @@ export async function initiatePaymentHandler(req: Request, res: Response) {
   } catch (error) {
     console.error("Payment initiation failed:", error);
     return res.status(500).json({ message: "Unable to initialize payment" });
+  }
+}
+
+export async function getOrderConfirmationHandler(req: Request, res: Response) {
+  try {
+    const orderId = Number(req.params.orderId);
+    const reference = String(req.query.reference || "").trim();
+
+    if (!Number.isFinite(orderId) || orderId <= 0) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    const order = await getOrderById(orderId);
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    if (order.payment_status !== "paid") {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    const authenticatedUserId = Number((req as any).userId ?? 0) || null;
+    const ownsOrder =
+      authenticatedUserId !== null && order.user_id !== null && Number(order.user_id) === authenticatedUserId;
+    const guestReferenceMatches =
+      order.user_id === null && Boolean(reference) && order.payment_reference === reference;
+
+    if (!ownsOrder && !guestReferenceMatches) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    return res.json(sanitizeOrderForConfirmation(order));
+  } catch (error) {
+    console.error("Failed to load order confirmation:", error);
+    return res.status(500).json({ message: "Unable to load order confirmation" });
   }
 }
 

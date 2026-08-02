@@ -48,6 +48,7 @@ type DataTrackingResult = {
   fulfillmentReference?: string;
   fulfillmentStatus?: string;
   fulfillmentMessage?: string;
+  estimatedTime?: string;
 };
 
 type StatusTone = {
@@ -155,7 +156,10 @@ function shouldShowFulfillmentDetails(result: DataTrackingResult) {
   const orderStatus = (result.status || "").toLowerCase();
 
   const hasDetails = Boolean(
-    result.fulfillmentReference || result.fulfillmentMessage || result.fulfillmentStatus,
+    result.fulfillmentReference ||
+      result.fulfillmentMessage ||
+      result.fulfillmentStatus ||
+      result.estimatedTime,
   );
 
   if (!hasDetails) return false;
@@ -551,6 +555,12 @@ function DataTrackPage() {
                           <p>
                             <span className="text-muted-foreground">Notes:</span>{" "}
                             {result.fulfillmentMessage}
+                          </p>
+                        )}
+                        {result.estimatedTime && (
+                          <p>
+                            <span className="text-muted-foreground">Estimated time:</span>{" "}
+                            {result.estimatedTime}
                           </p>
                         )}
                       </div>

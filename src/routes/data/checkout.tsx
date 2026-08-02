@@ -130,7 +130,11 @@ function DataCheckoutPage() {
       if (payment.sandbox) {
         toast.success("Sandbox payment initiated. Your data order is now queued.");
         clearDataCartItems();
-        navigate({ to: "/orders/$orderId", params: { orderId: created.id } });
+        navigate({
+          to: "/payment/success/$orderId",
+          params: { orderId: created.id },
+          search: { reference: payment.reference },
+        });
         return;
       }
 
@@ -164,11 +168,10 @@ function DataCheckoutPage() {
           throw new Error("Unable to confirm payment.");
         }
 
-        const order = await apiFetch<any>(`/api/orders/${orderId}`);
-        const formattedOrderId = formatOrderReference(order.order_number);
         navigate({
-          to: "/data/track",
-          search: { orderId: formattedOrderId, contactNumber: contactNumber.trim() },
+          to: "/payment/success/$orderId",
+          params: { orderId: String(orderId) },
+          search: { reference: redirectReference || undefined },
         });
       } catch (error) {
         setConfirmError(error instanceof Error ? error.message : "Unable to confirm payment.");
