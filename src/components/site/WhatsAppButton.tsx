@@ -9,13 +9,14 @@ import { readSiteSettings } from "@/lib/site-settings";
  */
 
 const WHATSAPP_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER as string | undefined;
+const DEFAULT_WHATSAPP_LINK = "https://chat.whatsapp.com/Gt085DIqhFK1BzG8HbtPYn?s=sw&p=i&ilr=0";
 
 export function WhatsAppButton() {
   const { whatsappNumber } = readSiteSettings();
   const resolvedWhatsAppNumber = whatsappNumber || WHATSAPP_NUMBER;
   const WHATSAPP_LINK = resolvedWhatsAppNumber
     ? `https://wa.me/${resolvedWhatsAppNumber}`
-    : undefined;
+    : DEFAULT_WHATSAPP_LINK;
 
   if (!WHATSAPP_LINK) return null;
 
