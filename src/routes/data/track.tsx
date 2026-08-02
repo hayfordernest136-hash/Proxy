@@ -150,31 +150,6 @@ function getDeliveryStep(deliveryStatus: string): number {
   return 1;
 }
 
-function shouldShowFulfillmentDetails(result: DataTrackingResult) {
-  const fulfillmentStatus = (result.fulfillmentStatus || "").toLowerCase();
-  const deliveryStatus = (result.deliveryStatus || "").toLowerCase();
-  const orderStatus = (result.status || "").toLowerCase();
-
-  const hasDetails = Boolean(
-    result.fulfillmentReference ||
-      result.fulfillmentMessage ||
-      result.fulfillmentStatus ||
-      result.estimatedTime,
-  );
-
-  if (!hasDetails) return false;
-
-  if (result.estimatedTime) {
-    return true;
-  }
-
-  return [fulfillmentStatus, deliveryStatus, orderStatus].some((value) =>
-    ["completed", "delivered", "fulfilled", "success", "failed", "cancelled", "refunded", "error"].some((term) =>
-      value.includes(term),
-    ),
-  );
-}
-
 function formatDate(value: string | undefined) {
   if (!value) return "-";
   const date = new Date(value);
@@ -215,6 +190,7 @@ function ProgressRing({ value, className }: { value: number; className?: string 
           className={className ?? "stroke-emerald-500"}
           strokeDasharray={circumference}
           strokeDashoffset={offset}
+          style={{ transition: "stroke-dashoffset 500ms ease-out" }}
         />
       </svg>
       <span className="absolute text-xs font-bold tabular-nums">{Math.round(clamped)}%</span>
@@ -438,10 +414,14 @@ function DataTrackPage() {
                 <div className="space-y-6">
                   {/* Status Header – compact with progress bar */}
                   <div className="rounded-2xl bg-muted/30 p-5 ring-1 ring-border/70">
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between gap-4">
                       <div className="flex items-center gap-4">
-                        <div className="rounded-full bg-background p-2.5 shadow-sm ring-1 ring-border/60">
-                          <StatusIcon className={"size-6 " + accent.icon} />
+                        <div className="relative grid place-items-center rounded-full bg-background p-2.5 shadow-sm ring-1 ring-border/60">
+                          <ProgressRing
+                            value={Math.round((deliveryStep / DELIVERY_STEPS.length) * 100)}
+                            className={accent.ring}
+                          />
+                          <StatusIcon className={"absolute size-5 " + accent.icon} />
                         </div>
                         <div>
                           <p className="text-sm font-semibold text-foreground">{result.status}</p>
@@ -464,13 +444,16 @@ function DataTrackPage() {
                       </div>
                     </div>
                     {/* Progress bar – moves based on deliveryStep */}
-                    <div className="mt-3 h-1.5 w-full rounded-full bg-border">
+                    <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-border">
                       <div
                         className={
-                          "h-full rounded-full transition-all duration-500 ease-out " +
+                          "h-full rounded-full transition-[width] duration-500 ease-out " +
                           accent.progress
                         }
-                        style={{ width: `${(deliveryStep / DELIVERY_STEPS.length) * 100}%` }}
+                        style={{
+                          width: `${(deliveryStep / DELIVERY_STEPS.length) * 100}%`,
+                          transitionTimingFunction: "ease-out",
+                        }}
                       />
                     </div>
                   </div>
@@ -535,41 +518,6 @@ function DataTrackPage() {
                       <p className="mt-1 text-sm font-bold">{result.contactNumber || "—"}</p>
                     </div>
                   </div>
-
-                  {/* Rema data details (only once the provider has a real outcome) */}
-                  {shouldShowFulfillmentDetails(result) && (
-                    <div className="rounded-xl border border-border/60 bg-muted/20 p-3">
-                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                        Rema data details
-                      </p>
-                      <div className="mt-1 space-y-1 text-sm">
-                        {result.fulfillmentReference && (
-                          <p>
-                            <span className="text-muted-foreground">Reference:</span>{" "}
-                            {result.fulfillmentReference}
-                          </p>
-                        )}
-                        {result.fulfillmentStatus && (
-                          <p>
-                            <span className="text-muted-foreground">Status:</span>{" "}
-                            {result.fulfillmentStatus}
-                          </p>
-                        )}
-                        {result.fulfillmentMessage && (
-                          <p>
-                            <span className="text-muted-foreground">Notes:</span>{" "}
-                            {result.fulfillmentMessage}
-                          </p>
-                        )}
-                        {result.estimatedTime && (
-                          <p>
-                            <span className="text-muted-foreground">Estimated time:</span>{" "}
-                            {result.estimatedTime}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  )}
 
                   {/* Timestamps */}
                   <div className="flex flex-wrap justify-between gap-2 rounded-xl border border-border/60 bg-muted/20 p-3 text-xs text-muted-foreground">
