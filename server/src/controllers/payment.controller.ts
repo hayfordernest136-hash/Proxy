@@ -500,7 +500,33 @@ async function finalizeDataOrder(
     status?: "completed" | "processing" | "failed";
   },
 ) {
+  const hasExplicitDeliveryConfirmation = /delivered|delivery confirmed|successfully delivered/i.test(
+    fulfillment.reason || "",
+  );
+
   if (fulfillment.status === "completed" || fulfillment.ok) {
+    if (!hasExplicitDeliveryConfirmation) {
+      await updateOrder(order.id, {
+        status: "processing",
+        delivery_status: "pending",
+        fulfillment_reference: fulfillment.reference ?? null,
+      });
+      await createOrderEvent(
+        order.id,
+        "processing",
+        `Data fulfilment is awaiting provider confirmation: ${fulfillment.reason}`,
+      );
+      if (order.user_id !== null) {
+        await createNotification(
+          order.user_id,
+          order.id,
+          `Data order still processing for #${order.order_number}`,
+          fulfillment.reason || "The provider is still confirming delivery.",
+        );
+      }
+      return { fulfilled: false, status: "processing" as const };
+    }
+
     await updateOrder(order.id, {
       status: "completed",
       delivery_status: "delivered",

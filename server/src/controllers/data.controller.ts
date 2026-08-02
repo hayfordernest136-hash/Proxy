@@ -406,50 +406,65 @@ async function fetchRemaOrderStatus(reference: string) {
 }
 
 function extractEstimatedTime(payload: any): string | null {
-  const candidateValues = [
-    payload?.estimated_time,
-    payload?.eta,
-    payload?.estimatedTime,
-    payload?.estimated_delivery,
-    payload?.estimated_delivery_time,
-    payload?.estimated_delivery_time_text,
-    payload?.expected_delivery_time,
-    payload?.delivery_eta,
-    payload?.data?.estimated_time,
-    payload?.data?.eta,
-    payload?.data?.estimatedTime,
-    payload?.data?.estimated_delivery,
-    payload?.data?.estimated_delivery_time,
-    payload?.result?.estimated_time,
-    payload?.result?.eta,
-    payload?.result?.estimatedTime,
-    payload?.result?.estimated_delivery,
-    payload?.result?.estimated_delivery_time,
-    payload?.response?.estimated_time,
-    payload?.response?.eta,
-    payload?.response?.estimatedTime,
-    payload?.response?.estimated_delivery,
-    payload?.response?.estimated_delivery_time,
-  ];
+  const candidateKeys = new Set([
+    "estimated_time",
+    "eta",
+    "estimatedTime",
+    "estimated_delivery",
+    "estimated_delivery_time",
+    "estimated_delivery_time_text",
+    "expected_delivery_time",
+    "delivery_eta",
+    "deliveryEta",
+    "estimated_eta",
+  ]);
 
-  for (const value of candidateValues) {
+  const seen = new Set<any>();
+
+  function walk(value: any): string | null {
+    if (!value || seen.has(value)) return null;
+    seen.add(value);
+
+    if (Array.isArray(value)) {
+      for (const item of value) {
+        const nested = walk(item);
+        if (nested) return nested;
+      }
+      return null;
+    }
+
     if (typeof value === "string") {
       const trimmed = value.trim();
       if (trimmed) return trimmed;
     }
+
     if (typeof value === "number" && Number.isFinite(value)) {
       return String(value);
     }
+
     if (value && typeof value === "object") {
-      const nested = (value as any).value ?? (value as any).text ?? (value as any).label;
-      if (typeof nested === "string") {
-        const trimmed = nested.trim();
+      for (const [key, nestedValue] of Object.entries(value)) {
+        if (candidateKeys.has(key)) {
+          const direct = walk(nestedValue);
+          if (direct) return direct;
+        }
+        const nested = walk(nestedValue);
+        if (nested && /(?:estimated|eta|delivery)/i.test(key)) {
+          return nested;
+        }
+      }
+
+      const fallbackValue = (value as any).value ?? (value as any).text ?? (value as any).label;
+      if (typeof fallbackValue === "string") {
+        const trimmed = fallbackValue.trim();
         if (trimmed) return trimmed;
       }
     }
+
+    return null;
   }
 
-  return null;
+  return walk(payload);
 }
 
 function deriveDisplayStatus(order: OrderRow) {

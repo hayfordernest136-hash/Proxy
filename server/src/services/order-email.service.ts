@@ -251,6 +251,10 @@ export async function sendOrderCompletedEmail(order: OrderRow): Promise<void> {
   const email = getOrderCustomerEmail(order);
   if (!email) return;
 
+  if (isDataOrder(order) && order.delivery_status !== "delivered") {
+    return;
+  }
+
   const base = buildBaseContext(order);
   const product = isDataOrder(order)
     ? null

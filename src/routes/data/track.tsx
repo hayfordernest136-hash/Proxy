@@ -164,6 +164,10 @@ function shouldShowFulfillmentDetails(result: DataTrackingResult) {
 
   if (!hasDetails) return false;
 
+  if (result.estimatedTime) {
+    return true;
+  }
+
   return [fulfillmentStatus, deliveryStatus, orderStatus].some((value) =>
     ["completed", "delivered", "fulfilled", "success", "failed", "cancelled", "refunded", "error"].some((term) =>
       value.includes(term),
