@@ -20,13 +20,13 @@ export function Footer() {
           <h3 className="text-sm font-semibold">Products</h3>
           <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
             <li>
-              <Link to="/products" className="hover:text-foreground">
-                All proxies
+              <Link to="/data" className="hover:text-foreground">
+                Data bundles
               </Link>
             </li>
             <li>
-              <Link to="/data" className="hover:text-foreground">
-                Data
+              <Link to="/products" className="hover:text-foreground">
+                Proxy plans
               </Link>
             </li>
           </ul>
@@ -56,9 +56,9 @@ export function Footer() {
         <div>
           <h3 className="text-sm font-semibold">Delivery</h3>
           <p className="mt-4 text-sm text-muted-foreground">
-            CD Key delivery in about 2 minutes. Account refills in about 5-7 minutes.
-            Delivery times are estimates and may vary during periods of high demand or
-            maintenance.
+            Data bundles delivered to your number in minutes. Proxy CD keys in about 2
+            minutes, account refills in about 5-7 minutes. Delivery times are estimates
+            and may vary during periods of high demand or maintenance.
           </p>
         </div>
       </div>
