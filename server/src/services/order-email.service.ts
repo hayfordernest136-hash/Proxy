@@ -114,7 +114,12 @@ export type OrderEmailContext = {
 
 function buildDataRows(
   order: OrderRow,
-  extra?: { amount?: string; status?: string; completion?: string },
+  extra?: {
+    amount?: string;
+    status?: string;
+    completion?: string;
+    estimatedTime?: string | null;
+  },
 ): { label: string; value: string }[] {
   const rows: { label: string; value: string }[] = [
     { label: "Network", value: getDataNetwork(order) },
@@ -124,6 +129,9 @@ function buildDataRows(
 
   if (extra?.status) rows.push({ label: "Status", value: extra.status });
   if (extra?.completion) rows.push({ label: "Completion", value: extra.completion });
+  if (extra?.estimatedTime) {
+    rows.push({ label: "Estimated delivery", value: extra.estimatedTime });
+  }
 
   const amount = extra?.amount ?? formatMoneyValue(order.total_amount, order.currency);
   rows.push({ label: "Amount paid", value: amount });
@@ -195,6 +203,7 @@ export async function sendOrderReceivedEmail(order: OrderRow): Promise<void> {
 export async function sendPaymentConfirmedEmail(
   order: OrderRow,
   paymentReference: string,
+  estimatedTime?: string | null,
 ): Promise<void> {
   const email = getOrderCustomerEmail(order);
   if (!email) return;
@@ -214,6 +223,7 @@ export async function sendPaymentConfirmedEmail(
             order.payment_total_amount || order.total_amount,
             order.currency,
           ),
+          estimatedTime: estimatedTime || null,
         })
       : buildProxyRows(order, product)),
   ];

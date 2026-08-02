@@ -415,6 +415,25 @@ async function fulfillDataOrder(order: OrderRow) {
   let fulfillmentStatus: "completed" | "processing" | "failed" = "processing";
   const fulfillmentMessage = parsed.message || "Unable to fulfil the data order.";
 
+  const estimatedTime = String(
+    result?.estimated_time ??
+      result?.eta ??
+      result?.estimatedTime ??
+      result?.estimated_delivery ??
+      result?.estimated_delivery_time ??
+      result?.data?.estimated_time ??
+      result?.data?.eta ??
+      result?.data?.estimatedTime ??
+      result?.data?.estimated_delivery ??
+      result?.data?.estimated_delivery_time ??
+      result?.result?.estimated_time ??
+      result?.result?.eta ??
+      result?.result?.estimatedTime ??
+      result?.result?.estimated_delivery ??
+      result?.result?.estimated_delivery_time ??
+      "",
+  ).trim();
+
   if (parsed.success) {
     fulfillmentStatus = "completed";
   } else if (
@@ -449,6 +468,7 @@ async function fulfillDataOrder(order: OrderRow) {
       reason: fulfillmentMessage || "Data order delivered successfully.",
       reference: parsed.reference || null,
       status: "completed" as const,
+      estimatedTime: estimatedTime || null,
     };
   }
 
@@ -458,6 +478,7 @@ async function fulfillDataOrder(order: OrderRow) {
       reason: fulfillmentMessage || "Rema reported a failed purchase.",
       reference: parsed.reference || null,
       status: "failed" as const,
+      estimatedTime: estimatedTime || null,
     };
   }
 
@@ -466,6 +487,7 @@ async function fulfillDataOrder(order: OrderRow) {
     reason: fulfillmentMessage || "Unable to fulfil the data order.",
     reference: parsed.reference || null,
     status: "processing" as const,
+    estimatedTime: estimatedTime || null,
   };
 }
 
@@ -723,14 +745,22 @@ export async function initiatePaymentHandler(req: Request, res: Response) {
           "Sandbox payment completed and your order is now queued for fulfilment.",
         );
       }
+      let fulfillment: Awaited<ReturnType<typeof fulfillDataOrder>> | null = null;
+      if (isDataOrder(order)) {
+        fulfillment = await fulfillDataOrder(order);
+      }
+
       const sandboxPaidOrder = await getOrderById(order.id);
       if (sandboxPaidOrder) {
-        await sendPaymentConfirmedEmail(sandboxPaidOrder, sandboxReference);
+        await sendPaymentConfirmedEmail(
+          sandboxPaidOrder,
+          sandboxReference,
+          fulfillment?.estimatedTime ?? null,
+        );
         await sendAdminAlertEmail(sandboxPaidOrder, "payment_success");
       }
       if (isDataOrder(order)) {
-        const fulfillment = await fulfillDataOrder(order);
-        const finalState = await finalizeDataOrder(order, fulfillment);
+        const finalState = await finalizeDataOrder(order, fulfillment!);
         return res.json({
           ok: true,
           sandbox: true,
@@ -904,15 +934,19 @@ export async function confirmPaymentHandler(req: Request, res: Response) {
       );
     }
     // Notify the customer that their payment was confirmed.
+    let fulfillment: Awaited<ReturnType<typeof fulfillDataOrder>> | null = null;
+    if (isDataOrder(order)) {
+      fulfillment = await fulfillDataOrder(order);
+    }
+
     const paidOrder = await getOrderById(order.id);
     if (paidOrder) {
-      await sendPaymentConfirmedEmail(paidOrder, paymentReference);
+      await sendPaymentConfirmedEmail(paidOrder, paymentReference, fulfillment?.estimatedTime ?? null);
       await sendAdminAlertEmail(paidOrder, "payment_success");
     }
 
     if (isDataOrder(order)) {
-      const fulfillment = await fulfillDataOrder(order);
-      const finalState = await finalizeDataOrder(order, fulfillment);
+      const finalState = await finalizeDataOrder(order, fulfillment!);
       return res.json({ ok: true, alreadyPaid: false, fulfillmentStatus: finalState.status });
     }
 
@@ -992,14 +1026,22 @@ export async function paystackWebhookHandler(req: Request, res: Response) {
           "Your payment has been confirmed and your order is now queued for fulfilment.",
         );
       }
+      let fulfillment: Awaited<ReturnType<typeof fulfillDataOrder>> | null = null;
+      if (isDataOrder(order)) {
+        fulfillment = await fulfillDataOrder(order);
+      }
+
       const webhookPaidOrder = await getOrderById(orderId);
       if (webhookPaidOrder) {
-        await sendPaymentConfirmedEmail(webhookPaidOrder, reference);
+        await sendPaymentConfirmedEmail(
+          webhookPaidOrder,
+          reference,
+          fulfillment?.estimatedTime ?? null,
+        );
         await sendAdminAlertEmail(webhookPaidOrder, "payment_success");
       }
       if (isDataOrder(order)) {
-        const fulfillment = await fulfillDataOrder(order);
-        await finalizeDataOrder(order, fulfillment);
+        await finalizeDataOrder(order, fulfillment!);
       } else if (order.user_id !== null) {
         await completeReferralForReferredUserId(order.user_id, order.id);
       }
