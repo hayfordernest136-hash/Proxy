@@ -43,8 +43,8 @@ function normalizeProduct(product: AdminProduct): ProductDraft {
     features: Array.isArray(product.features)
       ? product.features
       : product.features
-      ? JSON.parse(String(product.features))
-      : [],
+        ? JSON.parse(String(product.features))
+        : [],
     is_active: product.is_active ? 1 : 0,
     supports_cd_key: product.supports_cd_key ? 1 : 0,
     supports_account_refill: product.supports_account_refill ? 1 : 0,

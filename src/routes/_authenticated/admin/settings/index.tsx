@@ -7,7 +7,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { DEFAULT_SITE_SETTINGS, readSiteSettings, writeSiteSettings, type SiteSettings } from "@/lib/site-settings";
+import {
+  DEFAULT_SITE_SETTINGS,
+  readSiteSettings,
+  writeSiteSettings,
+  type SiteSettings,
+} from "@/lib/site-settings";
 
 export const Route = createFileRoute("/_authenticated/admin/settings/")({
   component: AdminSettingsPage,
@@ -84,7 +89,9 @@ function AdminSettingsPage() {
                 <Input
                   id="defaultCurrency"
                   value={settings.defaultCurrency}
-                  onChange={(event) => updateField("defaultCurrency", event.target.value.toUpperCase())}
+                  onChange={(event) =>
+                    updateField("defaultCurrency", event.target.value.toUpperCase())
+                  }
                   maxLength={3}
                 />
               </div>

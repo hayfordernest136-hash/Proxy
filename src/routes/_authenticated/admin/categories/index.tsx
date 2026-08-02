@@ -47,7 +47,11 @@ function AdminCategoriesPage() {
           <CardContent className="space-y-4 p-6">
             <div className="space-y-2">
               <Label>New category</Label>
-              <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Residential, ISP, Mobile" />
+              <Input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Residential, ISP, Mobile"
+              />
             </div>
             <Button onClick={addCategory}>Create category</Button>
           </CardContent>

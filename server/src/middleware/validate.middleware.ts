@@ -1,13 +1,15 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction } from "express";
 
 /**
  * Sanitize a string by trimming and removing dangerous characters.
  */
 function sanitizeString(value: string): string {
-  return value
-    .trim()
-    .replace(/[\0\x08\x09\x1a\n\r"'\\]/g, '')
-    .slice(0, 1000);
+  const filtered = Array.from(value.trim()).filter((char) => {
+    const code = char.charCodeAt(0);
+    return ![0, 8, 9, 10, 13, 26].includes(code) && char !== '"' && char !== "'" && char !== "\\";
+  });
+
+  return filtered.join("").slice(0, 1000);
 }
 
 /**
@@ -18,16 +20,16 @@ function isSensitiveField(key: string) {
 }
 
 function sanitizeObject(obj: any): any {
-  if (typeof obj === 'string') {
+  if (typeof obj === "string") {
     return sanitizeString(obj);
   }
   if (Array.isArray(obj)) {
     return obj.map(sanitizeObject);
   }
-  if (obj && typeof obj === 'object') {
+  if (obj && typeof obj === "object") {
     const sanitized: Record<string, any> = {};
     for (const [key, value] of Object.entries(obj)) {
-      if (isSensitiveField(key) && typeof value === 'string') {
+      if (isSensitiveField(key) && typeof value === "string") {
         sanitized[key] = value;
       } else {
         sanitized[key] = sanitizeObject(value);
@@ -42,13 +44,13 @@ function sanitizeObject(obj: any): any {
  * Middleware that sanitizes request body, query, and params.
  */
 export function sanitizeInput(req: Request, _res: Response, next: NextFunction) {
-  if (req.body && typeof req.body === 'object') {
+  if (req.body && typeof req.body === "object") {
     req.body = sanitizeObject(req.body);
   }
-  if (req.query && typeof req.query === 'object') {
+  if (req.query && typeof req.query === "object") {
     req.query = sanitizeObject(req.query);
   }
-  if (req.params && typeof req.params === 'object') {
+  if (req.params && typeof req.params === "object") {
     req.params = sanitizeObject(req.params);
   }
   next();
@@ -62,12 +64,12 @@ export function requireFields(...fields: string[]) {
   return (req: Request, res: Response, next: NextFunction) => {
     const missing = fields.filter((field) => {
       const value = req.body[field];
-      return value === undefined || value === null || value === '';
+      return value === undefined || value === null || value === "";
     });
 
     if (missing.length > 0) {
       return res.status(400).json({
-        message: `Missing required fields: ${missing.join(', ')}`,
+        message: `Missing required fields: ${missing.join(", ")}`,
       });
     }
     next();

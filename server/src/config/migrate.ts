@@ -1,132 +1,132 @@
-import fs from 'fs';
-import path from 'path';
-import dotenv from 'dotenv';
-import { pool } from './db';
+import fs from "fs";
+import path from "path";
+import dotenv from "dotenv";
+import { pool } from "./db";
 
 dotenv.config();
 
 const schemaFixes = [
   {
-    table: 'users',
-    column: 'role',
+    table: "users",
+    column: "role",
     ddl: "ALTER TABLE users ADD COLUMN role VARCHAR(32) NOT NULL DEFAULT 'user'",
   },
   {
-    table: 'users',
-    column: 'referral_code',
-    ddl: 'ALTER TABLE users ADD COLUMN referral_code VARCHAR(32) UNIQUE',
+    table: "users",
+    column: "referral_code",
+    ddl: "ALTER TABLE users ADD COLUMN referral_code VARCHAR(32) UNIQUE",
   },
   {
-    table: 'users',
-    column: 'referral_reward_used_at',
-    ddl: 'ALTER TABLE users ADD COLUMN referral_reward_used_at TIMESTAMP NULL',
+    table: "users",
+    column: "referral_reward_used_at",
+    ddl: "ALTER TABLE users ADD COLUMN referral_reward_used_at TIMESTAMP NULL",
   },
   {
-    table: 'orders',
-    column: 'referral_discount_applied',
-    ddl: 'ALTER TABLE orders ADD COLUMN referral_discount_applied TINYINT(1) NOT NULL DEFAULT 0',
+    table: "orders",
+    column: "referral_discount_applied",
+    ddl: "ALTER TABLE orders ADD COLUMN referral_discount_applied TINYINT(1) NOT NULL DEFAULT 0",
   },
   // Product/card management fields
   {
-    table: 'products',
-    column: 'number_of_ips',
-    ddl: 'ALTER TABLE products ADD COLUMN number_of_ips INT DEFAULT NULL',
+    table: "products",
+    column: "number_of_ips",
+    ddl: "ALTER TABLE products ADD COLUMN number_of_ips INT DEFAULT NULL",
   },
   {
-    table: 'products',
-    column: 'pricing_unit',
+    table: "products",
+    column: "pricing_unit",
     ddl: "ALTER TABLE products ADD COLUMN pricing_unit VARCHAR(16) NOT NULL DEFAULT 'ip'",
   },
   {
-    table: 'products',
-    column: 'updated_at',
+    table: "products",
+    column: "updated_at",
     ddl: "ALTER TABLE products ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP",
   },
   {
-    table: 'products',
-    column: 'duration_days',
-    ddl: 'ALTER TABLE products ADD COLUMN duration_days INT DEFAULT NULL',
+    table: "products",
+    column: "duration_days",
+    ddl: "ALTER TABLE products ADD COLUMN duration_days INT DEFAULT NULL",
   },
   {
-    table: 'plans',
-    column: 'number_of_ips',
-    ddl: 'ALTER TABLE plans ADD COLUMN number_of_ips INT DEFAULT NULL',
+    table: "plans",
+    column: "number_of_ips",
+    ddl: "ALTER TABLE plans ADD COLUMN number_of_ips INT DEFAULT NULL",
   },
   {
-    table: 'plans',
-    column: 'updated_at',
+    table: "plans",
+    column: "updated_at",
     ddl: "ALTER TABLE plans ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP",
   },
   {
-    table: 'products',
-    column: 'discount_price',
-    ddl: 'ALTER TABLE products ADD COLUMN discount_price DECIMAL(10,2) DEFAULT NULL',
+    table: "products",
+    column: "discount_price",
+    ddl: "ALTER TABLE products ADD COLUMN discount_price DECIMAL(10,2) DEFAULT NULL",
   },
   {
-    table: 'products',
-    column: 'availability_status',
+    table: "products",
+    column: "availability_status",
     ddl: "ALTER TABLE products ADD COLUMN availability_status VARCHAR(32) DEFAULT 'available'",
   },
   // Orders fields for delivery workflows
   {
-    table: 'orders',
-    column: 'delivery_method',
+    table: "orders",
+    column: "delivery_method",
     ddl: "ALTER TABLE orders ADD COLUMN delivery_method VARCHAR(32) DEFAULT NULL",
   },
   {
-    table: 'orders',
-    column: 'cd_key',
+    table: "orders",
+    column: "cd_key",
     ddl: "ALTER TABLE orders ADD COLUMN cd_key TEXT DEFAULT NULL",
   },
   {
-    table: 'orders',
-    column: 'refill_proof_url',
+    table: "orders",
+    column: "refill_proof_url",
     ddl: "ALTER TABLE orders ADD COLUMN refill_proof_url VARCHAR(512) DEFAULT NULL",
   },
   {
-    table: 'orders',
-    column: 'delivery_status',
+    table: "orders",
+    column: "delivery_status",
     ddl: "ALTER TABLE orders ADD COLUMN delivery_status VARCHAR(32) DEFAULT 'pending'",
   },
   {
-    table: 'orders',
-    column: 'payment_fee',
-    ddl: 'ALTER TABLE orders ADD COLUMN payment_fee DECIMAL(10,2) NOT NULL DEFAULT 0',
+    table: "orders",
+    column: "payment_fee",
+    ddl: "ALTER TABLE orders ADD COLUMN payment_fee DECIMAL(10,2) NOT NULL DEFAULT 0",
   },
   {
-    table: 'orders',
-    column: 'payment_total_amount',
-    ddl: 'ALTER TABLE orders ADD COLUMN payment_total_amount DECIMAL(10,2) NOT NULL DEFAULT 0',
+    table: "orders",
+    column: "payment_total_amount",
+    ddl: "ALTER TABLE orders ADD COLUMN payment_total_amount DECIMAL(10,2) NOT NULL DEFAULT 0",
   },
   {
-    table: 'orders',
-    column: 'support_message_unread',
-    ddl: 'ALTER TABLE orders ADD COLUMN support_message_unread TINYINT(1) NOT NULL DEFAULT 0',
+    table: "orders",
+    column: "support_message_unread",
+    ddl: "ALTER TABLE orders ADD COLUMN support_message_unread TINYINT(1) NOT NULL DEFAULT 0",
   },
   {
-    table: 'orders',
-    column: 'admin_notes',
+    table: "orders",
+    column: "admin_notes",
     ddl: "ALTER TABLE orders ADD COLUMN admin_notes TEXT DEFAULT NULL",
   },
   {
-    table: 'orders',
-    column: 'fulfillment_reference',
+    table: "orders",
+    column: "fulfillment_reference",
     ddl: "ALTER TABLE orders ADD COLUMN fulfillment_reference VARCHAR(255) DEFAULT NULL",
   },
   // Email notification fields
   {
-    table: 'orders',
-    column: 'customer_email',
+    table: "orders",
+    column: "customer_email",
     ddl: "ALTER TABLE orders ADD COLUMN customer_email VARCHAR(255) DEFAULT NULL",
   },
   {
-    table: 'orders',
-    column: 'customer_name',
+    table: "orders",
+    column: "customer_name",
     ddl: "ALTER TABLE orders ADD COLUMN customer_name VARCHAR(120) DEFAULT NULL",
   },
   {
-    table: 'orders',
-    column: 'order_type',
+    table: "orders",
+    column: "order_type",
     ddl: "ALTER TABLE orders ADD COLUMN order_type VARCHAR(32) DEFAULT 'proxy'",
   },
 ];
@@ -136,7 +136,7 @@ async function ensureSchemaColumnExists(table: string, column: string, ddl: stri
   if (!dbName) return;
 
   const [rows] = await pool.query(
-    'SELECT COUNT(*) AS count FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? AND COLUMN_NAME = ?',
+    "SELECT COUNT(*) AS count FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? AND COLUMN_NAME = ?",
     [dbName, table, column],
   );
   const exists = Number((rows as any[])[0]?.count ?? 0) > 0;
@@ -154,12 +154,12 @@ async function ensureNullableOrderColumns() {
   const dbName = process.env.DB_NAME;
   if (!dbName) return;
 
-  for (const column of ['user_id', 'product_id', 'plan_id']) {
+  for (const column of ["user_id", "product_id", "plan_id"]) {
     const [rows] = await pool.query(
-      'SELECT IS_NULLABLE FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? AND COLUMN_NAME = ?',
-      [dbName, 'orders', column],
+      "SELECT IS_NULLABLE FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? AND COLUMN_NAME = ?",
+      [dbName, "orders", column],
     );
-    const isNullable = String((rows as any[])[0]?.IS_NULLABLE ?? 'NO').toUpperCase() === 'YES';
+    const isNullable = String((rows as any[])[0]?.IS_NULLABLE ?? "NO").toUpperCase() === "YES";
     if (!isNullable) {
       try {
         await pool.query(`ALTER TABLE orders MODIFY COLUMN ${column} BIGINT NULL`);
@@ -172,12 +172,12 @@ async function ensureNullableOrderColumns() {
 }
 
 export async function runMigrations() {
-  const file = path.resolve(__dirname, '..', '..', 'sql', 'schema.sql');
+  const file = path.resolve(__dirname, "..", "..", "sql", "schema.sql");
   if (!fs.existsSync(file)) {
-    console.log('No migration file found:', file);
+    console.log("No migration file found:", file);
     return;
   }
-  const sql = fs.readFileSync(file, 'utf8');
+  const sql = fs.readFileSync(file, "utf8");
   // Naive split on semicolons to execute statements sequentially
   const parts = sql
     .split(/;\s*\n/)
@@ -188,7 +188,7 @@ export async function runMigrations() {
       await pool.query(stmt);
     } catch (e: any) {
       // Log and continue: statements may already exist
-      console.warn('Migration statement failed (continuing):', e.message || e);
+      console.warn("Migration statement failed (continuing):", e.message || e);
     }
   }
 
@@ -211,9 +211,39 @@ export async function runMigrations() {
         INDEX (order_id)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     `);
-    console.log('Ensured order_events table exists.');
+    console.log("Ensured order_events table exists.");
   } catch (e: any) {
-    console.warn('Unable to ensure order_events table:', e.message || e);
+    console.warn("Unable to ensure order_events table:", e.message || e);
+  }
+
+  // Ensure rema_purchase_logs table exists for purchase audit trails and duplicate protection
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS rema_purchase_logs (
+        id BIGINT PRIMARY KEY AUTO_INCREMENT,
+        order_id BIGINT NOT NULL,
+        action VARCHAR(32) NOT NULL DEFAULT 'buy-data',
+        request_payload JSON NULL,
+        response_payload JSON NULL,
+        status VARCHAR(32) NULL,
+        message TEXT NULL,
+        rema_reference VARCHAR(255) NULL,
+        client_reference VARCHAR(255) NULL,
+        provider_reference VARCHAR(255) NULL,
+        provider_name VARCHAR(255) NULL,
+        amount DECIMAL(10,2) NULL,
+        wallet_balance VARCHAR(255) NULL,
+        purchase_time TIMESTAMP NULL,
+        raw_response TEXT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        INDEX (order_id),
+        INDEX (status),
+        INDEX (created_at)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `);
+    console.log("Ensured rema_purchase_logs table exists.");
+  } catch (e: any) {
+    console.warn("Unable to ensure rema_purchase_logs table:", e.message || e);
   }
 
   // Ensure email_logs table exists for transactional email audit trail
@@ -232,9 +262,9 @@ export async function runMigrations() {
         INDEX (created_at)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     `);
-    console.log('Ensured email_logs table exists.');
+    console.log("Ensured email_logs table exists.");
   } catch (e: any) {
-    console.warn('Unable to ensure email_logs table:', e.message || e);
+    console.warn("Unable to ensure email_logs table:", e.message || e);
   }
 
   // Ensure password_reset_tokens table exists for the forgot/reset password flow
@@ -252,107 +282,107 @@ export async function runMigrations() {
         INDEX (expires_at)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     `);
-    console.log('Ensured password_reset_tokens table exists.');
+    console.log("Ensured password_reset_tokens table exists.");
   } catch (e: any) {
-    console.warn('Unable to ensure password_reset_tokens table:', e.message || e);
+    console.warn("Unable to ensure password_reset_tokens table:", e.message || e);
   }
 
-  console.log('Migrations applied (or already present).');
+  console.log("Migrations applied (or already present).");
 }
 
 export async function seedSampleProducts() {
-  if (process.env.NODE_ENV === 'production') {
+  if (process.env.NODE_ENV === "production") {
     return;
   }
 
   try {
-    const [rows] = await pool.query('SELECT slug FROM products');
+    const [rows] = await pool.query("SELECT slug FROM products");
     const existingSlugs = new Set((rows as any[]).map((row) => row.slug));
 
     const seedProducts = [
       {
-        slug: 'rotating-residential',
-        name: 'Rotating Residential Proxy',
+        slug: "rotating-residential",
+        name: "Rotating Residential Proxy",
         description:
-          'High-availability residential IPs with automatic rotation for web scraping, social media, and ad verification.',
-        proxy_type: 'Residential',
-        location: 'Global',
+          "High-availability residential IPs with automatic rotation for web scraping, social media, and ad verification.",
+        proxy_type: "Residential",
+        location: "Global",
         image_url: null,
-        features: ['Unlimited bandwidth', 'Auto IP rotation', 'High success rate'],
+        features: ["Unlimited bandwidth", "Auto IP rotation", "High success rate"],
         supports_cd_key: true,
         supports_account_refill: false,
         sort_order: 100,
         plans: [
-          { name: 'Starter', price: 14.99, currency: 'GHS', sort_order: 0 },
-          { name: 'Business', price: 29.99, currency: 'GHS', sort_order: 1 },
+          { name: "Starter", price: 14.99, currency: "GHS", sort_order: 0 },
+          { name: "Business", price: 29.99, currency: "GHS", sort_order: 1 },
         ],
       },
       {
-        slug: 'static-isp',
-        name: 'Static ISP Proxy',
+        slug: "static-isp",
+        name: "Static ISP Proxy",
         description:
-          'Stable static IP addresses for banking, streaming, and online services requiring consistent identity.',
-        proxy_type: 'Static ISP',
-        location: 'Ghana',
+          "Stable static IP addresses for banking, streaming, and online services requiring consistent identity.",
+        proxy_type: "Static ISP",
+        location: "Ghana",
         image_url: null,
-        features: ['Static IPs', 'Low latency', 'Reliable access'],
+        features: ["Static IPs", "Low latency", "Reliable access"],
         supports_cd_key: true,
         supports_account_refill: true,
         sort_order: 200,
         plans: [
-          { name: 'Standard', price: 24.99, currency: 'GHS', sort_order: 0 },
-          { name: 'Premium', price: 44.99, currency: 'GHS', sort_order: 1 },
+          { name: "Standard", price: 24.99, currency: "GHS", sort_order: 0 },
+          { name: "Premium", price: 44.99, currency: "GHS", sort_order: 1 },
         ],
       },
       {
-        slug: 'mobile-4g-proxy',
-        name: 'Mobile 4G/5G Proxy',
+        slug: "mobile-4g-proxy",
+        name: "Mobile 4G/5G Proxy",
         description:
-          'Mobile IPs with 4G/5G connectivity, ideal for verification, ad testing, and location-specific browsing.',
-        proxy_type: 'Mobile',
-        location: 'Africa',
+          "Mobile IPs with 4G/5G connectivity, ideal for verification, ad testing, and location-specific browsing.",
+        proxy_type: "Mobile",
+        location: "Africa",
         image_url: null,
-        features: ['4G/5G connections', 'Mobile carrier IPs', 'Quick setup'],
+        features: ["4G/5G connections", "Mobile carrier IPs", "Quick setup"],
         supports_cd_key: false,
         supports_account_refill: true,
         sort_order: 300,
         plans: [
-          { name: 'Mobile Basic', price: 19.99, currency: 'GHS', sort_order: 0 },
-          { name: 'Mobile Pro', price: 39.99, currency: 'GHS', sort_order: 1 },
+          { name: "Mobile Basic", price: 19.99, currency: "GHS", sort_order: 0 },
+          { name: "Mobile Pro", price: 39.99, currency: "GHS", sort_order: 1 },
         ],
       },
       {
-        slug: 'dedicated-ipv4',
-        name: 'Dedicated IPv4 Proxy',
+        slug: "dedicated-ipv4",
+        name: "Dedicated IPv4 Proxy",
         description:
-          'Dedicated IPv4 addresses for secure access, low-risk logins, and high-stability applications.',
-        proxy_type: 'Dedicated',
-        location: 'Global',
+          "Dedicated IPv4 addresses for secure access, low-risk logins, and high-stability applications.",
+        proxy_type: "Dedicated",
+        location: "Global",
         image_url: null,
-        features: ['Dedicated IP', 'High uptime', 'Low fraud risk'],
+        features: ["Dedicated IP", "High uptime", "Low fraud risk"],
         supports_cd_key: true,
         supports_account_refill: true,
         sort_order: 400,
         plans: [
-          { name: 'Basic', price: 29.99, currency: 'GHS', sort_order: 0 },
-          { name: 'Pro', price: 54.99, currency: 'GHS', sort_order: 1 },
+          { name: "Basic", price: 29.99, currency: "GHS", sort_order: 0 },
+          { name: "Pro", price: 54.99, currency: "GHS", sort_order: 1 },
         ],
       },
       {
-        slug: 'bandwidth-plan',
-        name: 'Bandwidth Proxy Plan',
+        slug: "bandwidth-plan",
+        name: "Bandwidth Proxy Plan",
         description:
-          'Flexible bandwidth-based proxy access for large volumes, traffic bursts, and cost-efficient usage.',
-        proxy_type: 'Bandwidth',
-        location: 'Global',
+          "Flexible bandwidth-based proxy access for large volumes, traffic bursts, and cost-efficient usage.",
+        proxy_type: "Bandwidth",
+        location: "Global",
         image_url: null,
-        features: ['Flexible data', 'Burst capacity', 'Pay-as-you-go'],
+        features: ["Flexible data", "Burst capacity", "Pay-as-you-go"],
         supports_cd_key: false,
         supports_account_refill: true,
         sort_order: 500,
         plans: [
-          { name: '100GB', price: 19.99, currency: 'GHS', sort_order: 0 },
-          { name: '250GB', price: 39.99, currency: 'GHS', sort_order: 1 },
+          { name: "100GB", price: 19.99, currency: "GHS", sort_order: 0 },
+          { name: "250GB", price: 39.99, currency: "GHS", sort_order: 1 },
         ],
       },
     ];
@@ -364,7 +394,7 @@ export async function seedSampleProducts() {
       }
 
       const [result] = await pool.query(
-        'INSERT INTO products (slug, name, description, proxy_type, location, image_url, features, supports_cd_key, supports_account_refill, is_active, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        "INSERT INTO products (slug, name, description, proxy_type, location, image_url, features, supports_cd_key, supports_account_refill, is_active, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         [
           product.slug,
           product.name,
@@ -383,7 +413,7 @@ export async function seedSampleProducts() {
       const productId = (result as any).insertId;
       for (const plan of product.plans) {
         await pool.query(
-          'INSERT INTO plans (product_id, name, price, currency, is_active, sort_order) VALUES (?, ?, ?, ?, ?, ?)',
+          "INSERT INTO plans (product_id, name, price, currency, is_active, sort_order) VALUES (?, ?, ?, ?, ?, ?)",
           [productId, plan.name, plan.price, plan.currency, 1, plan.sort_order],
         );
       }
@@ -391,45 +421,47 @@ export async function seedSampleProducts() {
     }
 
     if (seededCount > 0) {
-      console.log(`Seeded ${seededCount} sample product${seededCount === 1 ? '' : 's'}.`);
+      console.log(`Seeded ${seededCount} sample product${seededCount === 1 ? "" : "s"}.`);
     }
   } catch (error: any) {
-    console.warn('Unable to seed sample products:', error.message || error);
+    console.warn("Unable to seed sample products:", error.message || error);
   }
 }
 
 export async function ensureAdminUser() {
   const configuredAdminEmails = [process.env.ADMIN_EMAILS, process.env.ADMIN_EMAIL]
     .filter((value): value is string => Boolean(value))
-    .join(',')
-    .split(',')
+    .join(",")
+    .split(",")
     .map((value) => value.trim().toLowerCase())
     .filter(Boolean);
 
   const adminEmail = configuredAdminEmails[0];
   const adminPassword = process.env.ADMIN_PASSWORD?.trim();
-  const adminName = process.env.ADMIN_NAME?.trim() || 'Administrator';
+  const adminName = process.env.ADMIN_NAME?.trim() || "Administrator";
 
   if (!adminEmail || !adminPassword) {
     return;
   }
 
-  const [rows] = await pool.query('SELECT id, role FROM users WHERE email = ? LIMIT 1', [adminEmail]);
+  const [rows] = await pool.query("SELECT id, role FROM users WHERE email = ? LIMIT 1", [
+    adminEmail,
+  ]);
   const existing = (rows as any[])[0];
   if (existing) {
-    if (existing.role !== 'admin') {
-      await pool.query('UPDATE users SET role = ? WHERE id = ?', ['admin', existing.id]);
+    if (existing.role !== "admin") {
+      await pool.query("UPDATE users SET role = ? WHERE id = ?", ["admin", existing.id]);
       console.log(`Promoted existing user ${adminEmail} to admin.`);
     }
     return;
   }
 
-  const { createUser } = await import('../services/user.service');
+  const { createUser } = await import("../services/user.service");
   const user = await createUser({
     name: adminName,
     email: adminEmail,
     password: adminPassword,
-    role: 'admin',
+    role: "admin",
   });
   console.log(`Admin user seeded: ${user.email}`);
 }

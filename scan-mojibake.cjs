@@ -67,4 +67,3 @@ if (results.length === 0) {
   });
   console.log("\n\nTOTAL FILES WITH POTENTIAL MOJIBAKE: " + results.length);
 }
-

@@ -1,9 +1,12 @@
 function normalizeNetwork(value: string) {
-  const normalized = String(value || 'mtn').trim().toLowerCase();
-  if (normalized === 'mtn') return 'mtn';
-  if (normalized === 'telecel' || normalized === 'tigo' || normalized === 'telex') return 'telecel';
-  if (normalized === 'airteltigo' || normalized === 'airtel' || normalized === 'airtel-tigo') return 'airteltigo';
-  return normalized || 'mtn';
+  const normalized = String(value || "mtn")
+    .trim()
+    .toLowerCase();
+  if (normalized === "mtn") return "mtn";
+  if (normalized === "telecel" || normalized === "tigo" || normalized === "telex") return "telecel";
+  if (normalized === "airteltigo" || normalized === "airtel" || normalized === "airtel-tigo")
+    return "airteltigo";
+  return normalized || "mtn";
 }
 
 function parsePrice(text: string) {
@@ -13,26 +16,33 @@ function parsePrice(text: string) {
 }
 
 function extractPrices(html: string) {
-  const values = Array.from(html.matchAll(/₵\s*([0-9]+(?:\.[0-9]+)?)/gi)).map((match) => parsePrice(match[1]));
+  const values = Array.from(html.matchAll(/₵\s*([0-9]+(?:\.[0-9]+)?)/gi)).map((match) =>
+    parsePrice(match[1]),
+  );
   return values.filter((value): value is number => value !== null);
 }
 
 function slugify(value: string) {
-  return value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
 }
 
 export function normalizeBundleSizeLabel(value: string) {
-  const raw = String(value || '').trim();
+  const raw = String(value || "").trim();
   if (!raw) return raw;
 
-  const compact = raw.replace(/\s+/g, '');
+  const compact = raw.replace(/\s+/g, "");
   const match = compact.match(/^(\d+(?:\.\d+)?)(GB|MB|TB)$/i);
   if (!match) return raw;
 
   const numeric = Number.parseFloat(match[1]);
   const normalizedNumber = Number.isInteger(numeric)
     ? String(numeric)
-    : String(numeric).replace(/(\.\d*?[1-9])0+$/g, '$1').replace(/\.0+$/g, '');
+    : String(numeric)
+        .replace(/(\.\d*?[1-9])0+$/g, "$1")
+        .replace(/\.0+$/g, "");
   const suffix = match[2].toUpperCase();
 
   return `${normalizedNumber}${suffix}`;
@@ -51,7 +61,16 @@ export function parsePublicRemaBundlesPage(html: string, network: string) {
   const sectionEnd = Math.min(html.length, sectionIndex + 6000);
   const sectionHtml = html.slice(sectionStart, sectionEnd);
 
-  const bundles: Array<{ id: string; name: string; volume: string; price: number; currency: string; network: string; reference: string; description: string }> = [];
+  const bundles: Array<{
+    id: string;
+    name: string;
+    volume: string;
+    price: number;
+    currency: string;
+    network: string;
+    reference: string;
+    description: string;
+  }> = [];
   const sizeMatches = Array.from(sectionHtml.matchAll(/([0-9]+(?:\.[0-9]+)?)\s*(gb|gbs?)\b/gi));
   const prices = extractPrices(sectionHtml);
 
@@ -69,10 +88,10 @@ export function parsePublicRemaBundlesPage(html: string, network: string) {
       name,
       volume,
       price,
-      currency: 'GHS',
+      currency: "GHS",
       network: targetNetwork,
       reference: id,
-      description: '',
+      description: "",
     });
   }
 

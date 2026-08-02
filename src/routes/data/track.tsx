@@ -59,13 +59,15 @@ type StatusTone = {
 
 const ACCENT_STYLES = {
   success: {
-    banner: "border-emerald-500/30 bg-gradient-to-r from-emerald-500/10 via-primary/10 to-transparent",
+    banner:
+      "border-emerald-500/30 bg-gradient-to-r from-emerald-500/10 via-primary/10 to-transparent",
     icon: "text-emerald-500",
     ring: "stroke-emerald-500",
     progress: "bg-emerald-500",
   },
   danger: {
-    banner: "border-destructive/30 bg-gradient-to-r from-destructive/10 via-primary/10 to-transparent",
+    banner:
+      "border-destructive/30 bg-gradient-to-r from-destructive/10 via-primary/10 to-transparent",
     icon: "text-destructive",
     ring: "stroke-destructive",
     progress: "bg-destructive",
@@ -80,7 +82,13 @@ const ACCENT_STYLES = {
 
 function getStatusTone(status: string): StatusTone {
   const normalized = status.toLowerCase();
-  if (normalized.includes("paid") || normalized.includes("success") || normalized.includes("delivered") || normalized.includes("completed") || normalized.includes("fulfilled")) {
+  if (
+    normalized.includes("paid") ||
+    normalized.includes("success") ||
+    normalized.includes("delivered") ||
+    normalized.includes("completed") ||
+    normalized.includes("fulfilled")
+  ) {
     return {
       label: "Completed",
       badge: "bg-emerald-500/15 text-emerald-600 ring-emerald-500/30 dark:text-emerald-400",
@@ -88,7 +96,12 @@ function getStatusTone(status: string): StatusTone {
       accent: "success",
     };
   }
-  if (normalized.includes("fail") || normalized.includes("cancel") || normalized.includes("refund") || normalized.includes("error")) {
+  if (
+    normalized.includes("fail") ||
+    normalized.includes("cancel") ||
+    normalized.includes("refund") ||
+    normalized.includes("error")
+  ) {
     return {
       label: "Action needed",
       badge: "bg-destructive/15 text-destructive ring-destructive/30",
@@ -113,9 +126,26 @@ const DELIVERY_STEPS = [
 
 function getDeliveryStep(deliveryStatus: string): number {
   const normalized = deliveryStatus.toLowerCase();
-  if (normalized.includes("delivered") || normalized.includes("completed") || normalized.includes("fulfilled") || normalized.includes("success")) return 4;
-  if (normalized.includes("processing") || normalized.includes("in progress") || normalized.includes("queued") || normalized.includes("active")) return 3;
-  if (normalized.includes("paid") || normalized.includes("confirmed") || normalized.includes("approved")) return 2;
+  if (
+    normalized.includes("delivered") ||
+    normalized.includes("completed") ||
+    normalized.includes("fulfilled") ||
+    normalized.includes("success")
+  )
+    return 4;
+  if (
+    normalized.includes("processing") ||
+    normalized.includes("in progress") ||
+    normalized.includes("queued") ||
+    normalized.includes("active")
+  )
+    return 3;
+  if (
+    normalized.includes("paid") ||
+    normalized.includes("confirmed") ||
+    normalized.includes("approved")
+  )
+    return 2;
   return 1;
 }
 
@@ -141,7 +171,14 @@ function ProgressRing({ value, className }: { value: number; className?: string 
   return (
     <div className="relative grid size-16 shrink-0 place-items-center">
       <svg className="size-16 -rotate-90" viewBox="0 0 64 64" aria-hidden="true">
-        <circle cx="32" cy="32" r={radius} fill="none" strokeWidth="6" className="stroke-border/70" />
+        <circle
+          cx="32"
+          cy="32"
+          r={radius}
+          fill="none"
+          strokeWidth="6"
+          className="stroke-border/70"
+        />
         <circle
           cx="32"
           cy="32"
@@ -177,7 +214,11 @@ function DetailRow({
       </span>
       <div className="min-w-0 flex-1">
         <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">{label}</p>
-        <p className={"truncate text-sm font-semibold text-foreground " + (mono ? "font-mono" : "")}>{value}</p>
+        <p
+          className={"truncate text-sm font-semibold text-foreground " + (mono ? "font-mono" : "")}
+        >
+          {value}
+        </p>
       </div>
     </div>
   );
@@ -191,7 +232,10 @@ export const Route = createFileRoute("/data/track")({
   head: () => ({
     meta: [
       { title: "Track Data Order - BrokeFlex Data" },
-      { name: "description", content: "Track your data order using your order ID and contact number." },
+      {
+        name: "description",
+        content: "Track your data order using your order ID and contact number.",
+      },
     ],
   }),
   component: DataTrackPage,
@@ -240,9 +284,11 @@ function DataTrackPage() {
       const query = new URLSearchParams();
       if (trimmedOrderId) query.set("orderId", trimmedOrderId);
       if (trimmedContactNumber) query.set("contactNumber", trimmedContactNumber);
-      const response = await apiFetch<{ ok: boolean; order?: DataTrackingResult; message?: string }>(
-        `/api/data/track?${query.toString()}`,
-      );
+      const response = await apiFetch<{
+        ok: boolean;
+        order?: DataTrackingResult;
+        message?: string;
+      }>(`/api/data/track?${query.toString()}`);
       if (!response.order) {
         setResult(null);
         setError(response.message || "No matching order was found.");
@@ -338,7 +384,11 @@ function DataTrackPage() {
               </div>
 
               <Button className="w-full" size="lg" onClick={trackOrder} disabled={loading}>
-                {loading ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Search className="mr-2 size-4" />}
+                {loading ? (
+                  <Loader2 className="mr-2 size-4 animate-spin" />
+                ) : (
+                  <Search className="mr-2 size-4" />
+                )}
                 Track
               </Button>
 
@@ -370,7 +420,9 @@ function DataTrackPage() {
                         <div>
                           <p className="text-sm font-semibold text-foreground">{result.status}</p>
                           <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                            <span className={tone!.badge + " rounded-full px-2 py-0.5"}>{tone!.label}</span>
+                            <span className={tone!.badge + " rounded-full px-2 py-0.5"}>
+                              {tone!.label}
+                            </span>
                             <span>•</span>
                             <span>{result.deliveryStatus}</span>
                           </div>
@@ -380,13 +432,18 @@ function DataTrackPage() {
                         <p className="font-medium tabular-nums">
                           {Math.round((deliveryStep / DELIVERY_STEPS.length) * 100)}%
                         </p>
-                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Progress</p>
+                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                          Progress
+                        </p>
                       </div>
                     </div>
                     {/* Progress bar – moves based on deliveryStep */}
                     <div className="mt-3 h-1.5 w-full rounded-full bg-border">
                       <div
-                        className={"h-full rounded-full transition-all duration-500 ease-out " + accent.progress}
+                        className={
+                          "h-full rounded-full transition-all duration-500 ease-out " +
+                          accent.progress
+                        }
                         style={{ width: `${(deliveryStep / DELIVERY_STEPS.length) * 100}%` }}
                       />
                     </div>
@@ -395,7 +452,9 @@ function DataTrackPage() {
                   {/* Key Metrics – 2x2 grid */}
                   <div className="grid grid-cols-2 gap-3">
                     <div className="rounded-xl border border-border/60 bg-muted/20 p-3">
-                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Order ID</p>
+                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                        Order ID
+                      </p>
                       <div className="mt-1 flex items-center justify-between">
                         <span className="font-mono text-sm font-bold">{result.orderId}</span>
                         <button
@@ -403,21 +462,33 @@ function DataTrackPage() {
                           className="rounded p-1 text-muted-foreground hover:bg-background hover:text-foreground"
                           title="Copy"
                         >
-                          {copied ? <Check className="size-3.5 text-emerald-500" /> : <Copy className="size-3.5" />}
+                          {copied ? (
+                            <Check className="size-3.5 text-emerald-500" />
+                          ) : (
+                            <Copy className="size-3.5" />
+                          )}
                         </button>
                       </div>
                     </div>
                     <div className="rounded-xl border border-border/60 bg-muted/20 p-3">
-                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Network</p>
+                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                        Network
+                      </p>
                       <p className="mt-1 text-sm font-bold">{result.network}</p>
                     </div>
                     <div className="rounded-xl border border-border/60 bg-muted/20 p-3">
-                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Bundle</p>
+                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                        Bundle
+                      </p>
                       <p className="mt-1 text-sm font-bold">{result.dataBundle}</p>
                     </div>
                     <div className="rounded-xl border border-border/60 bg-muted/20 p-3">
-                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Amount</p>
-                      <p className="mt-1 text-sm font-bold">{formatMoney(result.amount, result.currency)}</p>
+                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                        Amount
+                      </p>
+                      <p className="mt-1 text-sm font-bold">
+                        {formatMoney(result.amount, result.currency)}
+                      </p>
                     </div>
                   </div>
 
@@ -440,23 +511,30 @@ function DataTrackPage() {
                   </div>
 
                   {/* Rema (optional) */}
-                  {(result.fulfillmentReference || result.fulfillmentStatus || result.fulfillmentMessage) && (
+                  {(result.fulfillmentReference ||
+                    result.fulfillmentStatus ||
+                    result.fulfillmentMessage) && (
                     <div className="rounded-xl border border-border/60 bg-muted/20 p-3">
-                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Fulfilment details</p>
+                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                        Fulfilment details
+                      </p>
                       <div className="mt-1 space-y-1 text-sm">
                         {result.fulfillmentReference && (
                           <p>
-                            <span className="text-muted-foreground">Reference:</span> {result.fulfillmentReference}
+                            <span className="text-muted-foreground">Reference:</span>{" "}
+                            {result.fulfillmentReference}
                           </p>
                         )}
                         {result.fulfillmentStatus && (
                           <p>
-                            <span className="text-muted-foreground">Status:</span> {result.fulfillmentStatus}
+                            <span className="text-muted-foreground">Status:</span>{" "}
+                            {result.fulfillmentStatus}
                           </p>
                         )}
                         {result.fulfillmentMessage && (
                           <p>
-                            <span className="text-muted-foreground">Notes:</span> {result.fulfillmentMessage}
+                            <span className="text-muted-foreground">Notes:</span>{" "}
+                            {result.fulfillmentMessage}
                           </p>
                         )}
                       </div>

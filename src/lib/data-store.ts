@@ -8,10 +8,10 @@ export type DataCartItem = {
   createdAt: number;
 };
 
-const CART_STORAGE_KEY = 'proxyy2-data-cart';
+const CART_STORAGE_KEY = "proxyy2-data-cart";
 
 function readItems(): DataCartItem[] {
-  if (typeof window === 'undefined') return [];
+  if (typeof window === "undefined") return [];
   try {
     const raw = window.localStorage.getItem(CART_STORAGE_KEY);
     if (!raw) return [];
@@ -27,7 +27,7 @@ export function getDataCartItems() {
 }
 
 export function saveDataCartItems(items: DataCartItem[]) {
-  if (typeof window === 'undefined') return;
+  if (typeof window === "undefined") return;
   window.localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
 }
 
@@ -53,12 +53,12 @@ export function removeDataCartItem(itemId: string) {
 }
 
 export function clearDataCartItems() {
-  if (typeof window === 'undefined') return;
+  if (typeof window === "undefined") return;
   window.localStorage.removeItem(CART_STORAGE_KEY);
 }
 
 export function formatGhanaPhone(value: string) {
-  return value.replace(/\s+/g, '').replace(/[^\d+]/g, '');
+  return value.replace(/\s+/g, "").replace(/[^\d+]/g, "");
 }
 
 export function isValidGhanaPhoneNumber(value: string) {

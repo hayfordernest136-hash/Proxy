@@ -60,7 +60,9 @@ function AdminSidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: (
       <div className="flex items-center justify-between gap-3 border-b border-border/60 p-4">
         <div className="space-y-1 overflow-hidden">
           <div className="text-sm font-semibold">BrokeFlex Data Admin</div>
-          {!collapsed ? <p className="text-xs text-muted-foreground">Operations dashboard</p> : null}
+          {!collapsed ? (
+            <p className="text-xs text-muted-foreground">Operations dashboard</p>
+          ) : null}
         </div>
         <button
           className="rounded-md border border-border/70 bg-muted px-2 py-1 text-xs font-medium text-foreground"
@@ -83,7 +85,8 @@ function AdminSidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: (
 
             {group.items.map((item) => {
               const Icon = item.icon;
-              const isActive = location.pathname === item.to || location.pathname.startsWith(`${item.to}/`);
+              const isActive =
+                location.pathname === item.to || location.pathname.startsWith(`${item.to}/`);
 
               return (
                 <Link
@@ -120,11 +123,17 @@ export function AdminLayout({ children }: { children?: ReactNode }) {
     <div className="min-h-screen bg-background">
       <div className="flex">
         <div className="hidden md:block">
-          <AdminSidebar collapsed={collapsed} onToggle={() => setCollapsed((current) => !current)} />
+          <AdminSidebar
+            collapsed={collapsed}
+            onToggle={() => setCollapsed((current) => !current)}
+          />
         </div>
 
         {mobileOpen ? (
-          <div className="fixed inset-0 z-30 bg-black/50 md:hidden" onClick={() => setMobileOpen(false)} />
+          <div
+            className="fixed inset-0 z-30 bg-black/50 md:hidden"
+            onClick={() => setMobileOpen(false)}
+          />
         ) : null}
 
         <div className="md:hidden">
@@ -149,7 +158,11 @@ export function AdminLayout({ children }: { children?: ReactNode }) {
               <p className="text-sm font-semibold">BrokeFlex Data Admin</p>
               <p className="text-xs text-muted-foreground">Operations dashboard</p>
             </div>
-            <button type="button" onClick={() => setMobileOpen(false)} className="rounded-md border border-border/70 p-2">
+            <button
+              type="button"
+              onClick={() => setMobileOpen(false)}
+              className="rounded-md border border-border/70 p-2"
+            >
               <X className="size-4" />
             </button>
           </div>

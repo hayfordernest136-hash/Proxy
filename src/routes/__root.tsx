@@ -14,7 +14,6 @@ import { reportError } from "../lib/error-reporting";
 import { Toaster } from "@/components/ui/sonner";
 import { WhatsAppButton } from "@/components/site/WhatsAppButton";
 
-
 function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -142,4 +141,3 @@ function RootComponent() {
     </QueryClientProvider>
   );
 }
-

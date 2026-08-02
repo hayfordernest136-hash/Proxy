@@ -9,7 +9,8 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
   siteName: "BrokeFlex Data",
   siteTagline:
     "Affordable data bundles and reliable proxy solutions delivered fast, with human support and local payment options.",
-  whatsappNumber: (typeof import.meta !== "undefined" ? import.meta.env.VITE_WHATSAPP_NUMBER : undefined) ?? "",
+  whatsappNumber:
+    (typeof import.meta !== "undefined" ? import.meta.env.VITE_WHATSAPP_NUMBER : undefined) ?? "",
   defaultCurrency: "GHS",
 };
 

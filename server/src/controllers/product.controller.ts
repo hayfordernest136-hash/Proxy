@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Request, Response } from "express";
 import {
   getActiveProducts,
   getPlansByProductId,
@@ -6,11 +6,11 @@ import {
   getPricesByProductIds,
   getProductBySlug,
   ProductPlan,
-} from '../services/product.service';
+} from "../services/product.service";
 
 export async function listProducts(req: Request, res: Response) {
   try {
-    const limit = typeof req.query.limit === 'string' ? Number(req.query.limit) : undefined;
+    const limit = typeof req.query.limit === "string" ? Number(req.query.limit) : undefined;
     const products = await getActiveProducts(limit);
     const productIds = products.map((product) => product.id);
     const plans = await getPlansByProductIds(productIds);
@@ -35,8 +35,8 @@ export async function listProducts(req: Request, res: Response) {
 
     return res.json(payload);
   } catch (error) {
-    console.error('Failed to list products:', error);
-    return res.status(500).json({ message: 'Unable to load products' });
+    console.error("Failed to list products:", error);
+    return res.status(500).json({ message: "Unable to load products" });
   }
 }
 
@@ -45,14 +45,14 @@ export async function getProduct(req: Request, res: Response) {
     const { slug } = req.params;
     const product = await getProductBySlug(slug);
     if (!product) {
-      return res.status(404).json({ message: 'Product not found' });
+      return res.status(404).json({ message: "Product not found" });
     }
 
     const plans = await getPlansByProductId(product.id);
     const prices = await getPricesByProductIds([product.id]);
     return res.json({ ...product, plans, prices: prices[0] ? prices : [] });
   } catch (error) {
-    console.error('Failed to load product:', error);
-    return res.status(500).json({ message: 'Unable to load product' });
+    console.error("Failed to load product:", error);
+    return res.status(500).json({ message: "Unable to load product" });
   }
 }

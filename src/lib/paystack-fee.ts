@@ -1,5 +1,5 @@
 export const PAYSTACK_FEE_RATE = 0.0195;
-export const PAYSTACK_FEE_CAP = Number(import.meta.env.VITE_PAYSTACK_FEE_CAP || '0') || null;
+export const PAYSTACK_FEE_CAP = Number(import.meta.env.VITE_PAYSTACK_FEE_CAP || "0") || null;
 
 export function roundMoney(value: number) {
   return Math.round((value + Number.EPSILON) * 100) / 100;

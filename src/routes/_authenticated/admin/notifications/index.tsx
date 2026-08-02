@@ -15,7 +15,8 @@ function AdminNotificationsPage() {
       </div>
       <Card>
         <CardContent className="p-6 text-sm text-muted-foreground">
-          Notification templates and delivery logs can be managed here once the messaging endpoint is exposed.
+          Notification templates and delivery logs can be managed here once the messaging endpoint
+          is exposed.
         </CardContent>
       </Card>
     </div>

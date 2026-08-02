@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Request, Response } from "express";
 import {
   createProduct,
   updateProduct,
@@ -9,7 +9,7 @@ import {
   getActiveProducts,
   getPlansByProductIds,
   getPricesByProductIds,
-} from '../services/product.service';
+} from "../services/product.service";
 
 export async function adminListProductsHandler(_req: Request, res: Response) {
   try {
@@ -29,11 +29,15 @@ export async function adminListProductsHandler(_req: Request, res: Response) {
       return acc;
     }, {});
 
-    const payload = products.map((product: any) => ({ ...product, plans: plansByProduct[product.id] ?? [], prices: pricesByProduct[product.id] ?? [] }));
+    const payload = products.map((product: any) => ({
+      ...product,
+      plans: plansByProduct[product.id] ?? [],
+      prices: pricesByProduct[product.id] ?? [],
+    }));
     return res.json(payload);
   } catch (error) {
-    console.error('Failed to list admin products:', error);
-    return res.status(500).json({ message: 'Unable to load products' });
+    console.error("Failed to list admin products:", error);
+    return res.status(500).json({ message: "Unable to load products" });
   }
 }
 
@@ -43,8 +47,8 @@ export async function adminCreateProductHandler(req: Request, res: Response) {
     const product = await createProduct(body);
     return res.status(201).json(product);
   } catch (error) {
-    console.error('Failed to create product:', error);
-    return res.status(500).json({ message: 'Unable to create product' });
+    console.error("Failed to create product:", error);
+    return res.status(500).json({ message: "Unable to create product" });
   }
 }
 
@@ -52,14 +56,18 @@ export async function adminUpdateProductHandler(req: Request, res: Response) {
   try {
     const id = Number(req.params.productId);
     const patch = req.body;
-    console.log(`adminUpdateProductHandler id=${id} bodyKeys=${Object.keys(patch).join(',')}`);
-    try { console.log('adminUpdateProductHandler body:', JSON.stringify(patch).slice(0,1000)); } catch(e) {}
+    console.log(`adminUpdateProductHandler id=${id} bodyKeys=${Object.keys(patch).join(",")}`);
+    try {
+      console.log("adminUpdateProductHandler body:", JSON.stringify(patch).slice(0, 1000));
+    } catch (error) {
+      console.warn("Unable to log admin update payload", error);
+    }
     const product = await updateProduct(id, patch);
     return res.json(product);
   } catch (error) {
-    console.error('Failed to update product:', error);
+    console.error("Failed to update product:", error);
     if ((error as any)?.stack) console.error((error as any).stack);
-    return res.status(500).json({ message: 'Unable to update product' });
+    return res.status(500).json({ message: "Unable to update product" });
   }
 }
 
@@ -69,8 +77,8 @@ export async function adminDeleteProductHandler(req: Request, res: Response) {
     await softDeleteProduct(id);
     return res.json({ ok: true });
   } catch (error) {
-    console.error('Failed to delete product:', error);
-    return res.status(500).json({ message: 'Unable to delete product' });
+    console.error("Failed to delete product:", error);
+    return res.status(500).json({ message: "Unable to delete product" });
   }
 }
 
@@ -81,8 +89,8 @@ export async function adminCreatePlanHandler(req: Request, res: Response) {
     const plan = await createPlan(productId, body);
     return res.status(201).json(plan);
   } catch (error) {
-    console.error('Failed to create plan:', error);
-    return res.status(500).json({ message: 'Unable to create plan' });
+    console.error("Failed to create plan:", error);
+    return res.status(500).json({ message: "Unable to create plan" });
   }
 }
 
@@ -93,8 +101,8 @@ export async function adminUpdatePlanHandler(req: Request, res: Response) {
     const plan = await updatePlan(planId, patch);
     return res.json(plan);
   } catch (error) {
-    console.error('Failed to update plan:', error);
-    return res.status(500).json({ message: 'Unable to update plan' });
+    console.error("Failed to update plan:", error);
+    return res.status(500).json({ message: "Unable to update plan" });
   }
 }
 
@@ -104,8 +112,8 @@ export async function adminDeletePlanHandler(req: Request, res: Response) {
     await deletePlan(planId);
     return res.json({ ok: true });
   } catch (error) {
-    console.error('Failed to delete plan:', error);
-    return res.status(500).json({ message: 'Unable to delete plan' });
+    console.error("Failed to delete plan:", error);
+    return res.status(500).json({ message: "Unable to delete plan" });
   }
 }
 

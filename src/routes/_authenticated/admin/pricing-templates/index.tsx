@@ -50,7 +50,9 @@ function AdminPricingTemplatesPage() {
     if (editingId !== null) {
       setTemplates((current) =>
         current.map((template) =>
-          template.id === editingId ? { ...template, name: name.trim(), lines: lines.trim() } : template,
+          template.id === editingId
+            ? { ...template, name: name.trim(), lines: lines.trim() }
+            : template,
         ),
       );
     } else {
@@ -87,20 +89,34 @@ function AdminPricingTemplatesPage() {
           <CardContent className="space-y-4 p-6">
             <div className="space-y-2">
               <Label>Template name</Label>
-              <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Retail, Promo, Enterprise" />
+              <Input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Retail, Promo, Enterprise"
+              />
             </div>
             <div className="space-y-2">
               <Label>Pricing lines</Label>
-              <Textarea value={lines} onChange={(e) => setLines(e.target.value)} className="min-h-40" placeholder="10ip=20\n20ip=35" />
+              <Textarea
+                value={lines}
+                onChange={(e) => setLines(e.target.value)}
+                className="min-h-40"
+                placeholder="10ip=20\n20ip=35"
+              />
               <p className="text-xs text-muted-foreground">Detected {parsedCount} price rows.</p>
             </div>
             <div className="flex gap-2">
-              <Button onClick={saveTemplate}>{editingId !== null ? "Save template" : "Create template"}</Button>
-              <Button variant="outline" onClick={() => {
-                setEditingId(null);
-                setName("");
-                setLines("10ip=20\n20ip=35");
-              }}>
+              <Button onClick={saveTemplate}>
+                {editingId !== null ? "Save template" : "Create template"}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setEditingId(null);
+                  setName("");
+                  setLines("10ip=20\n20ip=35");
+                }}
+              >
                 Reset
               </Button>
             </div>
@@ -115,17 +131,29 @@ function AdminPricingTemplatesPage() {
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <p className="font-semibold">{template.name}</p>
-                    <p className="text-xs text-muted-foreground">{template.lines.split(/\r?\n/).filter(Boolean).length} price rows</p>
+                    <p className="text-xs text-muted-foreground">
+                      {template.lines.split(/\r?\n/).filter(Boolean).length} price rows
+                    </p>
                   </div>
                   <div className="flex gap-2">
-                    <Button size="sm" variant="secondary" onClick={() => editTemplate(template)}>Edit</Button>
-                    <Button size="sm" variant="outline" onClick={() => removeTemplate(template.id)}>Delete</Button>
+                    <Button size="sm" variant="secondary" onClick={() => editTemplate(template)}>
+                      Edit
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => removeTemplate(template.id)}>
+                      Delete
+                    </Button>
                   </div>
                 </div>
                 <div className="mt-3 flex flex-wrap gap-2">
-                  {template.lines.split(/\r?\n/).filter(Boolean).slice(0, 3).map((line) => (
-                    <Badge key={line} variant="secondary">{line}</Badge>
-                  ))}
+                  {template.lines
+                    .split(/\r?\n/)
+                    .filter(Boolean)
+                    .slice(0, 3)
+                    .map((line) => (
+                      <Badge key={line} variant="secondary">
+                        {line}
+                      </Badge>
+                    ))}
                 </div>
               </div>
             ))}

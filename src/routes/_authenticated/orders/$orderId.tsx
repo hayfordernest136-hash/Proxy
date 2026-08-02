@@ -45,6 +45,7 @@ export const Route = createFileRoute("/_authenticated/orders/$orderId")({
 function OrderDetailPage() {
   const { orderId } = Route.useParams();
   const [copied, setCopied] = useState(false);
+  const [supportDialogOpen, setSupportDialogOpen] = useState(false);
 
   const queryClient = useQueryClient();
   const { data: order, isLoading } = useQuery({
@@ -62,6 +63,19 @@ function OrderDetailPage() {
       return await apiFetch<any[]>(`/api/orders/${orderId}/events`);
     },
   });
+
+  const status = (order?.status as OrderStatus | undefined) ?? "awaiting_payment";
+  const delivery = (order?.delivery_method as DeliveryMethod | undefined) ?? "cd_key";
+
+  useEffect(() => {
+    if (
+      order &&
+      (status === "cancelled" || status === "refunded") &&
+      order.support_message_unread
+    ) {
+      setSupportDialogOpen(true);
+    }
+  }, [order, status]);
 
   if (isLoading) {
     return (
@@ -87,20 +101,6 @@ function OrderDetailPage() {
     );
   }
 
-  const status = order.status as OrderStatus;
-  const delivery = order.delivery_method as DeliveryMethod;
-  const [supportDialogOpen, setSupportDialogOpen] = useState(false);
-
-  useEffect(() => {
-    if (
-      order &&
-      (status === "cancelled" || status === "refunded") &&
-      order.support_message_unread
-    ) {
-      setSupportDialogOpen(true);
-    }
-  }, [order, status]);
-
   async function markSupportMessageRead() {
     if (!order) return;
     try {
@@ -109,7 +109,7 @@ function OrderDetailPage() {
       });
       await queryClient.invalidateQueries({ queryKey: ["order", orderId] });
     } catch (error) {
-      console.error('Unable to mark support message read:', error);
+      console.error("Unable to mark support message read:", error);
     }
   }
 
@@ -133,9 +133,7 @@ function OrderDetailPage() {
         </nav>
 
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h1 className="text-3xl font-extrabold tracking-tight">
-            Order #{order.order_number}
-          </h1>
+          <h1 className="text-3xl font-extrabold tracking-tight">Order #{order.order_number}</h1>
           <Badge variant="outline" className={statusTone(status)}>
             {ORDER_STATUS_LABEL[status]}
           </Badge>
@@ -191,8 +189,8 @@ function OrderDetailPage() {
                 <RefreshCw className="size-4" /> Account activation completed.
               </p>
               <p className="mt-1 text-sm text-muted-foreground">
-                Your account {order.refill_email ? `(${order.refill_email})` : ""} has been
-                refilled and is ready to use.
+                Your account {order.refill_email ? `(${order.refill_email})` : ""} has been refilled
+                and is ready to use.
               </p>
             </CardContent>
           </Card>
@@ -205,7 +203,8 @@ function OrderDetailPage() {
                 <Wifi className="size-4" /> Data bundle delivered.
               </p>
               <p className="mt-1 text-sm text-muted-foreground">
-                Your data bundle has been delivered. Check the phone number you used during checkout for confirmation.
+                Your data bundle has been delivered. Check the phone number you used during checkout
+                for confirmation.
               </p>
             </CardContent>
           </Card>
@@ -216,7 +215,11 @@ function OrderDetailPage() {
             <CardContent className="p-5">
               <h3 className="font-medium">Refill proof</h3>
               <div className="mt-3">
-                <img src={order.refill_proof_url} alt="Refill proof" className="max-w-full rounded" />
+                <img
+                  src={order.refill_proof_url}
+                  alt="Refill proof"
+                  className="max-w-full rounded"
+                />
               </div>
             </CardContent>
           </Card>
@@ -235,6 +238,9 @@ function OrderDetailPage() {
                   ["Delivery method", DELIVERY_LABEL[delivery]],
                   ["Unit price", formatMoney(order.unit_price, order.currency)],
                   ["Total paid", formatMoney(order.total_amount, order.currency)],
+                  ...(delivery === "data_bundle"
+                    ? [["Rema Reference", order.fulfillment_reference || "Pending"]]
+                    : []),
                   ["Payment", order.payment_status === "paid" ? "Paid" : "Unpaid"],
                   ["Placed", formatDate(order.created_at)],
                 ].map(([label, value]) => (
@@ -267,12 +273,15 @@ function OrderDetailPage() {
           </Card>
         ) : null}
 
-        <AlertDialog open={supportDialogOpen} onOpenChange={async (open) => {
-          if (!open) {
-            await markSupportMessageRead();
-          }
-          setSupportDialogOpen(open);
-        }}>
+        <AlertDialog
+          open={supportDialogOpen}
+          onOpenChange={async (open) => {
+            if (!open) {
+              await markSupportMessageRead();
+            }
+            setSupportDialogOpen(open);
+          }}
+        >
           <AlertDialogContent className="max-w-3xl rounded-[2rem] p-10 text-center sm:p-12">
             <div className="space-y-6">
               <div className="space-y-3">

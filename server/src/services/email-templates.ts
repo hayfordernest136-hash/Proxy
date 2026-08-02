@@ -1,4 +1,4 @@
-import { getSupportEmail } from './email.service';
+import { getSupportEmail } from "./email.service";
 
 /**
  * Reusable HTML email templates shared by both Proxy and Data orders.
@@ -10,36 +10,36 @@ export type OrderEmailContext = {
   orderId: string; // BRK-XXX-XXX
   customerName: string;
   orderDate: string;
-  productType: 'Proxy' | 'Data';
+  productType: "Proxy" | "Data";
   statusLabel: string;
   rows: { label: string; value: string }[];
   message: string;
 };
 
-const SITE_NAME = 'BrokeFlex';
+const SITE_NAME = "BrokeFlex";
 
 function escapeHtml(value: unknown): string {
-  return String(value ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '<')
-    .replace(/>/g, '>')
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "<")
+    .replace(/>/g, ">")
     .replace(/"/g, '"')
-    .replace(/'/g, '&#39;');
+    .replace(/'/g, "&#39;");
 }
 
 function formatDate(value: string | Date | undefined) {
-  if (!value) return '—';
-  const date = typeof value === 'string' ? new Date(value) : value;
-  if (Number.isNaN(date.getTime())) return '—';
-  return date.toLocaleDateString('en-GB', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
+  if (!value) return "—";
+  const date = typeof value === "string" ? new Date(value) : value;
+  if (Number.isNaN(date.getTime())) return "—";
+  return date.toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
   });
 }
 
 export function formatOrderReference(orderNumber: number) {
-  const digits = String(orderNumber).padStart(6, '0');
+  const digits = String(orderNumber).padStart(6, "0");
   return `BRK-${digits.slice(0, 3)}-${digits.slice(3)}`;
 }
 
@@ -52,7 +52,7 @@ function renderStatusBadge(statusLabel: string) {
 }
 
 function renderRows(rows: { label: string; value: string }[]) {
-  if (!rows.length) return '';
+  if (!rows.length) return "";
   return rows
     .map(
       (row) => `
@@ -62,19 +62,11 @@ function renderRows(rows: { label: string; value: string }[]) {
         </tr>
       `,
     )
-    .join('');
+    .join("");
 }
 
 export function renderOrderEmail(context: OrderEmailContext): string {
-  const {
-    orderId,
-    customerName,
-    orderDate,
-    productType,
-    statusLabel,
-    rows,
-    message,
-  } = context;
+  const { orderId, customerName, orderDate, productType, statusLabel, rows, message } = context;
 
   return `
 <!doctype html>
@@ -97,7 +89,7 @@ export function renderOrderEmail(context: OrderEmailContext): string {
             <!-- Body -->
             <tr>
               <td style="padding:32px;">
-                <div style="font-size:14px;color:#6B7280;">${customerName ? `Hi ${escapeHtml(customerName)},` : 'Hello,'}</div>
+                <div style="font-size:14px;color:#6B7280;">${customerName ? `Hi ${escapeHtml(customerName)},` : "Hello,"}</div>
 
                 <div style="margin-top:20px;font-size:18px;font-weight:800;color:#111827;">${escapeHtml(message)}</div>
 
@@ -140,7 +132,7 @@ export function renderOrderEmail(context: OrderEmailContext): string {
                         ${renderRows(rows)}
                       </table>
                     `
-                    : ''
+                    : ""
                 }
 
                 <!-- Support -->
@@ -180,14 +172,14 @@ export function renderOrderReceivedEmail(input: {
   orderId: string;
   customerName: string;
   orderDate: string;
-  productType: 'Proxy' | 'Data';
+  productType: "Proxy" | "Data";
   rows: { label: string; value: string }[];
 }): string {
   return renderOrderEmail({
     ...input,
     siteName: SITE_NAME,
-    statusLabel: 'Pending Payment',
-    message: 'We received your order — it is awaiting payment.',
+    statusLabel: "Pending Payment",
+    message: "We received your order — it is awaiting payment.",
   });
 }
 
@@ -198,14 +190,14 @@ export function renderPaymentConfirmedEmail(input: {
   orderId: string;
   customerName: string;
   orderDate: string;
-  productType: 'Proxy' | 'Data';
+  productType: "Proxy" | "Data";
   rows: { label: string; value: string }[];
 }): string {
   return renderOrderEmail({
     ...input,
     siteName: SITE_NAME,
-    statusLabel: 'Processing Delivery',
-    message: 'Payment confirmed — your order is now being processed.',
+    statusLabel: "Processing Delivery",
+    message: "Payment confirmed — your order is now being processed.",
   });
 }
 
@@ -216,14 +208,14 @@ export function renderOrderCompletedEmail(input: {
   orderId: string;
   customerName: string;
   orderDate: string;
-  productType: 'Proxy' | 'Data';
+  productType: "Proxy" | "Data";
   rows: { label: string; value: string }[];
 }): string {
   return renderOrderEmail({
     ...input,
     siteName: SITE_NAME,
-    statusLabel: 'Completed',
-    message: 'Your order has been completed successfully.',
+    statusLabel: "Completed",
+    message: "Your order has been completed successfully.",
   });
 }
 
@@ -234,7 +226,7 @@ export function renderOrderIssueEmail(input: {
   orderId: string;
   customerName: string;
   orderDate: string;
-  productType: 'Proxy' | 'Data';
+  productType: "Proxy" | "Data";
   rows: { label: string; value: string }[];
   statusLabel: string;
   problem: string;
@@ -248,20 +240,20 @@ export function renderOrderIssueEmail(input: {
 }
 
 export type AdminAlertEvent =
-  | 'new_order'
-  | 'payment_success'
-  | 'payment_failed'
-  | 'data_delivery_success'
-  | 'data_delivery_failed'
-  | 'proxy_fulfillment_completed'
-  | 'proxy_fulfillment_failed';
+  | "new_order"
+  | "payment_success"
+  | "payment_failed"
+  | "data_delivery_success"
+  | "data_delivery_failed"
+  | "proxy_fulfillment_completed"
+  | "proxy_fulfillment_failed";
 
 export type AdminAlertContext = {
   event: AdminAlertEvent;
   orderId: string; // BRK-XXX-XXX
   customerName: string;
   customerEmail: string;
-  productType: 'Proxy' | 'Data';
+  productType: "Proxy" | "Data";
   productDetails: string;
   amount: string;
   currency: string;
@@ -272,23 +264,45 @@ export type AdminAlertContext = {
   eventTime: string;
 };
 
-const ADMIN_EVENT_META: Record<AdminAlertEvent, { label: string; color: string; description: string }> = {
-  new_order: { label: 'New Order', color: '#3B82F6', description: 'A new order has been placed.' },
-  payment_success: { label: 'Payment Success', color: '#10B981', description: 'A payment was confirmed successfully.' },
-  payment_failed: { label: 'Payment Failed', color: '#EF4444', description: 'A payment could not be verified.' },
-  data_delivery_success: { label: 'Data Delivery Success', color: '#10B981', description: 'A data order was fulfilled successfully.' },
-  data_delivery_failed: { label: 'Data Delivery Failed', color: '#EF4444', description: 'A data order could not be fulfilled.' },
-  proxy_fulfillment_completed: { label: 'Proxy Fulfillment Completed', color: '#10B981', description: 'A proxy order was marked as completed.' },
-  proxy_fulfillment_failed: { label: 'Proxy Fulfillment Failed', color: '#EF4444', description: 'A proxy order failed or was cancelled.' },
+const ADMIN_EVENT_META: Record<
+  AdminAlertEvent,
+  { label: string; color: string; description: string }
+> = {
+  new_order: { label: "New Order", color: "#3B82F6", description: "A new order has been placed." },
+  payment_success: {
+    label: "Payment Success",
+    color: "#10B981",
+    description: "A payment was confirmed successfully.",
+  },
+  payment_failed: {
+    label: "Payment Failed",
+    color: "#EF4444",
+    description: "A payment could not be verified.",
+  },
+  data_delivery_success: {
+    label: "Data Delivery Success",
+    color: "#10B981",
+    description: "A data order was fulfilled successfully.",
+  },
+  data_delivery_failed: {
+    label: "Data Delivery Failed",
+    color: "#EF4444",
+    description: "A data order could not be fulfilled.",
+  },
+  proxy_fulfillment_completed: {
+    label: "Proxy Fulfillment Completed",
+    color: "#10B981",
+    description: "A proxy order was marked as completed.",
+  },
+  proxy_fulfillment_failed: {
+    label: "Proxy Fulfillment Failed",
+    color: "#EF4444",
+    description: "A proxy order failed or was cancelled.",
+  },
 };
 
-function renderStatusPill(label: string, status: 'success' | 'failed' | 'pending') {
-  const color =
-    status === 'success'
-      ? '#10B981'
-      : status === 'failed'
-        ? '#EF4444'
-        : '#F59E0B';
+function renderStatusPill(label: string, status: "success" | "failed" | "pending") {
+  const color = status === "success" ? "#10B981" : status === "failed" ? "#EF4444" : "#F59E0B";
 
   return `
     <span style="display:inline-flex;align-items:center;gap:6px;background:${color}20;color:${color};font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.08em;padding:8px 14px;border-radius:999px;border:1px solid ${color}40;">
@@ -301,13 +315,13 @@ function renderAdminRows(rows: { label: string; value: string }[]) {
   return rows
     .map(
       (row, index) => `
-        <tr style="background:${index % 2 === 0 ? '#FFFFFF' : '#F8FAFC'};">
+        <tr style="background:${index % 2 === 0 ? "#FFFFFF" : "#F8FAFC"};">
           <td style="padding:12px 16px;color:#475569;font-size:14px;font-weight:600;">${escapeHtml(row.label)}</td>
           <td style="padding:12px 16px;color:#0F172A;font-size:14px;font-weight:700;text-align:right;">${escapeHtml(row.value)}</td>
         </tr>
       `,
     )
-    .join('');
+    .join("");
 }
 
 /**
@@ -345,7 +359,7 @@ export function renderWelcomeEmail(input: {
             <!-- Body -->
             <tr>
               <td style="padding:32px;">
-                <div style="font-size:14px;color:#6B7280;">${customerName ? `Hi ${escapeHtml(customerName)},` : 'Hello,'}</div>
+                <div style="font-size:14px;color:#6B7280;">${customerName ? `Hi ${escapeHtml(customerName)},` : "Hello,"}</div>
 
                 <div style="margin-top:20px;font-size:18px;font-weight:800;color:#111827;">
                   Your BrokeFlex account has been created successfully.
@@ -428,7 +442,7 @@ export function renderLoginNotificationEmail(input: { customerName: string }): s
             <!-- Body -->
             <tr>
               <td style="padding:32px;">
-                <div style="font-size:14px;color:#6B7280;">${customerName ? `Hi ${escapeHtml(customerName)},` : 'Hello,'}</div>
+                <div style="font-size:14px;color:#6B7280;">${customerName ? `Hi ${escapeHtml(customerName)},` : "Hello,"}</div>
 
                 <div style="margin-top:20px;font-size:18px;font-weight:800;color:#111827;">
                   You just signed in to your BrokeFlex account.
@@ -499,7 +513,7 @@ export function renderPasswordResetEmail(input: {
             <!-- Body -->
             <tr>
               <td style="padding:32px;">
-                <div style="font-size:14px;color:#6B7280;">${customerName ? `Hi ${escapeHtml(customerName)},` : 'Hello,'}</div>
+                <div style="font-size:14px;color:#6B7280;">${customerName ? `Hi ${escapeHtml(customerName)},` : "Hello,"}</div>
 
                 <div style="margin-top:20px;font-size:18px;font-weight:800;color:#111827;">
                   You requested a password reset for your BrokeFlex Data account.
@@ -576,17 +590,17 @@ export function renderAdminNotificationEmail(context: AdminAlertContext): string
     eventTime,
   } = context;
 
-  const statusTone = context.event.endsWith('_failed') ? 'failed' : 'success';
+  const statusTone = context.event.endsWith("_failed") ? "failed" : "success";
 
   const keyRows = [
-    { label: 'Order ID', value: orderId },
-    { label: 'Customer', value: customerName || customerEmail || '—' },
-    { label: 'Customer email', value: customerEmail || '—' },
-    { label: 'Product type', value: productType },
-    { label: 'Product details', value: productDetails },
-    { label: 'Amount', value: `${currency} ${amount}` },
-    { label: 'Payment status', value: paymentStatus },
-    { label: 'Fulfillment status', value: fulfillmentStatus },
+    { label: "Order ID", value: orderId },
+    { label: "Customer", value: customerName || customerEmail || "—" },
+    { label: "Customer email", value: customerEmail || "—" },
+    { label: "Product type", value: productType },
+    { label: "Product details", value: productDetails },
+    { label: "Amount", value: `${currency} ${amount}` },
+    { label: "Payment status", value: paymentStatus },
+    { label: "Fulfillment status", value: fulfillmentStatus },
   ];
 
   return `
@@ -618,7 +632,7 @@ export function renderAdminNotificationEmail(context: AdminAlertContext): string
               <td style="padding:32px;background:#F8FAFC;">
                 <div style="font-size:16px;font-weight:700;color:#0F172A;">Order summary</div>
                 <div style="margin-top:12px;font-size:14px;color:#475569;line-height:1.7;">
-                  ${customerName ? `Customer: ${escapeHtml(customerName)}` : 'Hello,'}
+                  ${customerName ? `Customer: ${escapeHtml(customerName)}` : "Hello,"}
                 </div>
 
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:20px;border-radius:18px;overflow:hidden;border:1px solid #E2E8F0;background:#FFFFFF;">
@@ -636,29 +650,39 @@ export function renderAdminNotificationEmail(context: AdminAlertContext): string
                   </div>
                 </div>
 
-                ${details && details.length
-                  ? `
+                ${
+                  details && details.length
+                    ? `
                     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:24px;border-radius:18px;overflow:hidden;border:1px solid #E2E8F0;background:#FFFFFF;">
                       <tr>
                         <td style="padding:18px 20px;background:#F8FAFC;border-bottom:1px solid #E2E8F0;">
                           <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:#475569;">Event details</div>
                         </td>
                       </tr>
-                      ${details.map((detail) => `
+                      ${details
+                        .map(
+                          (detail) => `
                         <tr>
                           <td style="padding:14px 20px;border-bottom:1px solid #E2E8F0;color:#334155;font-size:14px;line-height:1.7;">• ${escapeHtml(detail)}</td>
                         </tr>
-                      `).join('')}
+                      `,
+                        )
+                        .join("")}
                     </table>
-                  ` : ''}
+                  `
+                    : ""
+                }
 
-                ${errorMessage
-                  ? `
+                ${
+                  errorMessage
+                    ? `
                     <div style="margin-top:24px;padding:18px 20px;background:#FEF2F2;border:1px solid #FECACA;border-radius:18px;color:#991B1B;font-size:14px;line-height:1.7;">
                       <div style="font-weight:700;margin-bottom:8px;">Error details</div>
                       <div style="font-family:Arial,Helvetica,sans-serif;white-space:pre-wrap;">${escapeHtml(errorMessage)}</div>
                     </div>
-                  ` : ''}
+                  `
+                    : ""
+                }
 
                 <div style="margin-top:24px;padding:20px;background:#FFFFFF;border:1px solid #E2E8F0;border-radius:18px;">
                   <div style="font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:#94A3B8;">Event time</div>
@@ -684,4 +708,3 @@ export function renderAdminNotificationEmail(context: AdminAlertContext): string
 </html>
   `.trim();
 }
-

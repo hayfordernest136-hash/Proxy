@@ -17,7 +17,10 @@ export const Route = createFileRoute("/_authenticated/checkout/$orderId")({
   head: () => ({
     meta: [
       { title: "Secure Checkout - BrokeFlex" },
-      { name: "description", content: "Complete payment to start fulfillment of your proxy order." },
+      {
+        name: "description",
+        content: "Complete payment to start fulfillment of your proxy order.",
+      },
       { property: "og:title", content: "Secure Checkout - BrokeFlex" },
       { property: "og:description", content: "Complete payment for your proxy order." },
     ],
@@ -31,7 +34,11 @@ function CheckoutPage() {
   const [busy, setBusy] = useState(false);
   const [discountApplied, setDiscountApplied] = useState(false);
 
-  const { data: order, isLoading, refetch } = useQuery({
+  const {
+    data: order,
+    isLoading,
+    refetch,
+  } = useQuery({
     queryKey: ["order", orderId],
     queryFn: async () => {
       return await apiFetch<any>(`/api/orders/${orderId}`);
@@ -42,14 +49,14 @@ function CheckoutPage() {
     setBusy(true);
     try {
       const updatedOrder = await apiFetch<any>(`/api/orders/${orderId}`, {
-        method: 'PATCH',
+        method: "PATCH",
         body: JSON.stringify({ apply_referral_discount: true }),
       });
       setDiscountApplied(true);
-      toast.success('Referral reward applied. Your order total has been updated.');
+      toast.success("Referral reward applied. Your order total has been updated.");
       refetch();
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Unable to apply referral reward.');
+      toast.error(e instanceof Error ? e.message : "Unable to apply referral reward.");
     } finally {
       setBusy(false);
     }
@@ -58,13 +65,15 @@ function CheckoutPage() {
   async function handlePay() {
     setBusy(true);
     try {
-      const response = await apiFetch<{ ok: boolean; authorizationUrl?: string; reference?: string; sandbox?: boolean }>(
-        "/api/payments/initiate",
-        {
-          method: "POST",
-          body: JSON.stringify({ orderId }),
-        },
-      );
+      const response = await apiFetch<{
+        ok: boolean;
+        authorizationUrl?: string;
+        reference?: string;
+        sandbox?: boolean;
+      }>("/api/payments/initiate", {
+        method: "POST",
+        body: JSON.stringify({ orderId }),
+      });
 
       if (response.sandbox) {
         toast.success("Sandbox payment initiated. Confirming order as paid.");
@@ -87,9 +96,9 @@ function CheckoutPage() {
   useEffect(() => {
     if (!order) return;
     const params = new URLSearchParams(window.location.search);
-    const reference = params.get('reference') || params.get('trxref') || params.get('trxRef');
+    const reference = params.get("reference") || params.get("trxref") || params.get("trxRef");
     if (!reference) return;
-    if (order.payment_status === 'paid') {
+    if (order.payment_status === "paid") {
       window.history.replaceState({}, document.title, window.location.pathname);
       return;
     }
@@ -139,8 +148,11 @@ function CheckoutPage() {
 
   const paid = order.payment_status === "paid";
   const delivery = order.delivery_method as DeliveryMethod;
-  const hasEligibleReward = order.quantity === 10 && !order.referral_discount_applied && order.status !== 'paid';
-  const { fee: paystackFee, total: paystackTotal } = calculatePaystackFee(Number(order.total_amount));
+  const hasEligibleReward =
+    order.quantity === 10 && !order.referral_discount_applied && order.status !== "paid";
+  const { fee: paystackFee, total: paystackTotal } = calculatePaystackFee(
+    Number(order.total_amount),
+  );
 
   return (
     <SiteLayout>
@@ -168,7 +180,9 @@ function CheckoutPage() {
             <div className="space-y-3 rounded-2xl border border-border/70 bg-muted/5 p-4">
               <div className="flex justify-between gap-4 text-sm">
                 <span>Product Price</span>
-                <span className="font-medium">{formatMoney(order.total_amount, order.currency)}</span>
+                <span className="font-medium">
+                  {formatMoney(order.total_amount, order.currency)}
+                </span>
               </div>
               <div className="flex justify-between gap-4 text-sm">
                 <span>Paystack Processing Fee</span>
@@ -205,9 +219,7 @@ function CheckoutPage() {
                     onClick={handleApplyReward}
                     disabled={busy}
                   >
-                    {busy ? (
-                      <Loader2 className="mr-2 size-4 animate-spin" />
-                    ) : null}
+                    {busy ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}
                     Apply 50% referral reward
                   </Button>
                 ) : null}
@@ -220,8 +232,8 @@ function CheckoutPage() {
                   Pay {formatMoney(paystackTotal, order.currency)}
                 </Button>
                 <p className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
-                  <ShieldCheck className="size-3.5" /> Payments are verified securely on our
-                  servers before fulfilment begins.
+                  <ShieldCheck className="size-3.5" /> Payments are verified securely on our servers
+                  before fulfilment begins.
                 </p>
               </>
             )}

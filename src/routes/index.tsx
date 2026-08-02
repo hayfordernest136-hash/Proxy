@@ -70,7 +70,7 @@ function HomePage() {
     queryFn: async () => {
       const data = await apiFetch<any[]>("/api/products?limit=6");
       return data.map((p) => {
-        const prices = (p.prices ?? []).map((pr:any)=>Number(pr.price));
+        const prices = (p.prices ?? []).map((pr: any) => Number(pr.price));
         return {
           ...p,
           from_price: prices.length ? Math.min(...prices) : null,
@@ -92,13 +92,12 @@ function HomePage() {
             </Badge>
             <h1 className="text-4xl font-extrabold leading-[1.08] tracking-tight sm:text-6xl">
               Affordable data bundles and{" "}
-              <span className="gradient-text">reliable proxy solutions</span> in one
-              place.
+              <span className="gradient-text">reliable proxy solutions</span> in one place.
             </h1>
             <p className="mt-6 max-w-2xl text-lg text-muted-foreground">
-              Buy mobile data instantly for your phone, or get reliable proxies for your
-              online needs - all from one platform you can trust. Pay securely with
-              Paystack and get delivered fast.
+              Buy mobile data instantly for your phone, or get reliable proxies for your online
+              needs - all from one platform you can trust. Pay securely with Paystack and get
+              delivered fast.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Button asChild size="lg">
@@ -152,8 +151,7 @@ function HomePage() {
             <div>
               <h2 className="text-3xl font-bold tracking-tight">Popular plans</h2>
               <p className="mt-2 text-muted-foreground">
-                Hand-picked proxy plans and data bundles, transparent pricing, no hidden
-                renewals.
+                Hand-picked proxy plans and data bundles, transparent pricing, no hidden renewals.
               </p>
             </div>
             <Button asChild variant="ghost">
@@ -177,8 +175,8 @@ function HomePage() {
       <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6">
         <h2 className="text-3xl font-bold tracking-tight">Everything you need in one place</h2>
         <p className="mt-2 max-w-2xl text-muted-foreground">
-          Buy mobile data for yourself or as a gift, or pick a proxy plan for your
-          online work. Every order is handled by our team the moment your payment lands.
+          Buy mobile data for yourself or as a gift, or pick a proxy plan for your online work.
+          Every order is handled by our team the moment your payment lands.
         </p>
 
         <div className="mt-10 grid gap-6 md:grid-cols-3">
@@ -189,8 +187,8 @@ function HomePage() {
               </span>
               <h3 className="text-xl font-semibold tracking-tight">Mobile Data</h3>
               <p className="text-sm text-muted-foreground">
-                Cheap data bundles for MTN, Telecel and AirtelTigo numbers - delivered
-                straight to your phone in minutes.
+                Cheap data bundles for MTN, Telecel and AirtelTigo numbers - delivered straight to
+                your phone in minutes.
               </p>
               <Button asChild size="sm" className="mt-2">
                 <Link to="/data">Buy data</Link>
@@ -205,8 +203,8 @@ function HomePage() {
               </span>
               <h3 className="text-xl font-semibold tracking-tight">Proxy CD Key</h3>
               <p className="text-sm text-muted-foreground">
-                Get a proxy activation key in your dashboard, ready to redeem on the
-                provider's platform.
+                Get a proxy activation key in your dashboard, ready to redeem on the provider's
+                platform.
               </p>
               <p className="inline-flex items-center gap-2 text-sm font-medium text-primary">
                 <Clock className="size-4" /> Usually within 2 minutes after payment
@@ -221,8 +219,8 @@ function HomePage() {
               </span>
               <h3 className="text-xl font-semibold tracking-tight">Proxy Account Refill</h3>
               <p className="text-sm text-muted-foreground">
-                Give us your provider username and any notes - we top up or activate your
-                existing account for you.
+                Give us your provider username and any notes - we top up or activate your existing
+                account for you.
               </p>
               <p className="inline-flex items-center gap-2 text-sm font-medium text-primary">
                 <Clock className="size-4" /> Usually within 5-7 minutes after payment
@@ -240,8 +238,8 @@ function HomePage() {
           <div>
             <h2 className="text-3xl font-bold tracking-tight">Ready to get started?</h2>
             <p className="mt-2 max-w-xl text-muted-foreground">
-              Create a free account, grab a data bundle or pick a proxy plan, and pay
-              securely with Paystack. Our team handles the rest.
+              Create a free account, grab a data bundle or pick a proxy plan, and pay securely with
+              Paystack. Our team handles the rest.
             </p>
           </div>
           <div className="flex flex-wrap gap-3">

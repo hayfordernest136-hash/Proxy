@@ -19,4 +19,5 @@ npm run dev
 - TypeScript
 - React
 - Tailwind CSS
+
 # Proxy

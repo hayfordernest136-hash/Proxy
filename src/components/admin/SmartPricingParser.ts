@@ -48,7 +48,10 @@ const SmartPricingParser = {
 
       if (matched) continue;
 
-      const parts = line.split(/=|:|,|\s+/).map((part) => part.trim()).filter(Boolean);
+      const parts = line
+        .split(/=|:|,|\s+/)
+        .map((part) => part.trim())
+        .filter(Boolean);
       if (parts.length < 2) continue;
 
       const qtyText = parts[0];

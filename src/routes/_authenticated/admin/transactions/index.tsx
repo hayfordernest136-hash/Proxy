@@ -15,7 +15,8 @@ function AdminTransactionsPage() {
       </div>
       <Card>
         <CardContent className="p-6 text-sm text-muted-foreground">
-          Transaction history is ready for connection to the finance backend when that endpoint is exposed.
+          Transaction history is ready for connection to the finance backend when that endpoint is
+          exposed.
         </CardContent>
       </Card>
     </div>

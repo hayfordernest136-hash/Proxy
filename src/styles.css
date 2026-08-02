@@ -69,7 +69,7 @@
   --card-foreground: #111827;
   --popover: #ffffff;
   --popover-foreground: #111827;
-  --primary: #FACC15;
+  --primary: #facc15;
   --primary-foreground: #111827;
   --secondary: #111827;
   --secondary-foreground: #ffffff;
@@ -85,21 +85,25 @@
   --warning-foreground: #111827;
   --border: #e5e7eb;
   --input: #f9fafb;
-  --ring: #FACC15;
-  --chart-1: #FACC15;
+  --ring: #facc15;
+  --chart-1: #facc15;
   --chart-2: #16a34a;
   --chart-3: #7c3aed;
   --chart-4: #f59e0b;
   --chart-5: #ef4444;
   --sidebar: #ffffff;
   --sidebar-foreground: #111827;
-  --sidebar-primary: #FACC15;
+  --sidebar-primary: #facc15;
   --sidebar-primary-foreground: #111827;
   --sidebar-accent: #f3f4f6;
   --sidebar-accent-foreground: #6b7280;
   --sidebar-border: #e5e7eb;
-  --sidebar-ring: #FACC15;
-  --gradient-hero: radial-gradient(circle at 20% 0%, color-mix(in oklab, var(--primary) 22%, transparent), transparent 55%);
+  --sidebar-ring: #facc15;
+  --gradient-hero: radial-gradient(
+    circle at 20% 0%,
+    color-mix(in oklab, var(--primary) 22%, transparent),
+    transparent 55%
+  );
   --gradient-primary: linear-gradient(135deg, var(--primary), #e6c30a);
   --shadow-elevated: 0 24px 60px -30px rgba(250, 204, 21, 0.2);
 }
@@ -111,7 +115,7 @@
   --card-foreground: #ffffff;
   --popover: #0b1220;
   --popover-foreground: #ffffff;
-  --primary: #FACC15;
+  --primary: #facc15;
   --primary-foreground: #111827;
   --secondary: #111827;
   --secondary-foreground: #ffffff;
@@ -125,22 +129,22 @@
   --success-foreground: #ffffff;
   --warning: #f59e0b;
   --warning-foreground: #111827;
-  --border: rgba(255,255,255,0.06);
-  --input: rgba(255,255,255,0.04);
-  --ring: #FACC15;
-  --chart-1: #FACC15;
+  --border: rgba(255, 255, 255, 0.06);
+  --input: rgba(255, 255, 255, 0.04);
+  --ring: #facc15;
+  --chart-1: #facc15;
   --chart-2: #16a34a;
   --chart-3: #7c3aed;
   --chart-4: #f59e0b;
   --chart-5: #ef4444;
   --sidebar: #0b1220;
   --sidebar-foreground: #ffffff;
-  --sidebar-primary: #FACC15;
+  --sidebar-primary: #facc15;
   --sidebar-primary-foreground: #111827;
   --sidebar-accent: #0b1220;
   --sidebar-accent-foreground: #9ca3af;
-  --sidebar-border: rgba(255,255,255,0.06);
-  --sidebar-ring: #FACC15;
+  --sidebar-border: rgba(255, 255, 255, 0.06);
+  --sidebar-ring: #facc15;
 }
 
 @theme inline {
@@ -176,4 +180,3 @@
     -webkit-font-smoothing: antialiased;
   }
 }
-

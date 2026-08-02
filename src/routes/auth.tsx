@@ -12,10 +12,10 @@ import { Label } from "@/components/ui/label";
 import { useSession } from "@/hooks/useSession";
 import { Brand } from "@/components/site/Brand";
 
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID ?? '';
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID ?? "";
 const GOOGLE_CALLBACK_URL =
   import.meta.env.VITE_GOOGLE_CALLBACK_URL ??
-  (typeof window !== 'undefined' ? `${window.location.origin}/auth` : '');
+  (typeof window !== "undefined" ? `${window.location.origin}/auth` : "");
 
 const searchSchema = z.object({
   mode: z.enum(["login", "register"]).optional(),
@@ -80,37 +80,44 @@ function AuthPage() {
     }
   }, [user, loading, navigate]);
 
-  async function handleGoogleCredential(response: { credential?: string; code?: string; error?: string; error_description?: string }) {
+  async function handleGoogleCredential(response: {
+    credential?: string;
+    code?: string;
+    error?: string;
+    error_description?: string;
+  }) {
     if (response.error) {
-      toast.error(response.error_description || 'Google sign-in was cancelled. Please try again.');
+      toast.error(response.error_description || "Google sign-in was cancelled. Please try again.");
       return;
     }
 
     setGoogleBusy(true);
     try {
-      const data = await apiFetch<{ ok: boolean; token?: string; user?: { role?: string } }>('/api/auth/google', {
-        method: 'POST',
-        body: JSON.stringify({
-          ...(response.credential ? { credential: response.credential } : {}),
-          ...(response.code ? { code: response.code } : {}),
-        }),
-      });
+      const data = await apiFetch<{ ok: boolean; token?: string; user?: { role?: string } }>(
+        "/api/auth/google",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            ...(response.credential ? { credential: response.credential } : {}),
+            ...(response.code ? { code: response.code } : {}),
+          }),
+        },
+      );
       if (data?.token) {
-        window.localStorage.setItem('auth-token', data.token);
+        window.localStorage.setItem("auth-token", data.token);
       }
-      toast.success('Welcome!');
-      navigate({ to: data?.user?.role === 'admin' ? '/admin' : '/dashboard', replace: true });
+      toast.success("Welcome!");
+      navigate({ to: data?.user?.role === "admin" ? "/admin" : "/dashboard", replace: true });
     } catch (err: any) {
-      toast.error(err?.message || 'Google sign-in failed. Please try again.');
+      toast.error(err?.message || "Google sign-in failed. Please try again.");
     } finally {
       setGoogleBusy(false);
     }
   }
 
   useEffect(() => {
-    if (!GOOGLE_CLIENT_ID || typeof window === 'undefined') return;
+    if (!GOOGLE_CLIENT_ID || typeof window === "undefined") return;
 
-    let initInterval: number | undefined;
     const tryInit = () => {
       const google = (window as any).google;
       if (!google?.accounts) {
@@ -126,48 +133,43 @@ function AuthPage() {
 
       const client = google.accounts.oauth2.initCodeClient({
         client_id: GOOGLE_CLIENT_ID,
-        scope: 'openid email profile',
-        ux_mode: 'popup',
-        redirect_uri: 'postmessage',
+        scope: "openid email profile",
+        ux_mode: "popup",
+        redirect_uri: "postmessage",
         callback: (response: any) => {
           handleGoogleCredential(response);
         },
       });
       setGoogleClient(client);
-      if (initInterval) {
-        window.clearInterval(initInterval);
-      }
     };
 
     tryInit();
-    initInterval = window.setInterval(tryInit, 250);
+    const initInterval = window.setInterval(tryInit, 250);
 
     return () => {
-      if (initInterval) {
-        window.clearInterval(initInterval);
-      }
+      window.clearInterval(initInterval);
     };
   }, [googleClient]);
 
   async function startGoogleFlow() {
     if (!GOOGLE_CLIENT_ID) {
-      toast.error('Google sign-in is not configured yet.');
+      toast.error("Google sign-in is not configured yet.");
       return;
     }
 
-    if (typeof window === 'undefined') {
-      toast.error('Google sign-in is unavailable right now.');
+    if (typeof window === "undefined") {
+      toast.error("Google sign-in is unavailable right now.");
       return;
     }
 
     const google = (window as any).google;
     if (!google?.accounts) {
-      toast.info('Google sign-in is still loading. Please try again in a moment.');
+      toast.info("Google sign-in is still loading. Please try again in a moment.");
       return;
     }
 
     if (!googleSdkReady && !googleClient) {
-      toast.info('Google sign-in is still loading. Please try again in a moment.');
+      toast.info("Google sign-in is still loading. Please try again in a moment.");
       return;
     }
 
@@ -176,7 +178,7 @@ function AuthPage() {
       try {
         googleClient.requestCode();
       } catch (err: any) {
-        toast.error(err?.message || 'Google sign-in failed. Please try again.');
+        toast.error(err?.message || "Google sign-in failed. Please try again.");
       } finally {
         setGoogleBusy(false);
       }
@@ -186,9 +188,9 @@ function AuthPage() {
     if (google?.accounts?.oauth2?.initCodeClient) {
       const client = google.accounts.oauth2.initCodeClient({
         client_id: GOOGLE_CLIENT_ID,
-        scope: 'openid email profile',
-        ux_mode: 'popup',
-        redirect_uri: 'postmessage',
+        scope: "openid email profile",
+        ux_mode: "popup",
+        redirect_uri: "postmessage",
         callback: (response: any) => {
           handleGoogleCredential(response);
         },
@@ -198,7 +200,7 @@ function AuthPage() {
       try {
         client.requestCode();
       } catch (err: any) {
-        toast.error(err?.message || 'Google sign-in failed. Please try again.');
+        toast.error(err?.message || "Google sign-in failed. Please try again.");
       } finally {
         setGoogleBusy(false);
       }
@@ -206,7 +208,7 @@ function AuthPage() {
     }
 
     if (!google?.accounts?.id) {
-      toast.info('Google sign-in is still loading. Please try again in a moment.');
+      toast.info("Google sign-in is still loading. Please try again in a moment.");
       return;
     }
 
@@ -219,7 +221,7 @@ function AuthPage() {
 
     google.accounts.id.prompt((notification: any) => {
       if (notification?.getNotDisplayedReason?.()) {
-        toast.error('Google sign-in could not be shown. Please try again.');
+        toast.error("Google sign-in could not be shown. Please try again.");
       }
     });
   }
@@ -244,45 +246,50 @@ function AuthPage() {
     setBusy(true);
     if (mode === "register") {
       try {
-        const data = await apiFetch<{ ok: boolean; token?: string; user?: { role?: string } }>('/api/auth/register', {
-          method: 'POST',
-          body: JSON.stringify({
-            full_name: fullName.trim().slice(0, 120),
-            email: parsed.data.email,
-            password: parsed.data.password,
-            confirm_password: confirmPassword,
-            referral_code: search.referral_code ?? null,
-          }),
-        });
+        const data = await apiFetch<{ ok: boolean; token?: string; user?: { role?: string } }>(
+          "/api/auth/register",
+          {
+            method: "POST",
+            body: JSON.stringify({
+              full_name: fullName.trim().slice(0, 120),
+              email: parsed.data.email,
+              password: parsed.data.password,
+              confirm_password: confirmPassword,
+              referral_code: search.referral_code ?? null,
+            }),
+          },
+        );
         setBusy(false);
         if (data?.token) {
-          window.localStorage.setItem('auth-token', data.token);
+          window.localStorage.setItem("auth-token", data.token);
         }
-        toast.success('Welcome to BrokeFlex!');
-        navigate({ to: data?.user?.role === 'admin' ? '/admin' : '/dashboard', replace: true });
+        toast.success("Welcome to BrokeFlex!");
+        navigate({ to: data?.user?.role === "admin" ? "/admin" : "/dashboard", replace: true });
       } catch (err: any) {
         setBusy(false);
-        toast.error(err?.message || 'Registration failed');
+        toast.error(err?.message || "Registration failed");
       }
     } else {
       try {
-        const data = await apiFetch<{ ok: boolean; token?: string; user?: { role?: string } }>('/api/auth/login', {
-          method: 'POST',
-          body: JSON.stringify({ email: parsed.data.email, password: parsed.data.password }),
-        });
+        const data = await apiFetch<{ ok: boolean; token?: string; user?: { role?: string } }>(
+          "/api/auth/login",
+          {
+            method: "POST",
+            body: JSON.stringify({ email: parsed.data.email, password: parsed.data.password }),
+          },
+        );
         setBusy(false);
         if (data?.token) {
-          window.localStorage.setItem('auth-token', data.token);
+          window.localStorage.setItem("auth-token", data.token);
         }
-        toast.success('Welcome back!');
-        navigate({ to: data?.user?.role === 'admin' ? '/admin' : '/dashboard', replace: true });
+        toast.success("Welcome back!");
+        navigate({ to: data?.user?.role === "admin" ? "/admin" : "/dashboard", replace: true });
       } catch (err: any) {
         setBusy(false);
-        toast.error(err?.message || 'Login failed');
+        toast.error(err?.message || "Login failed");
       }
     }
   }
-
 
   return (
     <div className="hero-glow flex min-h-screen items-center justify-center px-4 py-16">
@@ -297,8 +304,8 @@ function AuthPage() {
               <div className="space-y-4 text-center">
                 <h1 className="text-xl font-semibold tracking-tight">Confirm your email</h1>
                 <p className="text-sm text-muted-foreground">
-                  We sent a confirmation link to <strong>{email}</strong>. Click it to
-                  activate your account, then come back and log in.
+                  We sent a confirmation link to <strong>{email}</strong>. Click it to activate your
+                  account, then come back and log in.
                 </p>
                 <Button
                   variant="outline"
@@ -349,9 +356,7 @@ function AuthPage() {
                       onClick={startGoogleFlow}
                       disabled={googleBusy}
                     >
-                      {googleBusy ? (
-                        <Loader2 className="mr-2 size-4 animate-spin" />
-                      ) : null}
+                      {googleBusy ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}
                       Continue with Google
                     </Button>
                   </div>
@@ -445,7 +450,11 @@ function AuthPage() {
                           onClick={() => setShowConfirmPassword((value) => !value)}
                           aria-label={showConfirmPassword ? "Hide password" : "Show password"}
                         >
-                          {showConfirmPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                          {showConfirmPassword ? (
+                            <EyeOff className="size-4" />
+                          ) : (
+                            <Eye className="size-4" />
+                          )}
                         </button>
                       </div>
                     </div>

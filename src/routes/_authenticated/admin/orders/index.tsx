@@ -7,12 +7,31 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { apiFetch } from "@/lib/api";
 import { formatDate, formatMoney } from "@/lib/format";
-import { DELIVERY_LABEL, ORDER_STATUS_LABEL, statusTone, type DeliveryMethod, type OrderStatus } from "@/lib/order-status";
+import {
+  DELIVERY_LABEL,
+  ORDER_STATUS_LABEL,
+  statusTone,
+  type DeliveryMethod,
+  type OrderStatus,
+} from "@/lib/order-status";
 
 type Order = {
   id: string;
@@ -71,7 +90,10 @@ function AdminOrdersPage() {
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <p className="text-sm font-medium text-primary">Orders</p>
-          <h1 className="text-3xl font-bold tracking-tight">Order management</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Manage orders</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Search, filter, and review order details in one place.
+          </p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <div className="relative min-w-64 flex-1">
@@ -85,7 +107,7 @@ function AdminOrdersPage() {
           </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-52">
-              <SelectValue placeholder="Status" />
+              <SelectValue placeholder="Filter status" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All statuses</SelectItem>
@@ -139,12 +161,12 @@ function AdminOrdersPage() {
                           {ORDER_STATUS_LABEL[order.status]}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-muted-foreground">{formatDate(order.created_at)}</TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {formatDate(order.created_at)}
+                      </TableCell>
                       <TableCell className="text-right">
                         <Button size="sm" variant="secondary" asChild>
-                          <Link to="/admin/orders/$orderId" params={{ orderId: order.id }}>
-                            Open
-                          </Link>
+                          <a href={`/admin/orders/${order.id}`}>Open</a>
                         </Button>
                       </TableCell>
                     </TableRow>

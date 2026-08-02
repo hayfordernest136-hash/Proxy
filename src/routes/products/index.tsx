@@ -41,7 +41,7 @@ function ProductsPage() {
       const products = await apiFetch<any[]>("/api/products");
       return products.map((p) => {
         const prices = (p.plans ?? [])
-.filter((pl: any) => pl.is_active)
+          .filter((pl: any) => pl.is_active)
           .map((pl: any) => Number(pl.price));
         return {
           ...p,
@@ -72,8 +72,8 @@ function ProductsPage() {
         <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
           <h1 className="text-4xl font-extrabold tracking-tight">Proxy plans</h1>
           <p className="mt-3 max-w-2xl text-muted-foreground">
-            Every provider we resell, with live pricing set by our team. Pick a plan,
-            choose CD Key or Account Refill, and pay securely.
+            Every provider we resell, with live pricing set by our team. Pick a plan, choose CD Key
+            or Account Refill, and pay securely.
           </p>
         </div>
       </section>
@@ -113,9 +113,12 @@ function ProductsPage() {
                 <div key={p.slug} className="relative">
                   <ProductCard product={p} />
                   {/* If admin, show Edit button overlay */}
-                  {user?.role === 'admin' ? (
+                  {user?.role === "admin" ? (
                     <div className="absolute right-3 top-3 z-10">
-                      <Button size="sm" onClick={() => navigate({ to: `/admin/products/${p.id}/edit` })}>
+                      <Button
+                        size="sm"
+                        onClick={() => navigate({ to: `/admin/products/${p.id}/edit` })}
+                      >
                         Edit Product
                       </Button>
                     </div>
@@ -125,9 +128,7 @@ function ProductsPage() {
         </div>
 
         {!isLoading && filtered.length === 0 ? (
-          <p className="py-20 text-center text-muted-foreground">
-            No proxies match your search.
-          </p>
+          <p className="py-20 text-center text-muted-foreground">No proxies match your search.</p>
         ) : null}
       </section>
     </SiteLayout>

@@ -117,9 +117,7 @@ function OrdersPage() {
                 ))}
               </div>
             ) : orders.length === 0 ? (
-              <p className="py-16 text-center text-sm text-muted-foreground">
-                No orders here yet.
-              </p>
+              <p className="py-16 text-center text-sm text-muted-foreground">No orders here yet.</p>
             ) : (
               <div className="overflow-x-auto">
                 <Table>
@@ -143,15 +141,10 @@ function OrdersPage() {
                         <TableCell>{o.product_name}</TableCell>
                         <TableCell>{o.plan_name}</TableCell>
                         <TableCell>{o.quantity}</TableCell>
-                        <TableCell>
-                          {DELIVERY_LABEL[o.delivery_method as DeliveryMethod]}
-                        </TableCell>
+                        <TableCell>{DELIVERY_LABEL[o.delivery_method as DeliveryMethod]}</TableCell>
                         <TableCell>{formatMoney(o.total_amount, o.currency)}</TableCell>
                         <TableCell>
-                          <Badge
-                            variant="outline"
-                            className={statusTone(o.status as OrderStatus)}
-                          >
+                          <Badge variant="outline" className={statusTone(o.status as OrderStatus)}>
                             {ORDER_STATUS_LABEL[o.status as OrderStatus]}
                           </Badge>
                         </TableCell>

@@ -27,8 +27,7 @@ export const ORDER_STATUS_MESSAGE: Record<OrderStatus, string> = {
   awaiting_payment: "Your order has been created and is waiting for payment.",
   paid: "We have received your payment successfully.",
   processing: "We have received your order and are working on it.",
-  purchasing_proxy:
-    "We have received your payment and are currently purchasing your proxy.",
+  purchasing_proxy: "We have received your payment and are currently purchasing your proxy.",
   delivering: "Your proxy is being delivered right now.",
   completed: "Your order has been completed. Enjoy your service.",
   cancelled: "This order was cancelled.",

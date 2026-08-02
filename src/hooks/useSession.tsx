@@ -15,14 +15,14 @@ export function useSession() {
 
   const refreshSession = async () => {
     try {
-      const body = await apiFetch<{ user: any | null }>('/api/auth/me');
+      const body = await apiFetch<{ user: any | null }>("/api/auth/me");
       setUser(body?.user ?? null);
       setError(null);
       return body?.user ?? null;
     } catch (e: any) {
       setUser(null);
       if (e?.statusCode === 0) {
-        setError('Unable to connect to the server. Please try again later.');
+        setError("Unable to connect to the server. Please try again later.");
       }
       return null;
     }

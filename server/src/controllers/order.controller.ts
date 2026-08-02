@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Request, Response } from "express";
 import {
   applyReferralDiscountToOrder,
   createOrder,
@@ -6,11 +6,8 @@ import {
   getOrdersByUserId,
   getOrderEvents,
   markSupportMessageRead,
-} from '../services/order.service';
-import {
-  sendAdminAlertEmail,
-  sendOrderReceivedEmail,
-} from '../services/order-email.service';
+} from "../services/order.service";
+import { sendAdminAlertEmail, sendOrderReceivedEmail } from "../services/order-email.service";
 
 type OrderRow = Awaited<ReturnType<typeof getOrderById>>;
 
@@ -20,7 +17,6 @@ function sanitizeOrderForCustomer(order: any) {
     refill_password,
     payment_reference,
     payment_provider,
-    fulfillment_reference,
     customer_email,
     customer_name,
     order_type,
@@ -49,12 +45,14 @@ export async function createOrderHandler(req: Request, res: Response) {
     } = req.body;
 
     // Basic validation: account refill requires account type and password
-    if (delivery_method === 'account_refill') {
-      if (!account_type || !['new', 'existing'].includes(String(account_type))) {
-        return res.status(400).json({ message: 'Missing or invalid account_type for account refill' });
+    if (delivery_method === "account_refill") {
+      if (!account_type || !["new", "existing"].includes(String(account_type))) {
+        return res
+          .status(400)
+          .json({ message: "Missing or invalid account_type for account refill" });
       }
       if (!refill_password || String(refill_password).trim().length === 0) {
-        return res.status(400).json({ message: 'Password is required for account refill' });
+        return res.status(400).json({ message: "Password is required for account refill" });
       }
     }
 
@@ -78,13 +76,13 @@ export async function createOrderHandler(req: Request, res: Response) {
     const createdOrder = await getOrderById(order.id);
     if (createdOrder) {
       await sendOrderReceivedEmail(createdOrder);
-      await sendAdminAlertEmail(createdOrder, 'new_order');
+      await sendAdminAlertEmail(createdOrder, "new_order");
     }
 
     return res.status(201).json(sanitizeOrderForCustomer(order));
   } catch (error) {
-    console.error('Failed to create order:', error);
-    return res.status(500).json({ message: 'Unable to create order' });
+    console.error("Failed to create order:", error);
+    return res.status(500).json({ message: "Unable to create order" });
   }
 }
 
@@ -92,11 +90,11 @@ export async function getOrderHandler(req: Request, res: Response) {
   try {
     const orderId = Number(req.params.orderId);
     const order = await getOrderById(orderId);
-    if (!order) return res.status(404).json({ message: 'Order not found' });
+    if (!order) return res.status(404).json({ message: "Order not found" });
     return res.json(sanitizeOrderForCustomer(order));
   } catch (error) {
-    console.error('Failed to load order:', error);
-    return res.status(500).json({ message: 'Unable to load order' });
+    console.error("Failed to load order:", error);
+    return res.status(500).json({ message: "Unable to load order" });
   }
 }
 
@@ -109,15 +107,15 @@ export async function updateOrderHandler(req: Request, res: Response) {
     if (apply_referral_discount) {
       const order = await applyReferralDiscountToOrder(orderId, userId);
       if (!order) {
-        return res.status(400).json({ message: 'Referral discount cannot be applied' });
+        return res.status(400).json({ message: "Referral discount cannot be applied" });
       }
       return res.json(sanitizeOrderForCustomer(order));
     }
 
-    return res.status(400).json({ message: 'No valid update provided' });
+    return res.status(400).json({ message: "No valid update provided" });
   } catch (error: any) {
-    console.error('Failed to update order:', error);
-    return res.status(500).json({ message: error.message || 'Unable to update order' });
+    console.error("Failed to update order:", error);
+    return res.status(500).json({ message: error.message || "Unable to update order" });
   }
 }
 
@@ -127,8 +125,8 @@ export async function getUserOrdersHandler(req: Request, res: Response) {
     const orders = await getOrdersByUserId(userId);
     return res.json(orders.map(sanitizeOrderForCustomer));
   } catch (error) {
-    console.error('Failed to load user orders:', error);
-    return res.status(500).json({ message: 'Unable to load orders' });
+    console.error("Failed to load user orders:", error);
+    return res.status(500).json({ message: "Unable to load orders" });
   }
 }
 
@@ -138,8 +136,8 @@ export async function getOrderEventsHandler(req: Request, res: Response) {
     const events = await getOrderEvents(orderId);
     return res.json(events);
   } catch (error) {
-    console.error('Failed to load order events:', error);
-    return res.status(500).json({ message: 'Unable to load order events' });
+    console.error("Failed to load order events:", error);
+    return res.status(500).json({ message: "Unable to load order events" });
   }
 }
 
@@ -148,17 +146,17 @@ export async function markSupportMessageReadHandler(req: Request, res: Response)
     const userId = Number((req as any).userId);
     const orderId = Number(req.params.orderId);
     if (!orderId) {
-      return res.status(400).json({ message: 'Missing order id' });
+      return res.status(400).json({ message: "Missing order id" });
     }
 
     const order = await markSupportMessageRead(orderId, userId);
     if (!order) {
-      return res.status(404).json({ message: 'Order not found or not owned by user' });
+      return res.status(404).json({ message: "Order not found or not owned by user" });
     }
 
     return res.json({ ok: true, order: sanitizeOrderForCustomer(order) });
   } catch (error) {
-    console.error('Failed to mark support message read:', error);
-    return res.status(500).json({ message: 'Unable to mark support message read' });
+    console.error("Failed to mark support message read:", error);
+    return res.status(500).json({ message: "Unable to mark support message read" });
   }
 }

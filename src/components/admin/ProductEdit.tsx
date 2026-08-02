@@ -193,9 +193,7 @@ export default function ProductEdit({
                   <Select
                     value=""
                     onValueChange={(value) => {
-                      const source = copySources.find(
-                        (item) => String(item.id) === value,
-                      );
+                      const source = copySources.find((item) => String(item.id) === value);
                       if (source) {
                         onChange({
                           ...values,
@@ -256,9 +254,7 @@ export default function ProductEdit({
                 </div>
                 <Switch
                   checked={!!values.is_active}
-                  onCheckedChange={(checked) =>
-                    onChange({ ...values, is_active: checked ? 1 : 0 })
-                  }
+                  onCheckedChange={(checked) => onChange({ ...values, is_active: checked ? 1 : 0 })}
                 />
               </div>
               <div className="flex items-center justify-between gap-4 rounded-xl border border-border/60 bg-muted/60 px-4 py-3">
@@ -276,7 +272,9 @@ export default function ProductEdit({
               <div className="flex items-center justify-between gap-4 rounded-xl border border-border/60 bg-muted/60 px-4 py-3">
                 <div>
                   <p className="text-sm font-medium">Account refill</p>
-                  <p className="text-sm text-muted-foreground">Enable refill delivery if supported.</p>
+                  <p className="text-sm text-muted-foreground">
+                    Enable refill delivery if supported.
+                  </p>
                 </div>
                 <Switch
                   checked={!!values.supports_account_refill}

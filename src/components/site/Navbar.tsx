@@ -63,7 +63,7 @@ export function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur-xl">
-      <div className="mx-auto flex h-16 max-w-7xl items-center gap-6 px-4 sm:px-6">
+      <div className="mx-auto flex h-16 max-w-7xl items-center gap-2 px-3 sm:gap-6 sm:px-6">
         <Brand />
 
         <nav className="hidden items-center gap-1 md:flex">
@@ -81,7 +81,7 @@ export function Navbar() {
           ))}
         </nav>
 
-        <div className="ml-auto flex items-center gap-2">
+        <div className="ml-auto flex items-center gap-1 sm:gap-2">
           <ThemeToggle />
           {isAdmin ? (
             <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
@@ -93,16 +93,21 @@ export function Navbar() {
               <Button asChild variant="secondary" size="sm" className="hidden sm:inline-flex">
                 <Link to="/dashboard">Dashboard</Link>
               </Button>
-              <Button variant="ghost" size="sm" onClick={signOut} className="text-red-500 hover:bg-red-500/10 hover:text-red-600">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={signOut}
+                className="text-red-500 hover:bg-red-500/10 hover:text-red-600"
+              >
                 Sign out
               </Button>
             </>
           ) : (
             <>
-              <Button asChild variant="ghost" size="sm">
+              <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
                 <Link to="/auth">Log in</Link>
               </Button>
-              <Button asChild size="sm">
+              <Button asChild size="sm" className="hidden sm:inline-flex">
                 <Link to="/auth" search={{ mode: "register" }}>
                   Get started
                 </Link>
@@ -142,7 +147,25 @@ export function Navbar() {
               >
                 Dashboard
               </Link>
-            ) : null}
+            ) : (
+              <>
+                <Link
+                  to="/auth"
+                  onClick={() => setOpen(false)}
+                  className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground"
+                >
+                  Log in
+                </Link>
+                <Link
+                  to="/auth"
+                  search={{ mode: "register" }}
+                  onClick={() => setOpen(false)}
+                  className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground"
+                >
+                  Get started
+                </Link>
+              </>
+            )}
             {isAdmin ? (
               <Link
                 to="/admin"

@@ -1,18 +1,18 @@
-import { randomBytes } from 'crypto';
-import { pool } from '../config/db';
-import bcrypt from 'bcrypt';
+import { randomBytes } from "crypto";
+import { pool } from "../config/db";
+import bcrypt from "bcrypt";
 
 function generateReferralCode() {
-  return randomBytes(4).toString('hex');
+  return randomBytes(4).toString("hex");
 }
 
 function getApprovedAdminEmails() {
   const raw = [process.env.ADMIN_EMAILS, process.env.ADMIN_EMAIL]
     .filter((value): value is string => Boolean(value))
-    .join(',');
+    .join(",");
 
   return raw
-    .split(',')
+    .split(",")
     .map((value) => value.trim().toLowerCase())
     .filter(Boolean);
 }
@@ -25,23 +25,23 @@ export function isApprovedAdminEmail(email: string) {
 
 export function resolveUserRole(email: string, fallbackRole?: string) {
   if (isApprovedAdminEmail(email)) {
-    return 'admin' as const;
+    return "admin" as const;
   }
-  return fallbackRole === 'admin' ? 'admin' : 'user';
+  return fallbackRole === "admin" ? "admin" : "user";
 }
 
 export async function findUserByEmail(email: string) {
-  const [rows] = await pool.query('SELECT * FROM users WHERE email = ? LIMIT 1', [email]);
+  const [rows] = await pool.query("SELECT * FROM users WHERE email = ? LIMIT 1", [email]);
   return (rows as any[])[0] || null;
 }
 
 export async function findUserById(id: number) {
-  const [rows] = await pool.query('SELECT * FROM users WHERE id = ? LIMIT 1', [id]);
+  const [rows] = await pool.query("SELECT * FROM users WHERE id = ? LIMIT 1", [id]);
   return (rows as any[])[0] || null;
 }
 
 export async function findUserByReferralCode(code: string) {
-  const [rows] = await pool.query('SELECT * FROM users WHERE referral_code = ? LIMIT 1', [code]);
+  const [rows] = await pool.query("SELECT * FROM users WHERE referral_code = ? LIMIT 1", [code]);
   return (rows as any[])[0] || null;
 }
 
@@ -59,7 +59,7 @@ export async function ensureUserReferralCode(userId: number) {
     tries += 1;
   }
 
-  await pool.query('UPDATE users SET referral_code = ? WHERE id = ?', [code, userId]);
+  await pool.query("UPDATE users SET referral_code = ? WHERE id = ?", [code, userId]);
   return code;
 }
 
@@ -79,27 +79,32 @@ export async function createUser({
   let code = generateReferralCode();
   let tries = 0;
   while (tries < 10) {
-    const [exists] = await pool.query('SELECT id FROM users WHERE referral_code = ? LIMIT 1', [code]);
+    const [exists] = await pool.query("SELECT id FROM users WHERE referral_code = ? LIMIT 1", [
+      code,
+    ]);
     if (!(exists as any[]).length) break;
     code = generateReferralCode();
     tries += 1;
   }
 
   const [result] = await pool.query(
-    'INSERT INTO users (name, email, password_hash, role, referral_code, created_at) VALUES (?, ?, ?, ?, ?, NOW())',
+    "INSERT INTO users (name, email, password_hash, role, referral_code, created_at) VALUES (?, ?, ?, ?, ?, NOW())",
     [name, email, password_hash, resolvedRole, code],
   );
   const insertId = (result as any).insertId;
   // create profile
-  await pool.query('INSERT INTO profiles (user_id, name, created_at) VALUES (?, ?, NOW())', [insertId, name]);
+  await pool.query("INSERT INTO profiles (user_id, name, created_at) VALUES (?, ?, NOW())", [
+    insertId,
+    name,
+  ]);
   return { id: insertId, name, email, role: resolvedRole, referral_code: code };
 }
 
 export async function setUserReferralRewardUsed(userId: number, used: boolean) {
-  await pool.query(
-    'UPDATE users SET referral_reward_used_at = ? WHERE id = ?',
-    [used ? new Date() : null, userId],
-  );
+  await pool.query("UPDATE users SET referral_reward_used_at = ? WHERE id = ?", [
+    used ? new Date() : null,
+    userId,
+  ]);
 }
 
 export async function verifyPassword(password: string, hash: string) {
@@ -107,22 +112,22 @@ export async function verifyPassword(password: string, hash: string) {
 }
 
 export async function updateUserProfile(userId: number, name: string) {
-  await pool.query('UPDATE users SET name = ? WHERE id = ?', [name, userId]);
-  await pool.query('UPDATE profiles SET name = ? WHERE user_id = ?', [name, userId]);
+  await pool.query("UPDATE users SET name = ? WHERE id = ?", [name, userId]);
+  await pool.query("UPDATE profiles SET name = ? WHERE user_id = ?", [name, userId]);
   return findUserById(userId);
 }
 
 export async function updateUserPassword(userId: number, password: string) {
   const password_hash = await bcrypt.hash(password, 12);
-  await pool.query('UPDATE users SET password_hash = ? WHERE id = ?', [password_hash, userId]);
+  await pool.query("UPDATE users SET password_hash = ? WHERE id = ?", [password_hash, userId]);
   return findUserById(userId);
 }
 
 export async function updateUserRole(userId: number, role: string) {
-  if (!['user', 'admin'].includes(role)) {
+  if (!["user", "admin"].includes(role)) {
     return null;
   }
-  const [result] = await pool.query('UPDATE users SET role = ? WHERE id = ?', [role, userId]);
+  const [result] = await pool.query("UPDATE users SET role = ? WHERE id = ?", [role, userId]);
   if ((result as any).affectedRows === 0) {
     return null;
   }
@@ -289,8 +294,8 @@ export async function getAdminDashboardStats() {
     top_selling_proxy_products: topProxyRows as any[],
     order_status_distribution: statusRows as any[],
     guest_vs_registered: [
-      { label: 'Guest', value: Number((guestRows as any[])[0]?.guest_orders ?? 0) },
-      { label: 'Registered', value: Number((guestRows as any[])[0]?.registered_orders ?? 0) },
+      { label: "Guest", value: Number((guestRows as any[])[0]?.guest_orders ?? 0) },
+      { label: "Registered", value: Number((guestRows as any[])[0]?.registered_orders ?? 0) },
     ],
     revenue_by_network: revenueByNetworkRows as any[],
     revenue_by_proxy_type: revenueByProxyTypeRows as any[],

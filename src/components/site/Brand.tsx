@@ -7,13 +7,11 @@ export function Brand({ compact }: { compact?: boolean }) {
   // Brand renders "Broke" + yellow "Flex" by default.
   // Falls back gracefully for any other site name.
   const defaultMatch = /^broke\s*(flex.*)?$/i.exec(siteName.trim());
-  const first = defaultMatch ? "Broke" : siteName.trim().split(" ")[0] ?? siteName;
-  const rest = defaultMatch
-    ? "Flex"
-    : siteName.trim().split(" ").slice(1).join(" ");
+  const first = defaultMatch ? "Broke" : (siteName.trim().split(" ")[0] ?? siteName);
+  const rest = defaultMatch ? "Flex" : siteName.trim().split(" ").slice(1).join(" ");
 
   return (
-    <Link to="/" className="flex min-w-0 items-center gap-2">
+    <Link to="/" className="flex min-w-0 flex-shrink-0 items-center gap-2 whitespace-nowrap">
       <span
         className={
           "grid shrink-0 place-items-center rounded-xl border border-border/70 bg-background/90 p-1 shadow-sm " +
@@ -27,7 +25,7 @@ export function Brand({ compact }: { compact?: boolean }) {
         />
       </span>
       {!compact ? (
-        <span className="min-w-0 truncate text-sm font-semibold tracking-tight sm:text-base">
+        <span className="min-w-0 whitespace-nowrap text-base font-semibold tracking-tight sm:text-lg">
           {first}
           {rest ? <span className="text-primary"> {rest}</span> : null}
         </span>

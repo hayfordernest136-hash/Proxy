@@ -11,12 +11,14 @@ export const Route = createFileRoute("/support")({
       { title: "Support Center - BrokeFlex Data" },
       {
         name: "description",
-        content: "Contact our support team through WhatsApp for help with data bundles, proxy orders, payments, and account issues.",
+        content:
+          "Contact our support team through WhatsApp for help with data bundles, proxy orders, payments, and account issues.",
       },
       { property: "og:title", content: "Support Center - BrokeFlex Data" },
       {
         property: "og:description",
-        content: "Get help with data bundles, proxy orders, payments, and account issues through WhatsApp support.",
+        content:
+          "Get help with data bundles, proxy orders, payments, and account issues through WhatsApp support.",
       },
     ],
   }),
@@ -31,7 +33,9 @@ function SupportPage() {
           <div className="max-w-3xl">
             <h1 className="text-4xl font-extrabold tracking-tight">Support Center</h1>
             <p className="mt-4 text-lg text-muted-foreground">
-              Need help? We are here for you. Whether you bought a data bundle or a proxy plan, our team is ready to assist with your orders, payments and account. Reach out to us directly on WhatsApp.
+              Need help? We are here for you. Whether you bought a data bundle or a proxy plan, our
+              team is ready to assist with your orders, payments and account. Reach out to us
+              directly on WhatsApp.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <div className="flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-4 py-2 text-sm text-muted-foreground">
@@ -51,7 +55,8 @@ function SupportPage() {
               <h2 className="text-xl font-semibold tracking-tight">Contact Support</h2>
             </div>
             <p className="text-sm leading-7 text-muted-foreground">
-              Click the WhatsApp button below to chat with us directly. Our support team helps customers with every service we offer, including data bundles and proxies.
+              Click the WhatsApp button below to chat with us directly. Our support team helps
+              customers with every service we offer, including data bundles and proxies.
             </p>
             <div className="rounded-xl border border-border/70 bg-muted/50 p-4">
               <p className="text-sm font-medium text-foreground">We can help you with:</p>
@@ -65,7 +70,9 @@ function SupportPage() {
               </ul>
             </div>
             <div className="rounded-xl border border-border/70 bg-muted/50 p-4">
-              <p className="text-sm font-medium text-foreground">When contacting support, please provide:</p>
+              <p className="text-sm font-medium text-foreground">
+                When contacting support, please provide:
+              </p>
               <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
                 <li>Your name</li>
                 <li>Email address or account details</li>
@@ -84,10 +91,14 @@ function SupportPage() {
             </div>
             <div className="space-y-3 text-sm text-muted-foreground">
               <p>
-                <span className="font-medium text-foreground">Support Hours:</span> We respond as quickly as possible and aim to resolve customer issues promptly.
+                <span className="font-medium text-foreground">Support Hours:</span> We respond as
+                quickly as possible and aim to resolve customer issues promptly.
               </p>
               <p>
-                <span className="font-medium text-foreground">Thank you for using our service.</span> We appreciate your trust and support.
+                <span className="font-medium text-foreground">
+                  Thank you for using our service.
+                </span>{" "}
+                We appreciate your trust and support.
               </p>
             </div>
           </CardContent>

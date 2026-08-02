@@ -39,21 +39,11 @@ export function OrderTimeline({ status }: { status: OrderStatus }) {
                 )}
               </span>
               {index < TIMELINE_STEPS.length - 1 ? (
-                <span
-                  className={cn(
-                    "my-1 w-px flex-1",
-                    done ? "bg-success/40" : "bg-border",
-                  )}
-                />
+                <span className={cn("my-1 w-px flex-1", done ? "bg-success/40" : "bg-border")} />
               ) : null}
             </div>
             <div className={cn("pb-6", index === TIMELINE_STEPS.length - 1 && "pb-0")}>
-              <p
-                className={cn(
-                  "text-sm font-medium",
-                  !done && !active && "text-muted-foreground",
-                )}
-              >
+              <p className={cn("text-sm font-medium", !done && !active && "text-muted-foreground")}>
                 {TIMELINE_LABEL[step]}
               </p>
             </div>

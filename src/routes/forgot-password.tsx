@@ -23,8 +23,7 @@ export const Route = createFileRoute("/forgot-password")({
       { property: "og:title", content: "Forgot Password - BrokeFlex Data" },
       {
         property: "og:description",
-        content:
-          "Request a secure password reset link for your BrokeFlex account.",
+        content: "Request a secure password reset link for your BrokeFlex account.",
       },
     ],
   }),
@@ -79,13 +78,13 @@ function ForgotPasswordPage() {
                 <div className="space-y-1">
                   <h1 className="text-xl font-semibold tracking-tight">Check your inbox</h1>
                   <p className="text-sm text-muted-foreground">
-                    If an account exists for <strong>{email.trim()}</strong>, we have sent
-                    a password reset link to it.
+                    If an account exists for <strong>{email.trim()}</strong>, we have sent a
+                    password reset link to it.
                   </p>
                 </div>
                 <div className="rounded-lg bg-muted/60 px-4 py-3 text-xs text-muted-foreground">
-                  The link expires in 30 minutes and can only be used once. If you do not
-                  see the email, check your spam or promotions folder.
+                  The link expires in 30 minutes and can only be used once. If you do not see the
+                  email, check your spam or promotions folder.
                 </div>
                 <div className="space-y-2">
                   <Button
@@ -108,8 +107,8 @@ function ForgotPasswordPage() {
               <>
                 <h1 className="text-xl font-semibold tracking-tight">Forgot your password?</h1>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Enter the email address linked to your account and we will send you a
-                  secure link to reset your password.
+                  Enter the email address linked to your account and we will send you a secure link
+                  to reset your password.
                 </p>
 
                 <form onSubmit={submit} className="mt-6 space-y-4">
@@ -153,4 +152,3 @@ function ForgotPasswordPage() {
     </div>
   );
 }
-

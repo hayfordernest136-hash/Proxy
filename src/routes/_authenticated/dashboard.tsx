@@ -1,14 +1,34 @@
 ﻿import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Bell, CheckCircle2, Copy, Eye, EyeOff, Gift, Menu, Package, ShoppingBag, Sparkles, User, Wifi } from "lucide-react";
+import {
+  Bell,
+  CheckCircle2,
+  Copy,
+  Eye,
+  EyeOff,
+  Gift,
+  Menu,
+  Package,
+  ShoppingBag,
+  Sparkles,
+  User,
+  Wifi,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   DropdownMenu,
@@ -61,7 +81,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 function DashboardPage() {
   const { user, refreshSession } = useSession();
   const queryClient = useQueryClient();
-  const [referralOrigin, setReferralOrigin] = useState('');
+  const [referralOrigin, setReferralOrigin] = useState("");
   const [profileOpen, setProfileOpen] = useState(false);
   const [profileName, setProfileName] = useState(user?.name ?? "");
   const [currentPassword, setCurrentPassword] = useState("");
@@ -73,7 +93,7 @@ function DashboardPage() {
   const [savingProfile, setSavingProfile] = useState(false);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       setReferralOrigin(window.location.origin);
     }
   }, []);
@@ -108,18 +128,17 @@ function DashboardPage() {
     },
   });
 
-  const referralLink = referralOrigin && referralStatus?.referralCode
-    ? `${referralOrigin}/auth?referral_code=${referralStatus.referralCode}`
-    : null;
+  const referralLink =
+    referralOrigin && referralStatus?.referralCode
+      ? `${referralOrigin}/auth?referral_code=${referralStatus.referralCode}`
+      : null;
   const rewardProgress = Math.min(100, ((referralStatus?.successfulReferrals ?? 0) / 10) * 100);
   const rewardUnlocked = referralStatus?.rewardStatus === "unlocked";
 
   const active = (orders ?? []).filter(
     (o) => !["completed", "cancelled", "refunded"].includes(o.status),
   );
-  const proxyOrders = (orders ?? []).filter(
-    (o) => o.delivery_method !== "data_bundle",
-  );
+  const proxyOrders = (orders ?? []).filter((o) => o.delivery_method !== "data_bundle");
   const dataOrders = (orders ?? []).filter((o) => o.delivery_method === "data_bundle");
   const proxyActive = proxyOrders.filter(
     (o) => !["completed", "cancelled", "refunded"].includes(o.status),
@@ -150,9 +169,7 @@ function DashboardPage() {
   useEffect(() => {
     if (!orders?.length) return;
     const unreadOrder = orders.find(
-      (o) =>
-        (o.status === "cancelled" || o.status === "refunded") &&
-        o.support_message_unread,
+      (o) => (o.status === "cancelled" || o.status === "refunded") && o.support_message_unread,
     );
     if (unreadOrder) {
       setHighlightedOrder(unreadOrder);
@@ -168,7 +185,7 @@ function DashboardPage() {
       });
       queryClient.invalidateQueries({ queryKey: ["my-orders", user?.id] });
     } catch (error) {
-      console.error('Unable to mark support message read:', error);
+      console.error("Unable to mark support message read:", error);
     }
   }
 
@@ -182,7 +199,10 @@ function DashboardPage() {
       toast.error("Please enter a display name.");
       return;
     }
-    if ((currentPassword || newPassword || confirmPassword) && (!currentPassword || !newPassword || !confirmPassword)) {
+    if (
+      (currentPassword || newPassword || confirmPassword) &&
+      (!currentPassword || !newPassword || !confirmPassword)
+    ) {
       toast.error("Please fill in your current password, new password, and confirmation.");
       return;
     }
@@ -328,7 +348,9 @@ function DashboardPage() {
               <DropdownMenuContent align="end" className="w-56">
                 <div className="px-2 py-2">
                   <p className="text-sm font-medium">{user?.name ?? "Account"}</p>
-                  <p className="text-xs text-muted-foreground">{user?.email ?? "Manage your profile"}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {user?.email ?? "Manage your profile"}
+                  </p>
                 </div>
                 <DropdownMenuItem onSelect={() => setProfileOpen(true)}>
                   Edit profile
@@ -341,12 +363,15 @@ function DashboardPage() {
           </div>
         </div>
 
-        <AlertDialog open={supportDialogOpen} onOpenChange={async (open) => {
-          if (!open) {
-            await markSupportMessageRead();
-          }
-          setSupportDialogOpen(open);
-        }}>
+        <AlertDialog
+          open={supportDialogOpen}
+          onOpenChange={async (open) => {
+            if (!open) {
+              await markSupportMessageRead();
+            }
+            setSupportDialogOpen(open);
+          }}
+        >
           <AlertDialogContent className="max-w-3xl rounded-[2rem] p-10 text-center sm:p-12">
             <div className="space-y-6">
               <div className="space-y-3">
@@ -354,9 +379,7 @@ function DashboardPage() {
                   Order #{highlightedOrder?.order_number}
                 </p>
                 <AlertDialogTitle className="text-3xl font-extrabold">
-                  {highlightedOrder?.status === "cancelled"
-                    ? "Order Cancelled"
-                    : "Refund Issued"}
+                  {highlightedOrder?.status === "cancelled" ? "Order Cancelled" : "Refund Issued"}
                 </AlertDialogTitle>
                 <AlertDialogDescription className="mx-auto max-w-2xl text-lg font-semibold leading-8 text-foreground">
                   {highlightedOrder?.admin_notes ||
@@ -404,8 +427,8 @@ function DashboardPage() {
                               Order #{o.order_number} - {o.product_name}
                             </p>
                             <p className="text-sm text-muted-foreground">
-                              {o.plan_name} - {DELIVERY_LABEL[o.delivery_method as DeliveryMethod]} -
-                              {formatDate(o.created_at)}
+                              {o.plan_name} - {DELIVERY_LABEL[o.delivery_method as DeliveryMethod]}{" "}
+                              -{formatDate(o.created_at)}
                             </p>
                           </div>
                           <div className="text-right">
@@ -424,13 +447,16 @@ function DashboardPage() {
                     ))
                   ) : (
                     <p className="py-8 text-center text-sm text-muted-foreground">
-                      No orders yet. <Link to="/products" className="text-primary">Browse proxies</Link>.
+                      No orders yet.{" "}
+                      <Link to="/products" className="text-primary">
+                        Browse proxies
+                      </Link>
+                      .
                     </p>
                   )}
                 </div>
               </CardContent>
             </Card>
-
           </div>
 
           <div className="space-y-6">
@@ -442,15 +468,22 @@ function DashboardPage() {
                       <Gift className="size-3.5" /> Referral rewards
                     </div>
                     <div>
-                      <h2 className="font-semibold tracking-tight">Invite friends, unlock rewards</h2>
+                      <h2 className="font-semibold tracking-tight">
+                        Invite friends, unlock rewards
+                      </h2>
                       <p className="mt-1 text-sm text-muted-foreground">
-                        Each successful referral moves you closer to a reward that applies automatically at checkout.
+                        Each successful referral moves you closer to a reward that applies
+                        automatically at checkout.
                       </p>
                     </div>
                   </div>
                   <div className="rounded-2xl border border-primary/20 bg-background/80 px-3 py-2 text-right shadow-sm">
-                    <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Progress</p>
-                    <p className="text-lg font-semibold">{referralStatus?.successfulReferrals ?? 0}/10</p>
+                    <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                      Progress
+                    </p>
+                    <p className="text-lg font-semibold">
+                      {referralStatus?.successfulReferrals ?? 0}/10
+                    </p>
                   </div>
                 </div>
 
@@ -458,10 +491,15 @@ function DashboardPage() {
                   <div className="flex items-center justify-between gap-3">
                     <div>
                       <p className="text-sm font-medium">Your referral link</p>
-                      <p className="text-xs text-muted-foreground">Share it with friends and earn progress together.</p>
+                      <p className="text-xs text-muted-foreground">
+                        Share it with friends and earn progress together.
+                      </p>
                     </div>
-                    <Badge variant={rewardUnlocked ? 'default' : 'secondary'} className="capitalize">
-                      {rewardUnlocked ? 'Unlocked' : 'In progress'}
+                    <Badge
+                      variant={rewardUnlocked ? "default" : "secondary"}
+                      className="capitalize"
+                    >
+                      {rewardUnlocked ? "Unlocked" : "In progress"}
                     </Badge>
                   </div>
 
@@ -471,7 +509,9 @@ function DashboardPage() {
                         <code className="block break-words">{referralLink}</code>
                       </div>
                     ) : (
-                      <p className="text-sm text-muted-foreground">Generating your referral link...</p>
+                      <p className="text-sm text-muted-foreground">
+                        Generating your referral link...
+                      </p>
                     )}
 
                     <div className="flex items-center gap-2">
@@ -481,7 +521,9 @@ function DashboardPage() {
                           style={{ width: `${rewardProgress}%` }}
                         />
                       </div>
-                      <span className="text-sm font-medium text-muted-foreground">{Math.round(rewardProgress)}%</span>
+                      <span className="text-sm font-medium text-muted-foreground">
+                        {Math.round(rewardProgress)}%
+                      </span>
                     </div>
 
                     {referralLink ? (
@@ -506,7 +548,7 @@ function DashboardPage() {
                     </div>
                     <p className="mt-2 text-sm text-muted-foreground">
                       {rewardUnlocked
-                        ? 'Your reward is ready and can be applied automatically on eligible orders.'
+                        ? "Your reward is ready and can be applied automatically on eligible orders."
                         : `You're ${referralStatus?.successfulReferrals ?? 0} of 10 referrals away from unlocking the bonus.`}
                     </p>
                   </div>
@@ -516,26 +558,29 @@ function DashboardPage() {
                       <Sparkles className="size-4 text-primary" /> How it works
                     </div>
                     <p className="mt-2 text-sm text-muted-foreground">
-                      Once a referral becomes successful, your progress updates instantly and the reward can be used at checkout.
+                      Once a referral becomes successful, your progress updates instantly and the
+                      reward can be used at checkout.
                     </p>
                   </div>
                 </div>
 
                 {rewardUnlocked ? (
                   <div className="mt-4 rounded-2xl border border-primary/25 bg-primary/10 p-4 text-sm text-primary">
-                    Your referral reward is unlocked. Apply it automatically on any eligible 10 IP proxy order at checkout.
+                    Your referral reward is unlocked. Apply it automatically on any eligible 10 IP
+                    proxy order at checkout.
                   </div>
                 ) : null}
               </CardContent>
             </Card>
-
           </div>
         </div>
         <Dialog open={profileOpen} onOpenChange={setProfileOpen}>
           <DialogContent className="sm:max-w-lg">
             <DialogHeader>
               <DialogTitle>Account settings</DialogTitle>
-              <DialogDescription>Update your display name or change your password anytime.</DialogDescription>
+              <DialogDescription>
+                Update your display name or change your password anytime.
+              </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
               <div className="space-y-2">
@@ -565,7 +610,11 @@ function DashboardPage() {
                       onClick={() => setShowCurrentPassword((value) => !value)}
                       aria-label={showCurrentPassword ? "Hide password" : "Show password"}
                     >
-                      {showCurrentPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                      {showCurrentPassword ? (
+                        <EyeOff className="size-4" />
+                      ) : (
+                        <Eye className="size-4" />
+                      )}
                     </button>
                   </div>
                 </div>
@@ -607,7 +656,11 @@ function DashboardPage() {
                       onClick={() => setShowConfirmPassword((value) => !value)}
                       aria-label={showConfirmPassword ? "Hide password" : "Show password"}
                     >
-                      {showConfirmPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                      {showConfirmPassword ? (
+                        <EyeOff className="size-4" />
+                      ) : (
+                        <Eye className="size-4" />
+                      )}
                     </button>
                   </div>
                 </div>

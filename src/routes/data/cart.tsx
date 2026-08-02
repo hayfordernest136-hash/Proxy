@@ -45,9 +45,7 @@ function DataCartPage() {
   }
 
   function updateDeliveryNumber(itemId: string, deliveryNumber: string) {
-    const next = items.map((item) =>
-      item.id === itemId ? { ...item, deliveryNumber } : item,
-    );
+    const next = items.map((item) => (item.id === itemId ? { ...item, deliveryNumber } : item));
     setItems(next);
     saveDataCartItems(next);
   }
@@ -96,7 +94,9 @@ function DataCartPage() {
                   <CardContent className="p-5">
                     <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                       <div>
-                        <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">{item.network}</p>
+                        <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+                          {item.network}
+                        </p>
                         <h2 className="mt-1 text-lg font-semibold">{item.bundle}</h2>
                         <p className="mt-1 text-sm text-muted-foreground">
                           {formatMoney(item.price, item.currency)}
@@ -138,7 +138,16 @@ function DataCartPage() {
                     <span>{formatMoney(cartTotal, "GHS")}</span>
                   </div>
                 </div>
-                <Button className="w-full" size="lg" onClick={() => navigate({ to: "/data/checkout", search: { orderId: undefined, reference: undefined } })}>
+                <Button
+                  className="w-full"
+                  size="lg"
+                  onClick={() =>
+                    navigate({
+                      to: "/data/checkout",
+                      search: { orderId: undefined, reference: undefined },
+                    })
+                  }
+                >
                   Proceed to checkout <ArrowRight className="ml-2 size-4" />
                 </Button>
               </CardContent>

@@ -6,7 +6,8 @@ export const Route = createFileRoute("/data")({
       { title: "Data Store - BrokeFlex Data" },
       {
         name: "description",
-        content: "Get live data bundles from MTN, Telecel, and AirtelTigo with instant Paystack checkout.",
+        content:
+          "Get live data bundles from MTN, Telecel, and AirtelTigo with instant Paystack checkout.",
       },
       { property: "og:title", content: "Data Store - BrokeFlex Data" },
       {
@@ -17,4 +18,3 @@ export const Route = createFileRoute("/data")({
   }),
   component: () => <Outlet />,
 });
-

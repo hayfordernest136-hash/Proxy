@@ -172,18 +172,12 @@ function AdminPage() {
   const [proofUploading, setProofUploading] = useState(false);
   const [proofUrl, setProofUrl] = useState<string | null>(null);
 
-  const {
-    data: dashboard,
-    isLoading: isLoadingDashboard,
-  } = useQuery({
+  const { data: dashboard, isLoading: isLoadingDashboard } = useQuery({
     queryKey: ["admin-dashboard"],
     queryFn: async () => await apiFetch<AdminStats>("/api/admin/dashboard"),
   });
 
-  const {
-    data: users,
-    isLoading: isLoadingUsers,
-  } = useQuery({
+  const { data: users, isLoading: isLoadingUsers } = useQuery({
     queryKey: ["admin-users"],
     queryFn: async () => await apiFetch<AdminUser[]>("/api/admin/users"),
   });
@@ -205,19 +199,16 @@ function AdminPage() {
       refill_proof_url?: string;
       delivery_status?: string;
     }) => {
-      return await apiFetch<{ ok: boolean; order: Order }>(
-        `/api/admin/orders/${input.orderId}`,
-        {
-          method: "PATCH",
-          body: JSON.stringify({
-            status: input.status,
-            cd_key: input.cdKey,
-            admin_notes: input.adminNote,
-            refill_proof_url: input.refill_proof_url,
-            delivery_status: input.delivery_status,
-          }),
-        },
-      );
+      return await apiFetch<{ ok: boolean; order: Order }>(`/api/admin/orders/${input.orderId}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          status: input.status,
+          cd_key: input.cdKey,
+          admin_notes: input.adminNote,
+          refill_proof_url: input.refill_proof_url,
+          delivery_status: input.delivery_status,
+        }),
+      });
     },
     onSuccess: () => {
       toast.success("Order updated and customer notified.");
@@ -330,7 +321,9 @@ function AdminPage() {
                     <p className="mt-2 text-3xl font-semibold tracking-tight">{stat.value}</p>
                   </div>
                 </div>
-                {stat.help ? <p className="mt-3 text-sm text-muted-foreground">{stat.help}</p> : null}
+                {stat.help ? (
+                  <p className="mt-3 text-sm text-muted-foreground">{stat.help}</p>
+                ) : null}
               </CardContent>
             </Card>
           ))}
@@ -372,8 +365,20 @@ function AdminPage() {
                     <XAxis dataKey="date" tick={{ fill: "#6B7280", fontSize: 12 }} />
                     <YAxis tick={{ fill: "#6B7280", fontSize: 12 }} />
                     <Tooltip formatter={(value: number) => formatMoney(value)} />
-                    <Area type="monotone" dataKey="revenue" stroke="#2563eb" fill="url(#revenueGradient)" strokeWidth={3} />
-                    <Line type="monotone" dataKey="orders" stroke="#0EA5E9" strokeWidth={2} dot={false} />
+                    <Area
+                      type="monotone"
+                      dataKey="revenue"
+                      stroke="#2563eb"
+                      fill="url(#revenueGradient)"
+                      strokeWidth={3}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="orders"
+                      stroke="#0EA5E9"
+                      strokeWidth={2}
+                      dot={false}
+                    />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
@@ -407,18 +412,20 @@ function AdminPage() {
                               entry.status === "completed"
                                 ? "#10B981"
                                 : entry.status === "processing"
-                                ? "#0EA5E9"
-                                : entry.status === "paid"
-                                ? "#3B82F6"
-                                : entry.status === "purchasing_proxy"
-                                ? "#8B5CF6"
-                                : entry.status === "delivering"
-                                ? "#F59E0B"
-                                : entry.status === "awaiting_payment"
-                                ? "#F97316"
-                                : entry.status === "failed" || entry.status === "cancelled" || entry.status === "refunded"
-                                ? "#EF4444"
-                                : "#6B7280"
+                                  ? "#0EA5E9"
+                                  : entry.status === "paid"
+                                    ? "#3B82F6"
+                                    : entry.status === "purchasing_proxy"
+                                      ? "#8B5CF6"
+                                      : entry.status === "delivering"
+                                        ? "#F59E0B"
+                                        : entry.status === "awaiting_payment"
+                                          ? "#F97316"
+                                          : entry.status === "failed" ||
+                                              entry.status === "cancelled" ||
+                                              entry.status === "refunded"
+                                            ? "#EF4444"
+                                            : "#6B7280"
                             }
                           />
                         ))}
@@ -442,7 +449,13 @@ function AdminPage() {
                 <div className="mt-6 h-72">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
-                      <Pie data={guestChartData} dataKey="value" nameKey="label" outerRadius={90} innerRadius={50}>
+                      <Pie
+                        data={guestChartData}
+                        dataKey="value"
+                        nameKey="label"
+                        outerRadius={90}
+                        innerRadius={50}
+                      >
                         {guestChartData.map((entry, index) => (
                           <Cell key={entry.label} fill={index === 0 ? "#7C3AED" : "#14B8A6"} />
                         ))}
@@ -474,7 +487,9 @@ function AdminPage() {
                         <p className="font-semibold">{bundle.bundle}</p>
                         <p className="text-sm text-muted-foreground">Orders: {bundle.orders}</p>
                       </div>
-                      <p className="text-right text-sm font-semibold">{formatMoney(bundle.revenue)}</p>
+                      <p className="text-right text-sm font-semibold">
+                        {formatMoney(bundle.revenue)}
+                      </p>
                     </div>
                   </div>
                 ))}
@@ -501,7 +516,9 @@ function AdminPage() {
                         <p className="font-semibold">{item.product}</p>
                         <p className="text-sm text-muted-foreground">Orders: {item.orders}</p>
                       </div>
-                      <p className="text-right text-sm font-semibold">{formatMoney(item.revenue)}</p>
+                      <p className="text-right text-sm font-semibold">
+                        {formatMoney(item.revenue)}
+                      </p>
                     </div>
                   </div>
                 ))}
@@ -607,7 +624,7 @@ function AdminPage() {
               <DialogHeader>
                 <DialogTitle>Order #{selected.order_number}</DialogTitle>
                 <DialogDescription>
-                  {selected.product_name} · {selected.plan_name} · qty {selected.quantity} · {" "}
+                  {selected.product_name} · {selected.plan_name} · qty {selected.quantity} ·{" "}
                   {DELIVERY_LABEL[selected.delivery_method]}
                 </DialogDescription>
               </DialogHeader>
@@ -615,8 +632,12 @@ function AdminPage() {
               {selected.delivery_method === "account_refill" ? (
                 <div className="rounded-lg border border-border/70 p-4 text-sm">
                   <p className="font-medium">Account details supplied by customer</p>
-                  <p className="mt-1 text-muted-foreground">Email: {selected.refill_email ?? "N/A"}</p>
-                  <p className="text-muted-foreground">Password: {selected.refill_password ?? "N/A"}</p>
+                  <p className="mt-1 text-muted-foreground">
+                    Email: {selected.refill_email ?? "N/A"}
+                  </p>
+                  <p className="text-muted-foreground">
+                    Password: {selected.refill_password ?? "N/A"}
+                  </p>
                   {selected.refill_notes ? (
                     <p className="text-muted-foreground">Notes: {selected.refill_notes}</p>
                   ) : null}
@@ -670,7 +691,10 @@ function AdminPage() {
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label>Status</Label>
-                  <Select value={draftStatus} onValueChange={(v) => setDraftStatus(v as OrderStatus)}>
+                  <Select
+                    value={draftStatus}
+                    onValueChange={(v) => setDraftStatus(v as OrderStatus)}
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -717,13 +741,13 @@ function AdminPage() {
                       status: draftStatus,
                       cdKey: draftKey,
                       adminNote: draftNote,
-                      ...(proofUrl ? { refill_proof_url: proofUrl, delivery_status: "delivered" } : {}),
+                      ...(proofUrl
+                        ? { refill_proof_url: proofUrl, delivery_status: "delivered" }
+                        : {}),
                     })
                   }
                 >
-                  {mutation.isPending ? (
-                    <Loader2 className="mr-2 size-4 animate-spin" />
-                  ) : null}
+                  {mutation.isPending ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}
                   Save and notify customer
                 </Button>
               </div>

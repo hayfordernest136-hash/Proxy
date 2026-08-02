@@ -102,8 +102,7 @@ function ResetPasswordPage() {
               <div className="space-y-4 text-center">
                 <h1 className="text-xl font-semibold tracking-tight">Invalid reset link</h1>
                 <p className="text-sm text-muted-foreground">
-                  This password reset link is missing or has expired. Request a new one
-                  to continue.
+                  This password reset link is missing or has expired. Request a new one to continue.
                 </p>
                 <Button
                   asChild
@@ -119,8 +118,7 @@ function ResetPasswordPage() {
               <div className="space-y-4 text-center">
                 <h1 className="text-xl font-semibold tracking-tight">Password updated</h1>
                 <p className="text-sm text-muted-foreground">
-                  Your password has been reset. You can now log in with your new
-                  password.
+                  Your password has been reset. You can now log in with your new password.
                 </p>
                 <Button
                   asChild
@@ -187,7 +185,11 @@ function ResetPasswordPage() {
                         onClick={() => setShowConfirmPassword((value) => !value)}
                         aria-label={showConfirmPassword ? "Hide password" : "Show password"}
                       >
-                        {showConfirmPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                        {showConfirmPassword ? (
+                          <EyeOff className="size-4" />
+                        ) : (
+                          <Eye className="size-4" />
+                        )}
                       </button>
                     </div>
                   </div>
@@ -211,4 +213,3 @@ function ResetPasswordPage() {
     </div>
   );
 }
-

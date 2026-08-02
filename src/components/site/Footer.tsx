@@ -56,9 +56,9 @@ export function Footer() {
         <div>
           <h3 className="text-sm font-semibold">Delivery</h3>
           <p className="mt-4 text-sm text-muted-foreground">
-            Data bundles delivered to your number in minutes. Proxy CD keys in about 2
-            minutes, account refills in about 5-7 minutes. Delivery times are estimates
-            and may vary during periods of high demand or maintenance.
+            Data bundles delivered to your number in minutes. Proxy CD keys in about 2 minutes,
+            account refills in about 5-7 minutes. Delivery times are estimates and may vary during
+            periods of high demand or maintenance.
           </p>
         </div>
       </div>

@@ -76,7 +76,7 @@ function DataCheckoutPage() {
   const paystackTotal = total;
 
   function formatOrderReference(orderNumber: number) {
-    const digits = String(orderNumber).padStart(6, '0');
+    const digits = String(orderNumber).padStart(6, "0");
     return `BRK-${digits.slice(0, 3)}-${digits.slice(3)}`;
   }
 
@@ -117,13 +117,15 @@ function DataCheckoutPage() {
       });
 
       setOrderId(created.id);
-      const payment = await apiFetch<{ ok: boolean; authorizationUrl?: string; reference?: string; sandbox?: boolean }>(
-        "/api/payments/initiate",
-        {
-          method: "POST",
-          body: JSON.stringify({ orderId: created.id }),
-        },
-      );
+      const payment = await apiFetch<{
+        ok: boolean;
+        authorizationUrl?: string;
+        reference?: string;
+        sandbox?: boolean;
+      }>("/api/payments/initiate", {
+        method: "POST",
+        body: JSON.stringify({ orderId: created.id }),
+      });
 
       if (payment.sandbox) {
         toast.success("Sandbox payment initiated. Your data order is now queued.");
@@ -153,23 +155,23 @@ function DataCheckoutPage() {
       setConfirming(true);
       setConfirmError(null);
       try {
-        const paymentResponse = await apiFetch<{ ok: boolean }>('/api/payments/confirm', {
-          method: 'POST',
+        const paymentResponse = await apiFetch<{ ok: boolean }>("/api/payments/confirm", {
+          method: "POST",
           body: JSON.stringify({ orderId, reference: redirectReference }),
         });
 
         if (!paymentResponse.ok) {
-          throw new Error('Unable to confirm payment.');
+          throw new Error("Unable to confirm payment.");
         }
 
         const order = await apiFetch<any>(`/api/orders/${orderId}`);
         const formattedOrderId = formatOrderReference(order.order_number);
         navigate({
-          to: '/data/track',
+          to: "/data/track",
           search: { orderId: formattedOrderId, contactNumber: contactNumber.trim() },
         });
       } catch (error) {
-        setConfirmError(error instanceof Error ? error.message : 'Unable to confirm payment.');
+        setConfirmError(error instanceof Error ? error.message : "Unable to confirm payment.");
       } finally {
         setConfirming(false);
       }
@@ -229,9 +231,13 @@ function DataCheckoutPage() {
                         <div>
                           <p className="font-medium">{item.network}</p>
                           <p className="text-muted-foreground">{item.bundle}</p>
-                          <p className="text-muted-foreground">Delivery Number: {item.deliveryNumber}</p>
+                          <p className="text-muted-foreground">
+                            Delivery Number: {item.deliveryNumber}
+                          </p>
                         </div>
-                        <div className="font-semibold">{formatMoney(item.price, item.currency)}</div>
+                        <div className="font-semibold">
+                          {formatMoney(item.price, item.currency)}
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -241,15 +247,31 @@ function DataCheckoutPage() {
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="full-name">Full Name (Optional)</Label>
-                  <Input id="full-name" value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Jane Doe" />
+                  <Input
+                    id="full-name"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    placeholder="Jane Doe"
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="email-address">Email Address (Required)</Label>
-                  <Input id="email-address" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" />
+                  <Input
+                    id="email-address"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="you@example.com"
+                  />
                 </div>
                 <div className="space-y-2 sm:col-span-2">
                   <Label htmlFor="contact-number">Contact Number (Required)</Label>
-                  <Input id="contact-number" value={contactNumber} onChange={(e) => setContactNumber(e.target.value)} placeholder="0240000000" />
+                  <Input
+                    id="contact-number"
+                    value={contactNumber}
+                    onChange={(e) => setContactNumber(e.target.value)}
+                    placeholder="0240000000"
+                  />
                 </div>
               </div>
 
@@ -262,7 +284,8 @@ function DataCheckoutPage() {
                 Proceed to Checkout
               </Button>
               <p className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
-                <ShieldCheck className="size-3.5" /> Secure Paystack checkout with instant data fulfilment.
+                <ShieldCheck className="size-3.5" /> Secure Paystack checkout with instant data
+                fulfilment.
               </p>
             </CardContent>
           </Card>
@@ -287,4 +310,3 @@ function DataCheckoutPage() {
     </SiteLayout>
   );
 }
-

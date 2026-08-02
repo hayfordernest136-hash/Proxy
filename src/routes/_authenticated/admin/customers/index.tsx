@@ -4,7 +4,14 @@ import { useQuery } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { apiFetch } from "@/lib/api";
 import { formatDate } from "@/lib/format";
 
@@ -46,13 +53,17 @@ function AdminCustomersPage() {
         <Card>
           <CardContent className="p-5">
             <p className="text-sm text-muted-foreground">Active admins</p>
-            <p className="mt-2 text-2xl font-bold">{users?.filter((u) => u.role === "admin").length ?? "N/A"}</p>
+            <p className="mt-2 text-2xl font-bold">
+              {users?.filter((u) => u.role === "admin").length ?? "N/A"}
+            </p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-5">
             <p className="text-sm text-muted-foreground">Referral rewards</p>
-            <p className="mt-2 text-2xl font-bold">{users?.filter((u) => u.referral_reward_used_at).length ?? "N/A"}</p>
+            <p className="mt-2 text-2xl font-bold">
+              {users?.filter((u) => u.referral_reward_used_at).length ?? "N/A"}
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -87,7 +98,9 @@ function AdminCustomersPage() {
                       <TableCell>{user.referral_code ?? "—"}</TableCell>
                       <TableCell>{formatDate(user.created_at)}</TableCell>
                       <TableCell>
-                        <Badge variant="outline">{user.referral_reward_used_at ? "Reward used" : "Active"}</Badge>
+                        <Badge variant="outline">
+                          {user.referral_reward_used_at ? "Reward used" : "Active"}
+                        </Badge>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -95,7 +108,9 @@ function AdminCustomersPage() {
               </Table>
             </div>
           ) : (
-            <div className="p-10 text-center text-sm text-muted-foreground">No customers available.</div>
+            <div className="p-10 text-center text-sm text-muted-foreground">
+              No customers available.
+            </div>
           )}
         </CardContent>
       </Card>

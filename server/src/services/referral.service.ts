@@ -1,6 +1,6 @@
-import { pool } from '../config/db';
-import { createNotification } from './notification.service';
-import { findUserById, setUserReferralRewardUsed } from './user.service';
+import { pool } from "../config/db";
+import { createNotification } from "./notification.service";
+import { findUserById, setUserReferralRewardUsed } from "./user.service";
 
 export type ReferralRow = {
   id: number;
@@ -27,22 +27,21 @@ export async function createReferral(
   sourceReferralCode: string,
 ) {
   const [rows] = await pool.query(
-    'INSERT INTO referrals (referrer_user_id, referred_user_id, referred_email, source_referral_code, status, created_at) VALUES (?, ?, ?, ?, ?, NOW())',
-    [referrerUserId, referredUserId, referredEmail, sourceReferralCode, 'pending'],
+    "INSERT INTO referrals (referrer_user_id, referred_user_id, referred_email, source_referral_code, status, created_at) VALUES (?, ?, ?, ?, ?, NOW())",
+    [referrerUserId, referredUserId, referredEmail, sourceReferralCode, "pending"],
   );
   return (rows as any).insertId;
 }
 
 export async function getReferralByReferredUserId(referredUserId: number) {
-  const [rows] = await pool.query('SELECT * FROM referrals WHERE referred_user_id = ? LIMIT 1', [referredUserId]);
+  const [rows] = await pool.query("SELECT * FROM referrals WHERE referred_user_id = ? LIMIT 1", [
+    referredUserId,
+  ]);
   return (rows as any[])[0] || null;
 }
 
 export async function getReferralById(referralId: number) {
-  const [rows] = await pool.query(
-    'SELECT * FROM referrals WHERE id = ? LIMIT 1',
-    [referralId],
-  );
+  const [rows] = await pool.query("SELECT * FROM referrals WHERE id = ? LIMIT 1", [referralId]);
   return (rows as any[])[0] || null;
 }
 
@@ -84,8 +83,8 @@ export async function getAllReferrals() {
 
 export async function countSuccessfulReferrals(referrerUserId: number) {
   const [rows] = await pool.query(
-    'SELECT COUNT(*) AS count FROM referrals WHERE referrer_user_id = ? AND status = ?',
-    [referrerUserId, 'completed'],
+    "SELECT COUNT(*) AS count FROM referrals WHERE referrer_user_id = ? AND status = ?",
+    [referrerUserId, "completed"],
   );
   return Number((rows as any[])[0]?.count ?? 0);
 }
@@ -95,9 +94,9 @@ export async function getReferralStatusForUser(referrerUserId: number) {
   const referrer = await findUserById(referrerUserId);
   const rewardUsed = !!referrer?.referral_reward_used_at;
   const unlocked = successfulReferrals >= 10;
-  let rewardStatus = 'locked';
-  if (rewardUsed) rewardStatus = 'used';
-  else if (unlocked) rewardStatus = 'unlocked';
+  let rewardStatus = "locked";
+  if (rewardUsed) rewardStatus = "used";
+  else if (unlocked) rewardStatus = "unlocked";
 
   return {
     successfulReferrals,
@@ -110,8 +109,8 @@ export async function getReferralStatusForUser(referrerUserId: number) {
 
 export async function completeReferralForReferredUserId(referredUserId: number, orderId: number) {
   const [result] = await pool.query(
-    'UPDATE referrals SET status = ?, completed_at = NOW() WHERE referred_user_id = ? AND status = ?',
-    ['completed', referredUserId, 'pending'],
+    "UPDATE referrals SET status = ?, completed_at = NOW() WHERE referred_user_id = ? AND status = ?",
+    ["completed", referredUserId, "pending"],
   );
 
   if ((result as any).affectedRows === 0) {
@@ -128,8 +127,8 @@ export async function completeReferralForReferredUserId(referredUserId: number, 
     await createNotification(
       referral.referrer_user_id,
       orderId,
-      'Referral reward unlocked',
-      'You just earned a one-time 50% discount on a 10 IP proxy package. Use it at checkout.',
+      "Referral reward unlocked",
+      "You just earned a one-time 50% discount on a 10 IP proxy package. Use it at checkout.",
     );
   }
 
@@ -137,7 +136,7 @@ export async function completeReferralForReferredUserId(referredUserId: number, 
 }
 
 export async function updateReferralStatus(referralId: number, status: string) {
-  await pool.query('UPDATE referrals SET status = ? WHERE id = ?', [status, referralId]);
+  await pool.query("UPDATE referrals SET status = ? WHERE id = ?", [status, referralId]);
   return getReferralById(referralId);
 }
 

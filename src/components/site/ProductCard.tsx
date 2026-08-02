@@ -71,7 +71,12 @@ export function ProductCard({ product }: { product: ProductCardData }) {
             </p>
           </div>
           <div className="flex items-center gap-2 self-end sm:self-auto">
-            <Button asChild size="sm" variant="secondary" className="h-8 px-3 text-xs sm:h-9 sm:px-4 sm:text-sm">
+            <Button
+              asChild
+              size="sm"
+              variant="secondary"
+              className="h-8 px-3 text-xs sm:h-9 sm:px-4 sm:text-sm"
+            >
               <Link to="/products/$slug" params={{ slug: product.slug }}>
                 View <ArrowRight className="ml-1 size-3.5" />
               </Link>
@@ -84,4 +89,3 @@ export function ProductCard({ product }: { product: ProductCardData }) {
     </Card>
   );
 }
-

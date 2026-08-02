@@ -1,5 +1,9 @@
-import { getSupportEmail, sendEmail } from './email.service';
-import { renderLoginNotificationEmail, renderPasswordResetEmail, renderWelcomeEmail } from './email-templates';
+import { getSupportEmail, sendEmail } from "./email.service";
+import {
+  renderLoginNotificationEmail,
+  renderPasswordResetEmail,
+  renderWelcomeEmail,
+} from "./email-templates";
 
 /**
  * Account-related transactional emails (Welcome, Login Notification, Password Reset).
@@ -11,7 +15,9 @@ import { renderLoginNotificationEmail, renderPasswordResetEmail, renderWelcomeEm
  */
 
 function getFrontendUrl(): string {
-  return String(process.env.FRONTEND_URL || process.env.FRONTEND_ORIGIN || 'http://localhost:5173').replace(/\/+$/, '');
+  return String(
+    process.env.FRONTEND_URL || process.env.FRONTEND_ORIGIN || "http://localhost:5173",
+  ).replace(/\/+$/, "");
 }
 
 function getLoginUrl(): string {
@@ -30,7 +36,9 @@ export async function sendWelcomeEmail(input: {
   userName: string;
   email: string;
 }): Promise<boolean> {
-  const email = String(input.email || '').trim().toLowerCase();
+  const email = String(input.email || "")
+    .trim()
+    .toLowerCase();
   if (!email) return false;
 
   const html = renderWelcomeEmail({
@@ -42,11 +50,11 @@ export async function sendWelcomeEmail(input: {
   return sendEmail(
     {
       to: email,
-      subject: 'Welcome to BrokeFlex — your account is ready',
+      subject: "Welcome to BrokeFlex — your account is ready",
       html,
       from: getSupportEmail(),
     },
-    { emailType: 'welcome', orderId: null },
+    { emailType: "welcome", orderId: null },
   );
 }
 
@@ -54,7 +62,9 @@ export async function sendLoginNotificationEmail(input: {
   userName: string;
   email: string;
 }): Promise<boolean> {
-  const email = String(input.email || '').trim().toLowerCase();
+  const email = String(input.email || "")
+    .trim()
+    .toLowerCase();
   if (!email) return false;
 
   const html = renderLoginNotificationEmail({
@@ -64,11 +74,11 @@ export async function sendLoginNotificationEmail(input: {
   return sendEmail(
     {
       to: email,
-      subject: 'You just signed in to your BrokeFlex account',
+      subject: "You just signed in to your BrokeFlex account",
       html,
       from: getSupportEmail(),
     },
-    { emailType: 'login_notification', orderId: null },
+    { emailType: "login_notification", orderId: null },
   );
 }
 
@@ -82,7 +92,9 @@ export async function sendPasswordResetEmail(input: {
   rawToken: string;
   expiresAt: Date;
 }): Promise<boolean> {
-  const email = String(input.email || '').trim().toLowerCase();
+  const email = String(input.email || "")
+    .trim()
+    .toLowerCase();
   if (!email) return false;
 
   const expiresInLabel = buildExpiryLabel(input.expiresAt);
@@ -97,11 +109,11 @@ export async function sendPasswordResetEmail(input: {
   return sendEmail(
     {
       to: email,
-      subject: 'Reset your BrokeFlex password',
+      subject: "Reset your BrokeFlex password",
       html,
       from: getSupportEmail(),
     },
-    { emailType: 'password_reset', orderId: null },
+    { emailType: "password_reset", orderId: null },
   );
 }
 
@@ -110,4 +122,3 @@ function buildExpiryLabel(expiresAt: Date): string {
   const diffMinutes = Math.max(1, Math.round((expiresAt.getTime() - Date.now()) / 60_000));
   return `${diffMinutes} minutes`;
 }
-

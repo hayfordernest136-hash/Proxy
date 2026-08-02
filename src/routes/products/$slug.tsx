@@ -23,11 +23,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { apiFetch } from "@/lib/api";
 import { useSession } from "@/hooks/useSession";
 import { formatMoney } from "@/lib/format";
-import {
-  DELIVERY_DISCLAIMER,
-  DELIVERY_ETA,
-  type DeliveryMethod,
-} from "@/lib/order-status";
+import { DELIVERY_DISCLAIMER, DELIVERY_ETA, type DeliveryMethod } from "@/lib/order-status";
 import { cn } from "@/lib/utils";
 
 type ProductPrice = {
@@ -138,7 +134,7 @@ function ProductDetailPage() {
   const [delivery, setDelivery] = useState<DeliveryMethod>("cd_key");
   const [refillEmail, setRefillEmail] = useState("");
   const [refillPassword, setRefillPassword] = useState("");
-  const [accountType, setAccountType] = useState<'new' | 'existing' | null>(null);
+  const [accountType, setAccountType] = useState<"new" | "existing" | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   const { data: product, isLoading } = useQuery({
@@ -148,18 +144,15 @@ function ProductDetailPage() {
     },
   });
 
-const prices = useMemo<ProductPrice[]>(
-    () =>
-      (product?.prices ?? [])
-        .slice()
-        .sort((a, b) => a.sort_order - b.sort_order),
+  const prices = useMemo<ProductPrice[]>(
+    () => (product?.prices ?? []).slice().sort((a, b) => a.sort_order - b.sort_order),
     [product],
   );
 
   const selectedPrice =
-    (planId == null
+    planId == null
       ? null
-      : prices.find(
+      : (prices.find(
           (p) =>
             p.id === planId ||
             (product?.plans ?? []).some(
@@ -167,7 +160,9 @@ const prices = useMemo<ProductPrice[]>(
             ),
         ) ?? null);
   const selectedPlan = (product?.plans ?? []).find((p) => p.id === planId) ?? null;
-  const total = (selectedPrice ? Number(selectedPrice.price) : selectedPlan ? Number(selectedPlan.price) : 0) * quantity;
+  const total =
+    (selectedPrice ? Number(selectedPrice.price) : selectedPlan ? Number(selectedPlan.price) : 0) *
+    quantity;
 
   async function createOrder() {
     if (!user) {
@@ -183,24 +178,32 @@ const prices = useMemo<ProductPrice[]>(
       toast.error("Enter the email or username of the account to refill.");
       return;
     }
-    if (delivery === 'account_refill' && !accountType) {
-      toast.error('Select an account type (New or Existing).');
+    if (delivery === "account_refill" && !accountType) {
+      toast.error("Select an account type (New or Existing).");
       return;
     }
-    if (delivery === 'account_refill' && (!refillPassword || refillPassword.trim().length < 1)) {
-      toast.error('Enter the account password.');
+    if (delivery === "account_refill" && (!refillPassword || refillPassword.trim().length < 1)) {
+      toast.error("Enter the account password.");
       return;
     }
 
     setSubmitting(true);
     try {
-      const planIdToUse = selectedPlan?.id ?? ((product.plans ?? []).find((pl:any)=>pl.number_of_ips === selectedPrice?.number_of_ips)?.id ?? null);
-      const planNameToUse = selectedPrice ? getUnitLabel(product.pricing_unit, selectedPrice.number_of_ips) : (selectedPlan?.name ?? '');
+      const planIdToUse =
+        selectedPlan?.id ??
+        (product.plans ?? []).find((pl: any) => pl.number_of_ips === selectedPrice?.number_of_ips)
+          ?.id ??
+        null;
+      const planNameToUse = selectedPrice
+        ? getUnitLabel(product.pricing_unit, selectedPrice.number_of_ips)
+        : (selectedPlan?.name ?? "");
       const unitPriceToUse = selectedPrice ? selectedPrice.price : (selectedPlan?.price ?? 0);
-      const currencyToUse = selectedPrice ? selectedPrice.currency : (selectedPlan?.currency ?? 'GHS');
+      const currencyToUse = selectedPrice
+        ? selectedPrice.currency
+        : (selectedPlan?.currency ?? "GHS");
 
-      const order = await apiFetch<any>('/api/orders', {
-        method: 'POST',
+      const order = await apiFetch<any>("/api/orders", {
+        method: "POST",
         body: JSON.stringify({
           product_id: product.id,
           plan_id: planIdToUse,
@@ -212,17 +215,18 @@ const prices = useMemo<ProductPrice[]>(
           total_amount: total,
           currency: currencyToUse,
           delivery_method: delivery,
-          refill_email:
-            delivery === 'account_refill' ? refillEmail.trim().slice(0, 255) : null,
+          refill_email: delivery === "account_refill" ? refillEmail.trim().slice(0, 255) : null,
           refill_password:
-            delivery === 'account_refill' && refillPassword ? refillPassword.slice(0, 255) : null,
-          account_type: delivery === 'account_refill' ? (accountType ?? 'existing') : null,
+            delivery === "account_refill" && refillPassword ? refillPassword.slice(0, 255) : null,
+          account_type: delivery === "account_refill" ? (accountType ?? "existing") : null,
         }),
       });
 
-      navigate({ to: '/checkout/$orderId', params: { orderId: order.id } });
+      navigate({ to: "/checkout/$orderId", params: { orderId: order.id } });
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Unable to create your order. Please try again.');
+      toast.error(
+        error instanceof Error ? error.message : "Unable to create your order. Please try again.",
+      );
     } finally {
       setSubmitting(false);
     }
@@ -312,7 +316,7 @@ const prices = useMemo<ProductPrice[]>(
               <CardContent className="p-6">
                 <h2 className="font-semibold tracking-tight">Features</h2>
                 <ul className="mt-4 grid gap-3 sm:grid-cols-2">
-{product.features.map((f: string) => (
+                  {product.features.map((f: string) => (
                     <li key={f} className="flex items-start gap-2 text-sm">
                       <Check className="mt-0.5 size-4 shrink-0 text-success" />
                       {f}
@@ -332,9 +336,7 @@ const prices = useMemo<ProductPrice[]>(
                     </span>
                     <div>
                       <p className="text-sm font-medium">{o.label}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {DELIVERY_ETA[o.value]}
-                      </p>
+                      <p className="text-sm text-muted-foreground">{DELIVERY_ETA[o.value]}</p>
                     </div>
                   </div>
                 ))}
@@ -396,7 +398,9 @@ const prices = useMemo<ProductPrice[]>(
                       );
                     })}
                     {(product?.prices ?? []).length === 0 ? (
-                      <p className="text-sm text-muted-foreground">No pricing available right now.</p>
+                      <p className="text-sm text-muted-foreground">
+                        No pricing available right now.
+                      </p>
                     ) : null}
                   </div>
                 </div>
@@ -457,26 +461,26 @@ const prices = useMemo<ProductPrice[]>(
                       <div className="flex gap-2" role="radiogroup" aria-label="Account Type">
                         <button
                           type="button"
-                          aria-pressed={accountType === 'new'}
-                          onClick={() => setAccountType('new')}
+                          aria-pressed={accountType === "new"}
+                          onClick={() => setAccountType("new")}
                           className={cn(
-                            'rounded-md border px-3 py-2 text-sm font-medium transition-colors',
-                            accountType === 'new'
-                              ? 'border-yellow-500 bg-yellow-500/20 text-yellow-700 shadow-sm'
-                              : 'border-transparent text-muted-foreground hover:border-yellow-500/40 hover:bg-yellow-500/10',
+                            "rounded-md border px-3 py-2 text-sm font-medium transition-colors",
+                            accountType === "new"
+                              ? "border-yellow-500 bg-yellow-500/20 text-yellow-700 shadow-sm"
+                              : "border-transparent text-muted-foreground hover:border-yellow-500/40 hover:bg-yellow-500/10",
                           )}
                         >
                           New Account
                         </button>
                         <button
                           type="button"
-                          aria-pressed={accountType === 'existing'}
-                          onClick={() => setAccountType('existing')}
+                          aria-pressed={accountType === "existing"}
+                          onClick={() => setAccountType("existing")}
                           className={cn(
-                            'rounded-md border px-3 py-2 text-sm font-medium transition-colors',
-                            accountType === 'existing'
-                              ? 'border-yellow-500 bg-yellow-500/20 text-yellow-700 shadow-sm'
-                              : 'border-transparent text-muted-foreground hover:border-yellow-500/40 hover:bg-yellow-500/10',
+                            "rounded-md border px-3 py-2 text-sm font-medium transition-colors",
+                            accountType === "existing"
+                              ? "border-yellow-500 bg-yellow-500/20 text-yellow-700 shadow-sm"
+                              : "border-transparent text-muted-foreground hover:border-yellow-500/40 hover:bg-yellow-500/10",
                           )}
                         >
                           Existing Account
@@ -484,8 +488,7 @@ const prices = useMemo<ProductPrice[]>(
                       </div>
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      Credentials are stored securely and only visible to our fulfilment
-                      team.
+                      Credentials are stored securely and only visible to our fulfilment team.
                     </p>
                   </div>
                 ) : null}

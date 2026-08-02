@@ -13,7 +13,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 type AdminProduct = {
   id: number;
@@ -23,7 +30,13 @@ type AdminProduct = {
   location: string;
   pricing_unit?: "ip" | "gb";
   is_active: number;
-  prices?: Array<{ id: number; number_of_ips: number; price: number; currency: string; sort_order?: number }>;
+  prices?: Array<{
+    id: number;
+    number_of_ips: number;
+    price: number;
+    currency: string;
+    sort_order?: number;
+  }>;
 };
 
 export const Route = createFileRoute("/_authenticated/admin/products/")({
@@ -42,7 +55,11 @@ function ProductsAdminPage() {
   });
 
   const productMutation = useMutation({
-    mutationFn: async (input: { action: "toggleActive" | "delete"; id: number; isActive?: number }) => {
+    mutationFn: async (input: {
+      action: "toggleActive" | "delete";
+      id: number;
+      isActive?: number;
+    }) => {
       if (input.action === "toggleActive") {
         return await apiFetch(`/api/admin/products/${input.id}`, {
           method: "PATCH",
@@ -72,8 +89,7 @@ function ProductsAdminPage() {
         statusFilter === "all" ||
         (statusFilter === "active" && product.is_active === 1) ||
         (statusFilter === "inactive" && product.is_active === 0);
-      const matchesUnit =
-        unitFilter === "all" || (product.pricing_unit ?? "ip") === unitFilter;
+      const matchesUnit = unitFilter === "all" || (product.pricing_unit ?? "ip") === unitFilter;
       const matchesTerm =
         !term ||
         product.name.toLowerCase().includes(term) ||
@@ -146,9 +162,7 @@ function ProductsAdminPage() {
               ))}
             </div>
           ) : !filtered.length ? (
-            <p className="py-12 text-center text-sm text-muted-foreground">
-              No products found.
-            </p>
+            <p className="py-12 text-center text-sm text-muted-foreground">No products found.</p>
           ) : (
             <div className="overflow-x-auto">
               <Table>
@@ -183,7 +197,14 @@ function ProductsAdminPage() {
                           <div className="text-sm text-muted-foreground">{unitLabel} pricing</div>
                         </TableCell>
                         <TableCell>
-                          <Badge variant="outline" className={product.is_active ? "border-foreground text-foreground" : "border-muted text-muted-foreground"}>
+                          <Badge
+                            variant="outline"
+                            className={
+                              product.is_active
+                                ? "border-foreground text-foreground"
+                                : "border-muted text-muted-foreground"
+                            }
+                          >
                             {product.is_active ? "Active" : "Inactive"}
                           </Badge>
                         </TableCell>

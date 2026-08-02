@@ -15,7 +15,8 @@ function AdminSupportPage() {
       </div>
       <Card>
         <CardContent className="p-6 text-sm text-muted-foreground">
-          Ticket management and escalation controls can be surfaced from this page once the support workflow is connected.
+          Ticket management and escalation controls can be surfaced from this page once the support
+          workflow is connected.
         </CardContent>
       </Card>
     </div>

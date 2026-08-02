@@ -1,5 +1,5 @@
-import { createHash, randomBytes } from 'crypto';
-import { pool } from '../config/db';
+import { createHash, randomBytes } from "crypto";
+import { pool } from "../config/db";
 
 /**
  * Password reset token service.
@@ -25,7 +25,7 @@ export type PasswordResetTokenRow = {
 };
 
 function hashToken(token: string): string {
-  return createHash('sha256').update(token).digest('hex');
+  return createHash("sha256").update(token).digest("hex");
 }
 
 /**
@@ -33,13 +33,15 @@ function hashToken(token: string): string {
  * unused tokens for the same user first (single active token per account).
  * Returns the raw token (to email to the user) and the expiry date.
  */
-export async function createPasswordResetToken(userId: number): Promise<{ rawToken: string; expiresAt: Date }> {
+export async function createPasswordResetToken(
+  userId: number,
+): Promise<{ rawToken: string; expiresAt: Date }> {
   await pool.query(
     `UPDATE password_reset_tokens SET used_at = NOW() WHERE user_id = ? AND used_at IS NULL`,
     [userId],
   );
 
-  const rawToken = randomBytes(32).toString('hex');
+  const rawToken = randomBytes(32).toString("hex");
   const tokenHash = hashToken(rawToken);
   const expiresAt = new Date(Date.now() + RESET_TOKEN_EXPIRY_MS);
 
@@ -57,7 +59,7 @@ export async function createPasswordResetToken(userId: number): Promise<{ rawTok
  * returned so the caller can update the password without a second query.
  */
 export async function findValidResetToken(rawToken: string) {
-  const tokenHash = hashToken(String(rawToken || '').trim());
+  const tokenHash = hashToken(String(rawToken || "").trim());
   const [rows] = await pool.query<any[]>(
     `SELECT * FROM password_reset_tokens WHERE token_hash = ? LIMIT 1`,
     [tokenHash],
@@ -104,4 +106,3 @@ export async function cleanupExpiredResetTokens(): Promise<void> {
     `DELETE FROM password_reset_tokens WHERE expires_at < NOW() OR used_at IS NOT NULL`,
   );
 }
-
