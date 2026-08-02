@@ -257,6 +257,16 @@ function DataTrackPage() {
   const accent = tone ? ACCENT_STYLES[tone.accent] : ACCENT_STYLES.success;
   const deliveryStep = result ? getDeliveryStep(result.deliveryStatus) : 1;
   const [copied, setCopied] = useState(false);
+  const [animatedProgress, setAnimatedProgress] = useState(0);
+
+  useEffect(() => {
+    const targetProgress = result ? Math.round((deliveryStep / DELIVERY_STEPS.length) * 100) : 0;
+    const frame = window.requestAnimationFrame(() => {
+      setAnimatedProgress(targetProgress);
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [deliveryStep, result?.orderId, result?.deliveryStatus]);
 
   async function copyOrderId() {
     if (!result) return;
@@ -412,15 +422,12 @@ function DataTrackPage() {
               {result ? (
                 // ========== REDESIGNED UI ==========
                 <div className="space-y-6">
-                  {/* Status Header – compact with progress bar */}
-                  <div className="rounded-2xl bg-muted/30 p-5 ring-1 ring-border/70">
-                    <div className="flex items-center justify-between gap-4">
-                      <div className="flex items-center gap-4">
+                  {/* Animated status timeline */}
+                  <div className="rounded-2xl bg-muted/30 p-4 ring-1 ring-border/70 sm:p-5">
+                    <div className="mb-4 flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3">
                         <div className="relative grid place-items-center rounded-full bg-background p-2.5 shadow-sm ring-1 ring-border/60">
-                          <ProgressRing
-                            value={Math.round((deliveryStep / DELIVERY_STEPS.length) * 100)}
-                            className={accent.ring}
-                          />
+                          <ProgressRing value={animatedProgress} className={accent.ring} />
                           <StatusIcon className={"absolute size-5 " + accent.icon} />
                         </div>
                         <div>
@@ -435,26 +442,72 @@ function DataTrackPage() {
                         </div>
                       </div>
                       <div className="text-right text-sm">
-                        <p className="font-medium tabular-nums">
-                          {Math.round((deliveryStep / DELIVERY_STEPS.length) * 100)}%
-                        </p>
+                        <p className="font-medium tabular-nums">{animatedProgress}%</p>
                         <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
                           Progress
                         </p>
                       </div>
                     </div>
-                    {/* Progress bar – moves based on deliveryStep */}
-                    <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-border">
-                      <div
-                        className={
-                          "h-full rounded-full transition-[width] duration-500 ease-out " +
-                          accent.progress
-                        }
-                        style={{
-                          width: `${(deliveryStep / DELIVERY_STEPS.length) * 100}%`,
-                          transitionTimingFunction: "ease-out",
-                        }}
-                      />
+
+                    <div className="relative mt-2">
+                      <div className="absolute left-4 right-4 top-5 h-1.5 overflow-hidden rounded-full bg-border/90 sm:left-5 sm:right-5">
+                        <div
+                          className={"h-full rounded-full bg-gradient-to-r from-emerald-500 via-emerald-500 to-emerald-400 transition-[width] duration-700 ease-out "}
+                          style={{ width: `${animatedProgress}%` }}
+                        />
+                      </div>
+
+                      <div className="relative z-10 grid grid-cols-4 gap-2 sm:gap-3">
+                        {DELIVERY_STEPS.map((step, index) => {
+                          const stepNumber = index + 1;
+                          const isCompleted = stepNumber < deliveryStep;
+                          const isCurrent = stepNumber === deliveryStep;
+                          const isFuture = stepNumber > deliveryStep;
+
+                          return (
+                            <div key={step.label} className="flex flex-col items-center text-center">
+                              <div
+                                className={[
+                                  "relative flex h-10 w-10 items-center justify-center rounded-full border-2 transition-all duration-500 ease-out",
+                                  isCompleted
+                                    ? "scale-110 border-emerald-500 bg-emerald-500 text-white shadow-[0_0_0_6px_rgba(16,185,129,0.12)]"
+                                    : isCurrent
+                                      ? "animate-pulse border-emerald-500 bg-white text-emerald-600 shadow-[0_0_0_8px_rgba(16,185,129,0.12)] dark:bg-slate-950"
+                                      : "border-border bg-muted text-muted-foreground",
+                                ].join(" ")}
+                                style={{
+                                  transform: isCompleted ? "scale(1.1)" : isCurrent ? "scale(1.04)" : "scale(1)",
+                                  transitionTimingFunction: "cubic-bezier(0.22, 1, 0.36, 1)",
+                                }}
+                              >
+                                {isCompleted ? (
+                                  <Check
+                                    className="h-4 w-4 transition-transform duration-300 ease-out"
+                                    style={{ transform: "scale(1.05)" }}
+                                  />
+                                ) : (
+                                  <step.icon className={"h-4 w-4 " + (isCurrent ? "text-emerald-600" : "text-current")} />
+                                )}
+                              </div>
+
+                              <span
+                                className={[
+                                  "mt-2 text-[10px] font-medium uppercase tracking-[0.12em] transition-colors duration-300",
+                                  isCompleted || isCurrent
+                                    ? "text-foreground"
+                                    : "text-muted-foreground",
+                                ].join(" ")}
+                              >
+                                {step.label}
+                              </span>
+
+                              {isCurrent && (
+                                <span className="mt-1 h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.8)]" />
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
                   </div>
 
