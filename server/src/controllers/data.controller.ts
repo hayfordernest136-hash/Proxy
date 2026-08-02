@@ -467,7 +467,40 @@ function extractEstimatedTime(payload: any): string | null {
   return walk(payload);
 }
 
-function deriveDisplayStatus(order: OrderRow) {
+function deriveDisplayStatus(order: OrderRow, liveStatusOverride?: string | null) {
+  const liveStatus = String(liveStatusOverride || "").trim().toLowerCase();
+  if (liveStatus) {
+    if (
+      liveStatus.includes("delivered") ||
+      liveStatus.includes("success") ||
+      liveStatus.includes("completed") ||
+      liveStatus.includes("fulfilled") ||
+      liveStatus.includes("fulfil")
+    ) {
+      return "Delivered";
+    }
+    if (
+      liveStatus.includes("fail") ||
+      liveStatus.includes("cancelled") ||
+      liveStatus.includes("canceled") ||
+      liveStatus.includes("refund") ||
+      liveStatus.includes("error") ||
+      liveStatus.includes("rejected")
+    ) {
+      return "Failed";
+    }
+    if (
+      liveStatus.includes("paid") ||
+      liveStatus.includes("processing") ||
+      liveStatus.includes("in progress") ||
+      liveStatus.includes("queued") ||
+      liveStatus.includes("active") ||
+      liveStatus.includes("pending")
+    ) {
+      return "Processing";
+    }
+  }
+
   const normalizedStatus = String(order.status || "")
     .trim()
     .toLowerCase();
@@ -498,11 +531,12 @@ function deriveDisplayStatus(order: OrderRow) {
   return "Pending";
 }
 
-function serializeTrackedOrder(order: OrderRow) {
+function serializeTrackedOrder(order: OrderRow, liveStatusOverride?: string | null) {
   const guestMetadata = parseGuestMetadata(order);
   const orderNumber = formatOrderReference(order.order_number);
   const contactNumber = normalizeTrackingNumber(guestMetadata.contact_number);
   const deliveryNumber = guestMetadata.delivery_number || guestMetadata.delivery_numbers[0] || "";
+  const liveLocalStatus = liveStatusOverride ? remaStatusToLocalStatus(liveStatusOverride) : null;
 
   return {
     orderId: orderNumber,
@@ -513,12 +547,13 @@ function serializeTrackedOrder(order: OrderRow) {
     currency: order.currency || "GHS",
     deliveryNumber,
     contactNumber,
-    status: deriveDisplayStatus(order),
-    deliveryStatus: order.delivery_status || "pending",
+    status: deriveDisplayStatus(order, liveStatusOverride),
+    deliveryStatus: liveLocalStatus || order.delivery_status || "pending",
     orderDate: order.created_at,
     lastUpdate: order.updated_at,
   };
 }
+
 
 export async function createDataOrderHandler(req: Request, res: Response) {
   try {
@@ -704,7 +739,10 @@ export async function trackDataOrderHandler(req: Request, res: Response) {
     }
 
     const freshOrder = await getOrderById(order.id);
-    const orderPayload = serializeTrackedOrder(freshOrder ?? order) as Record<string, unknown>;
+    const orderPayload = serializeTrackedOrder(
+      freshOrder ?? order,
+      remaStatusInfo?.status || undefined,
+    ) as Record<string, unknown>;
 
     const fulfillmentReference =
       remaStatusInfo?.reference || order.fulfillment_reference || undefined;
