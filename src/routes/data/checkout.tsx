@@ -1,6 +1,6 @@
 ﻿import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Loader2, ShieldCheck, CreditCard, AlertTriangle } from "lucide-react";
+import { Loader2, ShieldCheck, CreditCard, AlertTriangle, Info } from "lucide-react";
 import { toast } from "sonner";
 
 import { SiteLayout } from "@/components/site/SiteLayout";
@@ -278,17 +278,18 @@ function DataCheckoutPage() {
                 </div>
               </div>
 
-              <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-3 text-sm text-amber-900 dark:text-amber-100">
+              <div className="rounded-2xl border border-border/60 bg-muted/70 p-4 text-sm text-muted-foreground">
                 <div className="flex items-start gap-3">
-                  <span className="mt-0.5 inline-flex shrink-0 items-center justify-center rounded-full bg-amber-500/15 p-1.5">
-                    <AlertTriangle className="size-4 text-amber-600 dark:text-amber-300" />
+                  <span className="mt-0.5 inline-flex shrink-0 items-center justify-center rounded-full bg-primary/10 p-2 text-primary">
+                    <Info className="size-4" />
                   </span>
                   <div>
-                    <p className="font-semibold">Please note:</p>
-                    <p className="mt-1 leading-6">
-                      If you have already placed an order for this same number and it is still
-                      pending, please wait until it is completed before placing another order.
-                      Duplicate orders for the same number may cause delays.
+                    <p className="font-medium">Delivery disclaimer</p>
+                    <p className="mt-1 leading-6 text-sm text-muted-foreground">
+                      ⚡ Most orders are delivered instantly or within a few minutes. In rare cases,
+                      delays may occur due to mobile network providers or upstream service
+                      maintenance. If this happens, we&apos;ll ensure your order is completed or
+                      otherwise resolve the issue as quickly as possible.
                     </p>
                   </div>
                 </div>
