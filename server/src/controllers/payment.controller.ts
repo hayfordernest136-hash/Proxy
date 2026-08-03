@@ -11,6 +11,7 @@ import {
 } from "../services/order.service";
 import { createNotification } from "../services/notification.service";
 import { completeReferralForReferredUserId } from "../services/referral.service";
+import { creditResellerProfitForOrder } from "../services/wallet.service";
 import {
   sendAdminAlertEmail,
   sendOrderReceivedEmail,
@@ -670,9 +671,7 @@ async function initializePayment(
   }
 
   const reference = `paystack_order_${order.order_number}_${Date.now()}`;
-  const callbackPath = isDataOrder(order)
-    ? `/data/checkout?orderId=${order.id}&reference=${encodeURIComponent(reference)}`
-    : `/checkout/${order.id}?reference=${encodeURIComponent(reference)}`;
+  const callbackPath = `/payment/success/${order.id}?reference=${encodeURIComponent(reference)}`;
   const callbackUrl = new URL(callbackPath, callbackOrigin).toString();
 
   const isData = isDataOrder(order);
@@ -771,12 +770,19 @@ export async function initiatePaymentHandler(req: Request, res: Response) {
           "Sandbox payment completed and your order is now queued for fulfilment.",
         );
       }
+
+      const sandboxPaidOrder = await getOrderById(order.id);
+      if (sandboxPaidOrder) {
+        await creditResellerProfitForOrder(sandboxPaidOrder).catch((error) => {
+          console.warn("Failed to credit reseller wallet for sandbox payment:", error);
+        });
+      }
+
       let fulfillment: Awaited<ReturnType<typeof fulfillDataOrder>> | null = null;
       if (isDataOrder(order)) {
         fulfillment = await fulfillDataOrder(order);
       }
 
-      const sandboxPaidOrder = await getOrderById(order.id);
       if (sandboxPaidOrder) {
         await sendPaymentConfirmedEmail(
           sandboxPaidOrder,
@@ -950,6 +956,13 @@ export async function confirmPaymentHandler(req: Request, res: Response) {
       return res.status(409).json({ message: "Payment already processed for this order" });
     }
 
+    const paidOrder = await getOrderById(order.id);
+    if (paidOrder) {
+      await creditResellerProfitForOrder(paidOrder).catch((error) => {
+        console.warn("Failed to credit reseller wallet for payment confirmation:", error);
+      });
+    }
+
     await createOrderEvent(order.id, "paid", "Payment received successfully.");
     if (order.user_id !== null) {
       await createNotification(
@@ -965,7 +978,6 @@ export async function confirmPaymentHandler(req: Request, res: Response) {
       fulfillment = await fulfillDataOrder(order);
     }
 
-    const paidOrder = await getOrderById(order.id);
     if (paidOrder) {
       await sendPaymentConfirmedEmail(paidOrder, paymentReference, fulfillment?.estimatedTime ?? null);
       await sendAdminAlertEmail(paidOrder, "payment_success");
@@ -1052,12 +1064,19 @@ export async function paystackWebhookHandler(req: Request, res: Response) {
           "Your payment has been confirmed and your order is now queued for fulfilment.",
         );
       }
+
+      const webhookPaidOrder = await getOrderById(orderId);
+      if (webhookPaidOrder) {
+        await creditResellerProfitForOrder(webhookPaidOrder).catch((error) => {
+          console.warn("Failed to credit reseller wallet for webhook payment:", error);
+        });
+      }
+
       let fulfillment: Awaited<ReturnType<typeof fulfillDataOrder>> | null = null;
       if (isDataOrder(order)) {
         fulfillment = await fulfillDataOrder(order);
       }
 
-      const webhookPaidOrder = await getOrderById(orderId);
       if (webhookPaidOrder) {
         await sendPaymentConfirmedEmail(
           webhookPaidOrder,
