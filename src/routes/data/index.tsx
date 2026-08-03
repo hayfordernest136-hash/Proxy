@@ -51,9 +51,7 @@ function getBundleDisplayDetails(bundle: DataBundle) {
   }
 
   const primary = name || volume || "Data bundle";
-  const secondary = volume && volume.toLowerCase() !== primary.toLowerCase() ? volume : "";
-
-  return { name: primary, secondary };
+  return { name: primary, secondary: "" };
 }
 
 type DataBundle = {
