@@ -4,8 +4,6 @@ import { ArrowRight, Globe2, Layers } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { formatMoney } from "@/lib/format";
-
 export type ProductCardData = {
   slug: string;
   name: string;
@@ -63,11 +61,9 @@ export function ProductCard({ product }: { product: ProductCardData }) {
 
         <div className="flex flex-col items-stretch gap-3 border-t border-border/60 pt-3 sm:flex-row sm:items-center sm:justify-between sm:pt-4">
           <div>
-            <p className="text-[10px] text-muted-foreground sm:text-xs">Starting from</p>
-            <p className="text-sm font-semibold sm:text-base">
-              {product.from_price != null
-                ? formatMoney(product.from_price, product.currency)
-                : "Contact us"}
+            <p className="text-[10px] text-muted-foreground sm:text-xs">Live API pricing</p>
+            <p className="text-sm font-medium text-muted-foreground">
+              Pricing is pulled live from our provider integrations.
             </p>
           </div>
           <div className="flex items-center gap-2 self-end sm:self-auto">
