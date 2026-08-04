@@ -866,7 +866,28 @@ export async function getOrderConfirmationHandler(req: Request, res: Response) {
       return res.status(404).json({ message: "Order not found" });
     }
 
-    return res.json(sanitizeOrderForConfirmation(order));
+    // Attempt to fetch a provider-estimated time for data orders when available.
+    let estimatedTime: string | undefined = undefined;
+    try {
+      if (isDataOrder(order)) {
+        const referenceToCheck =
+          String(order.fulfillment_reference || order.provider_order_reference || "").trim();
+        if (referenceToCheck) {
+          const provider = createDataProvider(order.provider_name || undefined);
+          const providerStatus = await provider.checkTransactionStatus(referenceToCheck).catch(() => null);
+          if (providerStatus && providerStatus.estimatedTime) {
+            estimatedTime = String(providerStatus.estimatedTime).trim();
+          }
+        }
+      }
+    } catch (e) {
+      // Non-fatal: if provider check fails, fall back to static ETA on the frontend.
+    }
+
+    const payload = sanitizeOrderForConfirmation(order) as Record<string, unknown>;
+    if (estimatedTime) payload.estimated_time = estimatedTime;
+
+    return res.json(payload);
   } catch (error) {
     console.error("Failed to load order confirmation:", error);
     return res.status(500).json({ message: "Unable to load order confirmation" });
