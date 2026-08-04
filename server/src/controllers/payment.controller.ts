@@ -18,6 +18,8 @@ import {
   sendOrderCompletedEmail,
   sendOrderIssueEmail,
 } from "../services/order-email.service";
+import { createDataProvider } from "../providers/data-provider.service";
+import { buildDatamartProviderPatch } from "../providers/datamart-lifecycle";
 const PAYSTACK_FEE_RATE = 0.0195;
 const PAYSTACK_FEE_CAP =
   Number(process.env.PAYSTACK_FEE_CAP ?? 0) > 0 ? Number(process.env.PAYSTACK_FEE_CAP) : null;
@@ -325,11 +327,7 @@ function getOrderCustomerEmail(order: OrderRow) {
 }
 
 async function fulfillDataOrder(order: OrderRow) {
-  const apiKey = getRemaApiKey();
-
-  if (!apiKey) {
-    return { ok: false, reason: "Rema Data API is not configured.", status: "processing" as const };
-  }
+  const provider = createDataProvider();
 
   const existingFulfillment = await getExistingRemaFulfillment(order.id);
   if (existingFulfillment?.remaReference) {
@@ -380,93 +378,65 @@ async function fulfillDataOrder(order: OrderRow) {
     return { ok: false, reason: "Bundle size is missing.", status: "processing" as const };
   }
 
-  const endpoint = getRemaApiUrl();
-  const requestBody = {
-    ref: order.payment_reference ?? `${order.order_number}`,
+  const purchaseResult = await provider.purchaseData({
+    reference: order.payment_reference ?? `${order.order_number}`,
     phone,
+    network: networkType,
     volumeInMB,
-    networkType,
-  };
-
-  logRemaDebug("buy-data request", { endpoint, body: requestBody });
-
-  const response = await fetch(endpoint, {
-    method: "POST",
-    headers: buildRemaHeaders(apiKey),
-    body: JSON.stringify(requestBody),
+    metadata,
   });
 
-  const responseText = await response.text().catch(() => "");
-  let result: any = null;
-  if (responseText) {
-    try {
-      result = JSON.parse(responseText);
-    } catch (error) {
-      logRemaParseError("buy-data", error);
-    }
-  }
-
-  logRemaDebug("buy-data response", { status: response.status, body: result ?? responseText });
-
-  const parsed = parseRemaPurchaseResponse(result ?? {});
-  const normalizedStatus = String(result?.status ?? result?.data?.status ?? parsed.message ?? "")
+  const isDataMartProvider = String(purchaseResult.providerName || provider.name || "")
     .trim()
-    .toLowerCase();
-  let fulfillmentStatus: "completed" | "processing" | "failed" = "processing";
-  const fulfillmentMessage = parsed.message || "Unable to fulfil the data order.";
+    .toLowerCase() === "datamart";
 
-  const estimatedTime = String(
-    result?.estimated_time ??
-      result?.eta ??
-      result?.estimatedTime ??
-      result?.estimated_delivery ??
-      result?.estimated_delivery_time ??
-      result?.data?.estimated_time ??
-      result?.data?.eta ??
-      result?.data?.estimatedTime ??
-      result?.data?.estimated_delivery ??
-      result?.data?.estimated_delivery_time ??
-      result?.result?.estimated_time ??
-      result?.result?.eta ??
-      result?.result?.estimatedTime ??
-      result?.result?.estimated_delivery ??
-      result?.result?.estimated_delivery_time ??
-      "",
-  ).trim();
-
-  if (parsed.success) {
-    fulfillmentStatus = "completed";
-  } else if (
-    normalizedStatus.includes("fail") ||
-    normalizedStatus.includes("cancel") ||
-    normalizedStatus.includes("error") ||
-    normalizedStatus.includes("rejected") ||
-    normalizedStatus.includes("declined")
-  ) {
-    fulfillmentStatus = "failed";
+  // Always persist DataMart provider metadata when the provider handled the
+  // purchase request so we have a record of provider_name, provider_status,
+  // and any identifiers even for failed purchases.
+  if (isDataMartProvider) {
+    const patch = buildDatamartProviderPatch(purchaseResult, {
+      provider_order_reference: order.provider_order_reference,
+      provider_transaction_id: order.provider_transaction_id,
+      fulfillment_reference: order.fulfillment_reference,
+    });
+    await updateOrder(order.id, patch);
   }
+
+  const fulfillmentStatus: "completed" | "processing" | "failed" =
+    purchaseResult.status === "completed"
+      ? "completed"
+      : purchaseResult.status === "failed"
+        ? "failed"
+        : "processing";
+  const fulfillmentMessage = purchaseResult.reason || "Unable to fulfil the data order.";
+  const estimatedTime = purchaseResult.estimatedTime || null;
 
   await persistRemaPurchaseLog(order.id, {
     action: "buy-data",
-    requestPayload: requestBody,
-    responsePayload: result ?? {},
-    rawResponse: responseText,
+    requestPayload: {
+      reference: order.payment_reference ?? `${order.order_number}`,
+      phone,
+      volumeInMB,
+      networkType,
+    },
+    responsePayload: purchaseResult.raw ?? {},
+    rawResponse: "",
     status: fulfillmentStatus,
     message: fulfillmentMessage,
-    remaReference: parsed.reference || null,
-    clientReference: result?.client_reference ?? result?.data?.client_reference ?? null,
-    providerReference: result?.provider_reference ?? result?.data?.provider_reference ?? null,
-    providerName: result?.provider_name ?? result?.data?.provider_name ?? null,
-    amount: result?.amount ?? result?.data?.amount ?? null,
-    walletBalance: result?.wallet_balance ?? result?.data?.wallet_balance ?? null,
-    purchaseTime: result?.purchase_time ?? result?.data?.purchase_time ?? null,
+    remaReference: purchaseResult.reference || null,
+    clientReference: null,
+    providerReference: purchaseResult.reference || purchaseResult.transactionId || null,
+    providerName: purchaseResult.providerName ?? provider.name,
+    amount: null,
+    walletBalance: null,
+    purchaseTime: null,
   });
 
   if (fulfillmentStatus === "completed") {
     return {
       ok: true,
       reason: fulfillmentMessage || "Data order delivered successfully.",
-      reference: parsed.reference || null,
+      reference: purchaseResult.reference || null,
       status: "completed" as const,
       estimatedTime: estimatedTime || null,
     };
@@ -475,8 +445,8 @@ async function fulfillDataOrder(order: OrderRow) {
   if (fulfillmentStatus === "failed") {
     return {
       ok: false,
-      reason: fulfillmentMessage || "Rema reported a failed purchase.",
-      reference: parsed.reference || null,
+      reason: fulfillmentMessage || "The provider reported a failed purchase.",
+      reference: purchaseResult.reference || null,
       status: "failed" as const,
       estimatedTime: estimatedTime || null,
     };
@@ -485,10 +455,62 @@ async function fulfillDataOrder(order: OrderRow) {
   return {
     ok: false,
     reason: fulfillmentMessage || "Unable to fulfil the data order.",
-    reference: parsed.reference || null,
+    reference: purchaseResult.reference || null,
     status: "processing" as const,
     estimatedTime: estimatedTime || null,
   };
+}
+
+async function reconcileDataMartOrder(order: OrderRow) {
+  const providerName = String(order.provider_name || "").trim() || undefined;
+  const provider = createDataProvider(providerName);
+  if (String(provider.name || "").toLowerCase() !== "datamart") {
+    return null;
+  }
+
+  const reference = String(order.provider_order_reference || order.fulfillment_reference || "").trim();
+  if (!reference) {
+    return null;
+  }
+
+  const statusInfo = await provider.checkTransactionStatus(reference);
+  if (!statusInfo) {
+    return null;
+  }
+
+  const targetStatus = statusInfo.status?.toLowerCase().includes("completed") || statusInfo.status?.toLowerCase().includes("delivered")
+    ? "completed"
+    : statusInfo.status?.toLowerCase().includes("failed") || statusInfo.status?.toLowerCase().includes("refund")
+      ? "failed"
+      : "processing";
+
+  const patch = buildDatamartProviderPatch(
+    {
+      reference: statusInfo.reference || reference,
+      transactionId: statusInfo.transactionId || order.provider_transaction_id || null,
+      status: targetStatus,
+      providerName: statusInfo.providerName || "datamart",
+    },
+    {
+      provider_order_reference: order.provider_order_reference,
+      provider_transaction_id: order.provider_transaction_id,
+      fulfillment_reference: order.fulfillment_reference,
+    },
+  );
+
+  await updateOrder(order.id, patch);
+  if (targetStatus === "completed") {
+    await updateOrder(order.id, { status: "completed", delivery_status: "delivered" });
+    await createOrderEvent(order.id, "completed", `Reconciled completed status from DataMart: ${statusInfo.status}`);
+  } else if (targetStatus === "failed") {
+    await updateOrder(order.id, { status: "failed", delivery_status: "failed" });
+    await createOrderEvent(order.id, "failed", `Reconciled failed status from DataMart: ${statusInfo.status}`);
+  } else if (order.payment_status === "paid" && order.status !== "processing") {
+    await updateOrder(order.id, { status: "processing", delivery_status: "pending" });
+    await createOrderEvent(order.id, "processing", `Reconciled processing status from DataMart: ${statusInfo.status}`);
+  }
+
+  return statusInfo;
 }
 
 async function finalizeDataOrder(
@@ -503,6 +525,10 @@ async function finalizeDataOrder(
   const hasExplicitDeliveryConfirmation = /delivered|delivery confirmed|successfully delivered/i.test(
     fulfillment.reason || "",
   );
+
+  if (order.provider_name === "datamart" && order.provider_order_reference) {
+    await reconcileDataMartOrder(order);
+  }
 
   if (fulfillment.status === "completed" || fulfillment.ok) {
     if (!hasExplicitDeliveryConfirmation) {
@@ -670,8 +696,12 @@ async function initializePayment(
   }
 
   const reference = `paystack_order_${order.order_number}_${Date.now()}`;
+  // Use a direct confirmation page callback for data orders so providers
+  // redirect the buyer straight to the payment success page. This avoids
+  // relying on cart state or query param preservation on the checkout
+  // route which can cause users to land back on an empty cart.
   const callbackPath = isDataOrder(order)
-    ? `/data/checkout?orderId=${order.id}&reference=${encodeURIComponent(reference)}`
+    ? `/payment/success/${order.id}?reference=${encodeURIComponent(reference)}`
     : `/checkout/${order.id}?reference=${encodeURIComponent(reference)}`;
   const callbackUrl = new URL(callbackPath, callbackOrigin).toString();
 
