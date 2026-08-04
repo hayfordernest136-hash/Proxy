@@ -120,7 +120,7 @@ function PaymentSuccessPage() {
   const isDataOrder = order.delivery_method === "data_bundle" || order.product_name?.toLowerCase().includes("data");
   const delivery = (order.delivery_method || "cd_key") as DeliveryMethod;
   const deliveryLabel = DELIVERY_LABEL[delivery] || "Standard delivery";
-  const deliveryEta = DELIVERY_ETA[delivery] || "Processing";
+  const deliveryEta = (order as any).estimated_time || DELIVERY_ETA[delivery] || "Processing";
   const formattedOrderRef = (() => {
     const num = order.order_number ?? order.id ?? "";
     const digits = String(num).padStart(6, "0");
