@@ -121,6 +121,11 @@ function PaymentSuccessPage() {
   const delivery = (order.delivery_method || "cd_key") as DeliveryMethod;
   const deliveryLabel = DELIVERY_LABEL[delivery] || "Standard delivery";
   const deliveryEta = DELIVERY_ETA[delivery] || "Processing";
+  const formattedOrderRef = (() => {
+    const num = order.order_number ?? order.id ?? "";
+    const digits = String(num).padStart(6, "0");
+    return `BRK-${digits.slice(0, 3)}-${digits.slice(3)}`;
+  })();
 
   return (
     <SiteLayout>
@@ -205,7 +210,7 @@ function PaymentSuccessPage() {
                       Delivery number: {order.data_metadata?.delivery_number || "-"}
                     </p>
                     <p>
-                      Provider reference: {order.fulfillment_reference || "Pending"}
+                      Order ID: {formattedOrderRef}
                     </p>
                   </div>
                 </div>
